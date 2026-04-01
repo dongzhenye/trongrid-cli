@@ -1,8 +1,11 @@
 import { styleText } from "node:util";
 
 export function sunToTrx(sun: number): string {
-	const trx = sun / 1_000_000;
-	return trx % 1 === 0 ? trx.toFixed(0) : String(trx);
+	const whole = Math.floor(sun / 1_000_000);
+	const frac = sun % 1_000_000;
+	if (frac === 0) return String(whole);
+	const fracStr = String(frac).padStart(6, "0").replace(/0+$/, "");
+	return `${whole}.${fracStr}`;
 }
 
 export function formatKeyValue(pairs: [string, string][]): string {
