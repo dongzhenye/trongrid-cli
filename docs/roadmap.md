@@ -32,6 +32,30 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 
 **Not included**: No npm publish. Architecture validation only.
 
+## Phase A+ : Post-Foundation Improvements
+
+**Goal**: Address code review findings and design research before expanding to Phase B.
+
+### Code quality fixes
+
+| Item | Priority | Effort |
+|------|----------|--------|
+| `account tokens`: add `token_decimals` + `balance_major` to JSON output | High | Medium — needs static decimals map for top tokens or secondary API call |
+| `config set`: validate key against known config fields, reject typos | High | Small |
+| API client: wrap network errors (offline/DNS) with friendly message | Medium | Small |
+| Eliminate `as unknown as Record<string, unknown>` casts in commands | Medium | Small — make `printResult` generic or data interfaces extend Record |
+| Extract `printListResult` for array-returning commands (`account tokens`) | Medium | Small — generalize when Phase B adds more list commands |
+
+### Design research
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| Competitor CLI analysis (solana-cli, cast/foundry, sui, aptos) | High | Learn proven UX patterns, avoid reinventing |
+| TronScan + TronGrid MCP/Skills review (4 products) | High | Critique weaknesses, absorb strengths |
+| Google CLI design best practices article review | Medium | User has a specific article to review against our code |
+| Command argument ordering: `account tokens <addr>` vs `account <addr> tokens` | Medium | UX decision — research how other CLIs handle this |
+| MCP optimization sync (address defaults, etc.) | Medium | Port applicable MCP improvements to CLI |
+
 ## Phase B: First Release
 
 **Goal**: Feature-complete release. ~47 commands across 13 resources.
