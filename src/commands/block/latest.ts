@@ -4,11 +4,11 @@ import type { GlobalOptions } from "../../index.js";
 import { printError, printResult } from "../../output/format.js";
 
 interface BlockData {
-	blockId: string;
+	block_id: string;
 	number: number;
 	timestamp: number;
-	witnessAddress: string;
-	txCount: number;
+	witness_address: string;
+	tx_count: number;
 }
 
 export async function fetchLatestBlock(client: ApiClient): Promise<BlockData> {
@@ -25,11 +25,11 @@ export async function fetchLatestBlock(client: ApiClient): Promise<BlockData> {
 	}>("/wallet/getnowblock");
 
 	return {
-		blockId: raw.blockID,
+		block_id: raw.blockID,
 		number: raw.block_header.raw_data.number,
 		timestamp: raw.block_header.raw_data.timestamp,
-		witnessAddress: raw.block_header.raw_data.witness_address,
-		txCount: raw.transactions?.length ?? 0,
+		witness_address: raw.block_header.raw_data.witness_address,
+		tx_count: raw.transactions?.length ?? 0,
 	};
 }
 
@@ -52,10 +52,10 @@ export function registerBlockCommands(parent: Command): void {
 					data as unknown as Record<string, unknown>,
 					[
 						["Block", String(data.number)],
-						["Block ID", data.blockId],
+						["Block ID", data.block_id],
 						["Time", new Date(data.timestamp).toISOString()],
-						["Producer", data.witnessAddress],
-						["Transactions", String(data.txCount)],
+						["Producer", data.witness_address],
+						["Transactions", String(data.tx_count)],
 					],
 					{ json: opts.json, fields: parseFields(opts) },
 				);

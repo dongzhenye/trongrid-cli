@@ -4,14 +4,15 @@ import type { GlobalOptions } from "../../index.js";
 import { printError, printResult, sunToTrx } from "../../output/format.js";
 
 interface TxViewData {
-	txId: string;
-	blockNumber: number;
+	tx_id: string;
+	block_number: number;
 	timestamp: number;
 	status: string;
-	contractType: string;
-	feeSun: number;
-	feeTrx: string;
-	energyUsed: number;
+	contract_type: string;
+	fee: number;
+	fee_unit: "sun";
+	fee_trx: string;
+	energy_used: number;
 }
 
 export async function fetchTxView(client: ApiClient, hash: string): Promise<TxViewData> {
@@ -34,14 +35,15 @@ export async function fetchTxView(client: ApiClient, hash: string): Promise<TxVi
 	const fee = info.fee ?? 0;
 
 	return {
-		txId: tx.txID,
-		blockNumber: info.blockNumber,
+		tx_id: tx.txID,
+		block_number: info.blockNumber,
 		timestamp: tx.raw_data.timestamp,
 		status: info.receipt.result ?? "UNKNOWN",
-		contractType: tx.raw_data.contract[0]?.type ?? "Unknown",
-		feeSun: fee,
-		feeTrx: sunToTrx(fee),
-		energyUsed: info.receipt.energy_usage_total ?? 0,
+		contract_type: tx.raw_data.contract[0]?.type ?? "Unknown",
+		fee: fee,
+		fee_unit: "sun",
+		fee_trx: sunToTrx(fee),
+		energy_used: info.receipt.energy_usage_total ?? 0,
 	};
 }
 
@@ -61,13 +63,13 @@ export function registerTxCommands(parent: Command): void {
 				printResult(
 					data as unknown as Record<string, unknown>,
 					[
-						["TX Hash", data.txId],
-						["Block", String(data.blockNumber)],
+						["TX Hash", data.tx_id],
+						["Block", String(data.block_number)],
 						["Time", new Date(data.timestamp).toISOString()],
 						["Status", data.status],
-						["Type", data.contractType],
-						["Fee", `${data.feeTrx} TRX`],
-						["Energy Used", String(data.energyUsed)],
+						["Type", data.contract_type],
+						["Fee", `${data.fee_trx} TRX`],
+						["Energy Used", String(data.energy_used)],
 					],
 					{ json: opts.json, fields: parseFields(opts) },
 				);

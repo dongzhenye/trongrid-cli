@@ -41,11 +41,11 @@ describe("block latest", () => {
     const client = createClient({ network: "mainnet" });
     const result = await fetchLatestBlock(client);
 
-    expect(result.blockId).toBe("000000000123abcdef");
+    expect(result.block_id).toBe("000000000123abcdef");
     expect(result.number).toBe(70000000);
     expect(result.timestamp).toBe(1711929600000);
-    expect(result.witnessAddress).toBe("41abc123");
-    expect(result.txCount).toBe(3);
+    expect(result.witness_address).toBe("41abc123");
+    expect(result.tx_count).toBe(3);
   });
 
   it("handles blocks with no transactions", async () => {
@@ -69,6 +69,6 @@ describe("block latest", () => {
     const client = createClient({ network: "mainnet" });
     const result = await fetchLatestBlock(client);
 
-    expect(result.txCount).toBe(0);
+    expect(result.tx_count).toBe(0);
   });
 });

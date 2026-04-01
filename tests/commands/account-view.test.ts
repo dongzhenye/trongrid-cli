@@ -36,10 +36,10 @@ describe("account view", () => {
     const result = await fetchAccountView(client, "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW");
 
     expect(result.address).toBe("TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW");
-    expect(result.balanceSun).toBe(50_000_000);
-    expect(result.balanceTrx).toBe("50");
-    expect(result.isContract).toBe(false);
-    expect(result.createTime).toBe(1600000000000);
+    expect(result.balance).toBe(50_000_000);
+    expect(result.balance_trx).toBe("50");
+    expect(result.is_contract).toBe(false);
+    expect(result.create_time).toBe(1600000000000);
   });
 
   it("handles account with zero balance", async () => {
@@ -58,8 +58,8 @@ describe("account view", () => {
     const client = createClient({ network: "mainnet" });
     const result = await fetchAccountView(client, "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW");
 
-    expect(result.balanceSun).toBe(0);
-    expect(result.balanceTrx).toBe("0");
+    expect(result.balance).toBe(0);
+    expect(result.balance_trx).toBe("0");
   });
 
   it("identifies contract accounts", async () => {
@@ -79,6 +79,6 @@ describe("account view", () => {
     const client = createClient({ network: "mainnet" });
     const result = await fetchAccountView(client, "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW");
 
-    expect(result.isContract).toBe(true);
+    expect(result.is_contract).toBe(true);
   });
 });

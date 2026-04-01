@@ -45,9 +45,9 @@ describe("tx view", () => {
     const client = createClient({ network: "mainnet" });
     const result = await fetchTxView(client, "abc123");
 
-    expect(result.txId).toBe("abc123");
-    expect(result.blockNumber).toBe(70000000);
+    expect(result.tx_id).toBe("abc123");
+    expect(result.block_number).toBe(70000000);
     expect(result.status).toBe("SUCCESS");
-    expect(result.feeSun).toBe(1_100_000);
+    expect(result.fee).toBe(1_100_000);
   });
 });

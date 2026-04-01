@@ -6,10 +6,11 @@ import { validateAddress } from "../../utils/address.js";
 
 interface AccountViewData {
 	address: string;
-	balanceSun: number;
-	balanceTrx: string;
-	isContract: boolean;
-	createTime: number;
+	balance: number;
+	balance_unit: "sun";
+	balance_trx: string;
+	is_contract: boolean;
+	create_time: number;
 }
 
 export async function fetchAccountView(
@@ -28,10 +29,11 @@ export async function fetchAccountView(
 
 	return {
 		address: raw.address ?? address,
-		balanceSun: balance,
-		balanceTrx: sunToTrx(balance),
-		isContract: raw.type === "Contract",
-		createTime: raw.create_time ?? 0,
+		balance: balance,
+		balance_unit: "sun",
+		balance_trx: sunToTrx(balance),
+		is_contract: raw.type === "Contract",
+		create_time: raw.create_time ?? 0,
 	};
 }
 
@@ -54,9 +56,9 @@ export function registerAccountCommands(parent: Command): Command {
 					data as unknown as Record<string, unknown>,
 					[
 						["Address", data.address],
-						["Balance", `${data.balanceTrx} TRX`],
-						["Type", data.isContract ? "Contract" : "EOA"],
-						["Created", data.createTime ? new Date(data.createTime).toISOString() : "Unknown"],
+						["Balance", `${data.balance_trx} TRX`],
+						["Type", data.is_contract ? "Contract" : "EOA"],
+						["Created", data.create_time ? new Date(data.create_time).toISOString() : "Unknown"],
 					],
 					{ json: opts.json, fields: parseFields(opts) },
 				);

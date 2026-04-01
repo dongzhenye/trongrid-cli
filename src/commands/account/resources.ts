@@ -6,11 +6,10 @@ import { validateAddress } from "../../utils/address.js";
 
 interface ResourceData {
 	address: string;
-	energyUsed: number;
-	energyLimit: number;
-	bandwidthUsed: number;
-	bandwidthLimit: number;
-	totalFrozenV2: number;
+	energy_used: number;
+	energy_limit: number;
+	bandwidth_used: number;
+	bandwidth_limit: number;
 }
 
 export async function fetchAccountResources(
@@ -28,11 +27,10 @@ export async function fetchAccountResources(
 
 	return {
 		address,
-		energyUsed: raw.EnergyUsed ?? 0,
-		energyLimit: raw.EnergyLimit ?? 0,
-		bandwidthUsed: (raw.freeNetUsed ?? 0) + (raw.NetUsed ?? 0),
-		bandwidthLimit: (raw.freeNetLimit ?? 0) + (raw.NetLimit ?? 0),
-		totalFrozenV2: 0,
+		energy_used: raw.EnergyUsed ?? 0,
+		energy_limit: raw.EnergyLimit ?? 0,
+		bandwidth_used: (raw.freeNetUsed ?? 0) + (raw.NetUsed ?? 0),
+		bandwidth_limit: (raw.freeNetLimit ?? 0) + (raw.NetLimit ?? 0),
 	};
 }
 
@@ -55,11 +53,11 @@ export function registerAccountResourcesCommand(account: Command, parent: Comman
 						["Address", data.address],
 						[
 							"Energy",
-							`${data.energyUsed.toLocaleString()} / ${data.energyLimit.toLocaleString()}`,
+							`${data.energy_used.toLocaleString()} / ${data.energy_limit.toLocaleString()}`,
 						],
 						[
 							"Bandwidth",
-							`${data.bandwidthUsed.toLocaleString()} / ${data.bandwidthLimit.toLocaleString()}`,
+							`${data.bandwidth_used.toLocaleString()} / ${data.bandwidth_limit.toLocaleString()}`,
 						],
 					],
 					{ json: opts.json, fields: parseFields(opts) },
