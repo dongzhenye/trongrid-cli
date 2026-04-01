@@ -58,7 +58,9 @@ registerTxCommands(program);
 registerAuthCommands(program);
 registerConfigCommands(program);
 
-program.hook("preAction", () => {
+program.hook("preAction", (thisCommand) => {
+	const name = thisCommand.parent?.name() ?? thisCommand.name();
+	if (name === "auth" || name === "config") return;
 	if (!resolveApiKey()) {
 		console.error(styleText("dim", 'Tip: Run "trongrid auth login" for 5x faster rate limits.\n'));
 	}
