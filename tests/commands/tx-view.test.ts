@@ -50,4 +50,18 @@ describe("tx view", () => {
     expect(result.status).toBe("SUCCESS");
     expect(result.fee).toBe(1_100_000);
   });
+
+  it("throws on non-existent transaction", async () => {
+    globalThis.fetch = mock(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      } as Response),
+    );
+
+    const { fetchTxView } = await import("../../src/commands/tx/view.js");
+    const client = createClient({ network: "mainnet" });
+
+    expect(fetchTxView(client, "nonexistent")).rejects.toThrow("Transaction not found");
+  });
 });

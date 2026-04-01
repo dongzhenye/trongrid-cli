@@ -32,6 +32,10 @@ export async function fetchTxView(client: ApiClient, hash: string): Promise<TxVi
 		}>("/wallet/gettransactioninfobyid", { value: hash }),
 	]);
 
+	if (!tx.txID) {
+		throw new Error(`Transaction not found: ${hash}`);
+	}
+
 	const fee = info.fee ?? 0;
 
 	return {
