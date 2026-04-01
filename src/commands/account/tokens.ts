@@ -7,8 +7,11 @@ import { validateAddress } from "../../utils/address.js";
 
 export interface TokenBalance {
 	type: "TRC20" | "TRC10";
-	contractAddress: string; // contract address for TRC20, token ID for TRC10
-	balance: string; // raw balance string (no decimals applied)
+	contract_address: string;
+	balance: string;
+	// Note: token_decimals and balance_major are not available from /v1/accounts/:address.
+	// Adding them requires a secondary API call per token or a static decimals map.
+	// Tracked for future improvement.
 }
 
 // /v1/accounts/:address returns the account object directly in data[0]
@@ -30,16 +33,16 @@ export async function fetchAccountTokens(
 
 	const results: TokenBalance[] = [];
 
-	// TRC20: [{contractAddress: balanceStr}, ...]
+	// TRC20: [{contract_address: balanceStr}, ...]
 	for (const entry of account.trc20 ?? []) {
-		for (const [contractAddress, balance] of Object.entries(entry)) {
-			results.push({ type: "TRC20", contractAddress, balance });
+		for (const [contract_address, balance] of Object.entries(entry)) {
+			results.push({ type: "TRC20", contract_address, balance });
 		}
 	}
 
 	// TRC10 (assetV2): [{key: tokenId, value: amount}, ...]
 	for (const asset of account.assetV2 ?? []) {
-		results.push({ type: "TRC10", contractAddress: asset.key, balance: String(asset.value) });
+		results.push({ type: "TRC10", contract_address: asset.key, balance: String(asset.value) });
 	}
 
 	return results;
@@ -76,7 +79,7 @@ export function registerAccountTokensCommand(account: Command, parent: Command):
 					console.log(styleText("dim", `Found ${tokens.length} tokens:\n`));
 					for (const t of tokens) {
 						const typeTag = styleText("dim", `[${t.type}]`);
-						console.log(`  ${typeTag} ${t.contractAddress.padEnd(35)}  ${t.balance}`);
+						console.log(`  ${typeTag} ${t.contract_address.padEnd(35)}  ${t.balance}`);
 					}
 				}
 			} catch (err) {
