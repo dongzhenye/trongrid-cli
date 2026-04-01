@@ -43,8 +43,10 @@ export { program };
 // Import commands (added as tasks implement them)
 import { registerBlockCommands } from "./commands/block/latest.js";
 import { registerAccountCommands } from "./commands/account/view.js";
+import { registerAccountTokensCommand } from "./commands/account/tokens.js";
 
 registerBlockCommands(program);
 const account = registerAccountCommands(program);
+registerAccountTokensCommand(account, program);
 
 program.parse();
