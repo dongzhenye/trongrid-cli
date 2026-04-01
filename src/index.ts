@@ -40,7 +40,9 @@ export function parseFields(opts: GlobalOptions): string[] | undefined {
 
 export { program };
 
-// Commands will be registered here by each command module
 // Import commands (added as tasks implement them)
+import { registerBlockCommands } from "./commands/block/latest.js";
+
+registerBlockCommands(program);
 
 program.parse();
