@@ -11,6 +11,18 @@ describe("sunToTrx", () => {
   it("handles large values", () => {
     expect(sunToTrx(1_000_000_000_000)).toBe("1000000");
   });
+
+  it("preserves full precision for fractional values", () => {
+    expect(sunToTrx(35216519)).toBe("35.216519");
+    expect(sunToTrx(100001)).toBe("0.100001");
+    expect(sunToTrx(1)).toBe("0.000001");
+  });
+
+  it("handles negative values", () => {
+    expect(sunToTrx(-500000)).toBe("-0.5");
+    expect(sunToTrx(-1_000_000)).toBe("-1");
+    expect(sunToTrx(-1)).toBe("-0.000001");
+  });
 });
 
 describe("formatKeyValue", () => {
