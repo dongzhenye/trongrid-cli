@@ -45,10 +45,12 @@ import { registerBlockCommands } from "./commands/block/latest.js";
 import { registerAccountCommands } from "./commands/account/view.js";
 import { registerAccountTokensCommand } from "./commands/account/tokens.js";
 import { registerAccountResourcesCommand } from "./commands/account/resources.js";
+import { registerTxCommands } from "./commands/tx/view.js";
 
 registerBlockCommands(program);
 const account = registerAccountCommands(program);
 registerAccountTokensCommand(account, program);
 registerAccountResourcesCommand(account, program);
+registerTxCommands(program);
 
 program.parse();
