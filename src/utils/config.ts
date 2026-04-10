@@ -12,11 +12,7 @@ const DEFAULT_CONFIG: TrongridConfig = {
 	network: "mainnet",
 };
 
-export const CONFIG_KEYS = new Set<keyof TrongridConfig>([
-	"network",
-	"apiKey",
-	"default_address",
-]);
+export const CONFIG_KEYS = new Set<keyof TrongridConfig>(["network", "apiKey", "default_address"]);
 
 export const CONFIG_DIR = join(homedir(), ".config", "trongrid");
 export const CONFIG_PATH = join(CONFIG_DIR, "config.json");

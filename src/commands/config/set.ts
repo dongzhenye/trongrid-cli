@@ -1,7 +1,7 @@
 import { styleText } from "node:util";
 import type { Command } from "commander";
-import { CONFIG_KEYS, getConfigValue, readConfig, setConfigValue } from "../../utils/config.js";
 import { validateAddress } from "../../utils/address.js";
+import { CONFIG_KEYS, getConfigValue, readConfig, setConfigValue } from "../../utils/config.js";
 
 export function validateConfigKey(key: string): void {
 	if (!(CONFIG_KEYS as Set<string>).has(key)) {
@@ -14,7 +14,7 @@ export function validateConfigValue(key: string, value: string): void {
 	if (key === "default_address") {
 		try {
 			validateAddress(value);
-		} catch (err) {
+		} catch (_err) {
 			throw new Error(
 				`Invalid TRON address for default_address: "${value}". Expected Base58 (T...) or Hex (41...).`,
 			);

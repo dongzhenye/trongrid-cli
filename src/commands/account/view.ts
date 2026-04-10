@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
 import { printError, printResult, sunToTrx } from "../../output/format.js";
-import { validateAddress } from "../../utils/address.js";
+import { resolveAddress } from "../../utils/resolve-address.js";
 
 interface AccountViewData {
 	address: string;
@@ -43,14 +43,14 @@ export function registerAccountCommands(parent: Command): Command {
 	account
 		.command("view")
 		.description("View account balance, type, and activation status")
-		.argument("<address>", "TRON address (Base58 or Hex)")
-		.action(async (address: string) => {
+		.argument("[address]", "TRON address (defaults to config default_address)")
+		.action(async (address: string | undefined) => {
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();
 			try {
-				validateAddress(address);
+				const resolved = resolveAddress(address);
 				const client = getClient(opts);
-				const data = await fetchAccountView(client, address);
+				const data = await fetchAccountView(client, resolved);
 
 				printResult(
 					data as unknown as Record<string, unknown>,
