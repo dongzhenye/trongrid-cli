@@ -151,6 +151,41 @@ trongrid <resource> <action> [target] [flags]
 
 API service CLIs (gh, gcloud, aws) use resource-first. We follow gh's 2-level pattern.
 
+### Positional argument ordering
+
+**Decision**: Identifier (address / hash / id) is the **trailing positional**. `trongrid account tokens <address>`, not `trongrid account <address> tokens`.
+
+**Alternatives considered**:
+
+| Option | Shape | Verdict |
+|--------|-------|---------|
+| A — target-first | `account <addr> tokens` | Reads more as possessive ("X's tokens"), but fails discoverability and default-address. |
+| **B — action-first (chosen)** | `account tokens <addr>` | Matches git / kubectl / gh / aws / solana convention. |
+| C — flag-based | `account tokens --address <addr>` | Explicit, but verbose for a read-heavy CLI. |
+
+**Why B wins**:
+
+1. **Discoverability** — `trongrid account --help` lists all aspects. Option A has no clean answer for what to show before an address is supplied.
+2. **Default address** — Option B lets `<address>` become optional when `default_address` is configured, so `trongrid account tokens` naturally uses the default. Option A introduces parsing ambiguity when the address is omitted.
+3. **Ecosystem consistency** — all major CLIs keep identifier trailing; user muscle memory matches.
+4. **Uniform scaling** — address-less commands (`chain parameters`, `block latest`) share the same `<noun> <verb> [args]` shape as address-taking ones. Option A creates two structural classes.
+5. **Commander.js fit** — Option B is idiomatic; Option A requires parameterized parent-command routing.
+6. **Future writes** — `account transfer <from> <to> <amount>` is unambiguous under B; Option A's `account <addr> transfer <to> <amt>` leaves the address role (source? recipient?) unclear.
+
+**What's sacrificed**: Option A reads slightly more naturally as a possessive ("X's tokens" / "TR... 的代币"). This loss is recovered through three compensating mechanisms — see §Coupled decisions below.
+
+**Full analysis**: Four-tool competitive evidence base, 10-dimension quantitative scoring (A 48 / B 85 / C 77), and linguistic discussion in [`competitors.md`](./competitors.md#decision-1-command-argument-ordering).
+
+### Coupled decisions
+
+Three mechanisms preserve the linguistic naturalness that Option A would have provided, without sacrificing Option B's ecosystem fit:
+
+| Mechanism | Effect | Phase |
+|-----------|--------|-------|
+| **Default address** (`trongrid config set default_address <addr>`) | Makes `<address>` positional optional across `account` / `tx` / related commands. Frequent users rarely retype the address. | A+ (committed) |
+| **Smart identifier routing** | Bare identifier without subcommand — `trongrid TR7...` / `trongrid 0xabc...` / `trongrid 12345` — auto-routes to `account view` / `tx view` / `block view`. Gives tronscan-URL shortcut without changing the core grammar. | B (polish) |
+| **Documentation prose framing** | Help text and docs phrase commands possessively ("show the tokens of `<address>`") even though the grammar is action-first. Naturalness lives in prose, not syntax. | B (writing guideline) |
+
 ### Naming convention: `view` for single-item lookup
 
 | Action | Verb | Evidence |
