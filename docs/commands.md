@@ -18,14 +18,16 @@
 ### account — Address queries
 
 ```bash
-trongrid account view <address>          # Balance, type, activation status
-trongrid account tokens <address>        # All TRC20/TRC10 balances
+trongrid account view [address]          # Balance, type, activation status
+trongrid account tokens [address]        # All TRC20/TRC10 balances
 trongrid account txs <address>           # Transaction history (all types)
 trongrid account transfers <address>     # Token transfer history
-trongrid account resources <address>     # Energy, bandwidth, staking state
+trongrid account resources [address]     # Energy, bandwidth, staking state
 trongrid account delegations <address>   # Resources delegated to/from
 trongrid account permissions <address>   # Multi-sig, owner/active keys
 ```
+
+Commands shown with `[address]` accept an optional TRON address. When omitted, the address falls back to `default_address` from config — set it once with `trongrid config set default_address <addr>`. Remaining `<address>` entries will gain the same fallback as they are implemented in Phase B.
 
 ### tx — Transaction queries
 
