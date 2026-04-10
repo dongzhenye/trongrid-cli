@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
 import { printError, printResult } from "../../output/format.js";
-import { validateAddress } from "../../utils/address.js";
+import { resolveAddress } from "../../utils/resolve-address.js";
 
 interface ResourceData {
 	address: string;
@@ -38,14 +38,14 @@ export function registerAccountResourcesCommand(account: Command, parent: Comman
 	account
 		.command("resources")
 		.description("View energy, bandwidth, and staking state")
-		.argument("<address>", "TRON address")
-		.action(async (address: string) => {
+		.argument("[address]", "TRON address (defaults to config default_address)")
+		.action(async (address: string | undefined) => {
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();
 			try {
-				validateAddress(address);
+				const resolved = resolveAddress(address);
 				const client = getClient(opts);
-				const data = await fetchAccountResources(client, address);
+				const data = await fetchAccountResources(client, resolved);
 
 				printResult(
 					data as unknown as Record<string, unknown>,
