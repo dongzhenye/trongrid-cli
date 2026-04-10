@@ -3,7 +3,7 @@ import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
 import { printError } from "../../output/format.js";
-import { validateAddress } from "../../utils/address.js";
+import { resolveAddress } from "../../utils/resolve-address.js";
 
 export interface TokenBalance {
 	type: "TRC20" | "TRC10";
@@ -52,14 +52,14 @@ export function registerAccountTokensCommand(account: Command, parent: Command):
 	account
 		.command("tokens")
 		.description("List TRC20 and TRC10 token balances")
-		.argument("<address>", "TRON address")
-		.action(async (address: string) => {
+		.argument("[address]", "TRON address (defaults to config default_address)")
+		.action(async (address: string | undefined) => {
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();
 			try {
-				validateAddress(address);
+				const resolved = resolveAddress(address);
 				const client = getClient(opts);
-				const tokens = await fetchAccountTokens(client, address);
+				const tokens = await fetchAccountTokens(client, resolved);
 
 				if (opts.json) {
 					const fields = parseFields(opts);
