@@ -45,6 +45,40 @@ export function printResult<T extends object>(
 	}
 }
 
+export function formatJsonList<T extends object>(items: T[], fields?: string[]): string {
+	if (fields && fields.length > 0) {
+		const filtered = items.map((item) => {
+			const source = item as Record<string, unknown>;
+			const out: Record<string, unknown> = {};
+			for (const field of fields) {
+				if (field in source) out[field] = source[field];
+			}
+			return out;
+		});
+		return JSON.stringify(filtered, null, 2);
+	}
+	return JSON.stringify(items, null, 2);
+}
+
+/**
+ * List counterpart of {@link printResult}. Handles JSON mode generically
+ * (array serialization + per-item field filtering) and delegates human mode
+ * to a caller-supplied renderer, which has full control over empty-state
+ * messaging, per-row formatting, and any summary line. Pulled out of
+ * `account tokens` so future list commands can share the JSON branch.
+ */
+export function printListResult<T extends object>(
+	items: T[],
+	renderHuman: (items: T[]) => void,
+	options: { json?: boolean; fields?: string[] },
+): void {
+	if (options.json) {
+		console.log(formatJsonList(items, options.fields));
+	} else {
+		renderHuman(items);
+	}
+}
+
 export function printError(
 	message: string,
 	options: { json?: boolean; verbose?: boolean; upstream?: unknown },

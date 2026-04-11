@@ -2,7 +2,7 @@ import { styleText } from "node:util";
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printError } from "../../output/format.js";
+import { printError, printListResult } from "../../output/format.js";
 import { resolveAddress } from "../../utils/resolve-address.js";
 import { formatMajor, resolveTrc10Decimals, resolveTrc20Decimals } from "../../utils/tokens.js";
 
@@ -85,31 +85,25 @@ export function registerAccountTokensCommand(account: Command, parent: Command):
 				const client = getClient(opts);
 				const tokens = await fetchAccountTokens(client, resolved);
 
-				if (opts.json) {
-					const fields = parseFields(opts);
-					const data = fields
-						? tokens.map((t) => {
-								const filtered: Record<string, unknown> = {};
-								for (const f of fields) if (f in t) filtered[f] = t[f as keyof TokenBalance];
-								return filtered;
-							})
-						: tokens;
-					console.log(JSON.stringify(data, null, 2));
-				} else {
-					if (tokens.length === 0) {
-						console.log(styleText("dim", "No tokens found."));
-						return;
-					}
-					console.log(styleText("dim", `Found ${tokens.length} tokens:\n`));
-					for (const t of tokens) {
-						const typeTag = styleText("dim", `[${t.type}]`);
-						const display =
-							t.balance_major !== undefined
-								? `${t.balance_major} ${styleText("dim", `(raw ${t.balance})`)}`
-								: t.balance;
-						console.log(`  ${typeTag} ${t.contract_address.padEnd(35)}  ${display}`);
-					}
-				}
+				printListResult(
+					tokens,
+					(items) => {
+						if (items.length === 0) {
+							console.log(styleText("dim", "No tokens found."));
+							return;
+						}
+						console.log(styleText("dim", `Found ${items.length} tokens:\n`));
+						for (const t of items) {
+							const typeTag = styleText("dim", `[${t.type}]`);
+							const display =
+								t.balance_major !== undefined
+									? `${t.balance_major} ${styleText("dim", `(raw ${t.balance})`)}`
+									: t.balance;
+							console.log(`  ${typeTag} ${t.contract_address.padEnd(35)}  ${display}`);
+						}
+					},
+					{ json: opts.json, fields: parseFields(opts) },
+				);
 			} catch (err) {
 				printError(err instanceof Error ? err.message : String(err), {
 					json: opts.json,
