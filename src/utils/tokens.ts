@@ -1,3 +1,5 @@
+import type { ApiClient } from "../api/client.js";
+
 /**
  * Static decimals map for the most common TRC20 tokens on TRON mainnet.
  *
@@ -21,4 +23,40 @@ const STATIC_TRC20_DECIMALS: Record<string, number> = {
 
 export function getStaticDecimals(contractAddress: string): number | undefined {
 	return STATIC_TRC20_DECIMALS[contractAddress];
+}
+
+interface TriggerConstantResponse {
+	result?: { result?: boolean; message?: string };
+	constant_result?: string[];
+}
+
+/**
+ * Call the TRC20 contract's `decimals()` view function via TronGrid's
+ * FullNode trigger-constant proxy. Returns the decimals as an integer.
+ *
+ * Uses the contract address as the `owner_address` (any valid address
+ * works for view calls; using the contract itself avoids dependency on
+ * an externally meaningful caller).
+ */
+export async function fetchOnChainDecimals(
+	client: ApiClient,
+	contractAddress: string,
+): Promise<number> {
+	const res = await client.post<TriggerConstantResponse>("/wallet/triggerconstantcontract", {
+		contract_address: contractAddress,
+		function_selector: "decimals()",
+		parameter: "",
+		owner_address: contractAddress,
+		visible: true,
+	});
+
+	const hex = res.constant_result?.[0];
+	if (!hex) {
+		throw new Error(`No decimals() result for contract ${contractAddress}`);
+	}
+	const decimals = Number.parseInt(hex, 16);
+	if (Number.isNaN(decimals) || decimals < 0 || decimals > 32) {
+		throw new Error(`Unexpected decimals() hex for ${contractAddress}: ${hex}`);
+	}
+	return decimals;
 }
