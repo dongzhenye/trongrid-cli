@@ -27,6 +27,31 @@ interface AccountV1Response {
 	}>;
 }
 
+/**
+ * Human-mode renderer for a list of token balances. Emits an empty-state
+ * message when the list is empty, a "Found N tokens" header otherwise,
+ * and one `[TYPE] contract_address  <major> (raw <raw>)` line per token.
+ * Tokens with unresolved decimals fall back to raw-only display.
+ *
+ * Exported for testing — the command action passes this as the human
+ * callback to `printListResult`.
+ */
+export function renderTokenList(tokens: TokenBalance[]): void {
+	if (tokens.length === 0) {
+		console.log(styleText("dim", "No tokens found."));
+		return;
+	}
+	console.log(styleText("dim", `Found ${tokens.length} tokens:\n`));
+	for (const t of tokens) {
+		const typeTag = styleText("dim", `[${t.type}]`);
+		const display =
+			t.balance_major !== undefined
+				? `${t.balance_major} ${styleText("dim", `(raw ${t.balance})`)}`
+				: t.balance;
+		console.log(`  ${typeTag} ${t.contract_address.padEnd(35)}  ${display}`);
+	}
+}
+
 export async function fetchAccountTokens(
 	client: ApiClient,
 	address: string,
@@ -85,25 +110,10 @@ export function registerAccountTokensCommand(account: Command, parent: Command):
 				const client = getClient(opts);
 				const tokens = await fetchAccountTokens(client, resolved);
 
-				printListResult(
-					tokens,
-					(items) => {
-						if (items.length === 0) {
-							console.log(styleText("dim", "No tokens found."));
-							return;
-						}
-						console.log(styleText("dim", `Found ${items.length} tokens:\n`));
-						for (const t of items) {
-							const typeTag = styleText("dim", `[${t.type}]`);
-							const display =
-								t.balance_major !== undefined
-									? `${t.balance_major} ${styleText("dim", `(raw ${t.balance})`)}`
-									: t.balance;
-							console.log(`  ${typeTag} ${t.contract_address.padEnd(35)}  ${display}`);
-						}
-					},
-					{ json: opts.json, fields: parseFields(opts) },
-				);
+				printListResult(tokens, renderTokenList, {
+					json: opts.json,
+					fields: parseFields(opts),
+				});
 			} catch (err) {
 				printError(err instanceof Error ? err.message : String(err), {
 					json: opts.json,

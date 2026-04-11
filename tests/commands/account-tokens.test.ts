@@ -2,7 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { createClient } from "../../src/api/client.js";
-import { fetchAccountTokens } from "../../src/commands/account/tokens.js";
+import {
+	fetchAccountTokens,
+	renderTokenList,
+	type TokenBalance,
+} from "../../src/commands/account/tokens.js";
 import { setConfigValue } from "../../src/utils/config.js";
 import { resolveAddress } from "../../src/utils/resolve-address.js";
 import {
@@ -281,5 +285,108 @@ describe("default_address resolution helpers", () => {
 
 		expect(capturedUrl).toContain(VALID);
 		expect(tokens).toEqual([]);
+	});
+});
+
+describe("renderTokenList (human output)", () => {
+	// NO_COLOR forces styleText to emit plain ASCII; assertions stay simple.
+	const originalNoColor = process.env.NO_COLOR;
+	const originalLog = console.log;
+	let captured: string[];
+
+	beforeEach(() => {
+		process.env.NO_COLOR = "1";
+		captured = [];
+		console.log = (msg?: unknown) => {
+			captured.push(typeof msg === "string" ? msg : String(msg));
+		};
+	});
+
+	afterEach(() => {
+		console.log = originalLog;
+		if (originalNoColor !== undefined) {
+			process.env.NO_COLOR = originalNoColor;
+		} else {
+			delete process.env.NO_COLOR;
+		}
+	});
+
+	it("shows empty-state message for an empty list", () => {
+		renderTokenList([]);
+		expect(captured).toHaveLength(1);
+		expect(captured[0]).toContain("No tokens found");
+	});
+
+	it("shows 'Found N tokens' header for a non-empty list", () => {
+		const tokens: TokenBalance[] = [
+			{
+				type: "TRC20",
+				contract_address: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+				balance: "1234000",
+				decimals: 6,
+				balance_major: "1.234",
+			},
+		];
+		renderTokenList(tokens);
+		expect(captured[0]).toContain("Found 1 tokens");
+	});
+
+	it("renders `<major> (raw <raw>)` when balance_major is set", () => {
+		const tokens: TokenBalance[] = [
+			{
+				type: "TRC20",
+				contract_address: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+				balance: "1234000",
+				decimals: 6,
+				balance_major: "1.234",
+			},
+		];
+		renderTokenList(tokens);
+		// First line is the header, second line is the token row.
+		const row = captured[1];
+		expect(row).toContain("[TRC20]");
+		expect(row).toContain("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t");
+		expect(row).toContain("1.234");
+		expect(row).toContain("(raw 1234000)");
+	});
+
+	it("falls back to raw-only when balance_major is undefined", () => {
+		const tokens: TokenBalance[] = [
+			{
+				type: "TRC20",
+				contract_address: "TXYZunknownunknownunknownunknowxxxx",
+				balance: "500000",
+				// decimals and balance_major intentionally omitted (lookup failure)
+			},
+		];
+		renderTokenList(tokens);
+		const row = captured[1];
+		expect(row).toContain("[TRC20]");
+		expect(row).toContain("TXYZunknownunknownunknownunknowxxxx");
+		expect(row).toContain("500000");
+		expect(row).not.toContain("(raw");
+	});
+
+	it("renders mixed resolved and unresolved tokens in one pass", () => {
+		const tokens: TokenBalance[] = [
+			{
+				type: "TRC20",
+				contract_address: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+				balance: "1000000",
+				decimals: 6,
+				balance_major: "1",
+			},
+			{
+				type: "TRC10",
+				contract_address: "1000001",
+				balance: "42",
+				// unresolved
+			},
+		];
+		renderTokenList(tokens);
+		expect(captured[0]).toContain("Found 2 tokens");
+		expect(captured[1]).toContain("(raw 1000000)");
+		expect(captured[2]).toContain("[TRC10]");
+		expect(captured[2]).not.toContain("(raw");
 	});
 });
