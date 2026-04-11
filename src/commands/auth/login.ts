@@ -4,11 +4,23 @@ import { removeApiKey, resolveApiKey, saveApiKey } from "../../auth/store.js";
 import { fail, muted, pass, warn } from "../../output/colors.js";
 
 export function registerAuthCommands(parent: Command): void {
-	const auth = parent.command("auth").description("Authentication");
+	const auth = parent
+		.command("auth")
+		.description("Authentication")
+		.helpGroup("Authentication & Configuration:");
 
 	auth
 		.command("login")
-		.description("Authenticate with TronGrid API key")
+		.description("Authenticate with TronGrid API key (interactive)")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid auth login                      # prompts for API key
+  $ trongrid auth status                     # check current auth state
+  $ trongrid auth logout                     # remove stored credentials
+`,
+		)
 		.action(async () => {
 			const rl = createInterface({
 				input: process.stdin,

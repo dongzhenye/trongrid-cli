@@ -52,11 +52,20 @@ export async function fetchTxView(client: ApiClient, hash: string): Promise<TxVi
 }
 
 export function registerTxCommands(parent: Command): void {
-	const tx = parent.command("tx").description("Transaction queries");
+	const tx = parent.command("tx").description("Transaction queries").helpGroup("Read commands:");
 
 	tx.command("view")
-		.description("View transaction details by hash")
+		.description("View transaction details by hash (typical first step)")
 		.argument("<hash>", "Transaction hash")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid tx view 0xabc123...
+  $ trongrid tx view <hash> --json
+  $ trongrid tx view <hash> --verbose        # include upstream API detail
+`,
+		)
 		.action(async (hash: string) => {
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();

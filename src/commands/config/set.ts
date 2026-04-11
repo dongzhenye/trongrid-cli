@@ -23,13 +23,26 @@ export function validateConfigValue(key: string, value: string): void {
 }
 
 export function registerConfigCommands(parent: Command): void {
-	const config = parent.command("config").description("Configuration");
+	const config = parent
+		.command("config")
+		.description("Configuration")
+		.helpGroup("Authentication & Configuration:");
 
 	config
 		.command("set")
 		.description("Set a config value")
 		.argument("<key>", "Config key (e.g., network, default_address)")
 		.argument("<value>", "Config value")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid config set network mainnet
+  $ trongrid config set default_address TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW
+  $ trongrid config list
+  $ trongrid config get default_address
+`,
+		)
 		.action((key: string, value: string) => {
 			try {
 				validateConfigKey(key);

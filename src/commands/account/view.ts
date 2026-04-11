@@ -40,12 +40,25 @@ export async function fetchAccountView(
 }
 
 export function registerAccountCommands(parent: Command): Command {
-	const account = parent.command("account").description("Address queries");
+	const account = parent
+		.command("account")
+		.description("Address queries")
+		.helpGroup("Read commands:");
 
 	account
 		.command("view")
-		.description("View account balance, type, and activation status")
+		.description("View account balance, type, and activation status (typical first step)")
 		.argument("[address]", "TRON address (defaults to config default_address)")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid account view TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW
+  $ trongrid account view                   # uses default_address from config
+  $ trongrid account view TR... --json      # machine-readable output (class S1 shape)
+  $ trongrid account view TR... --fields balance_trx,is_contract
+`,
+		)
 		.action(async (address: string | undefined) => {
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();

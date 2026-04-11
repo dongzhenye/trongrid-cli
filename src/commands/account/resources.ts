@@ -39,6 +39,15 @@ export function registerAccountResourcesCommand(account: Command, parent: Comman
 		.command("resources")
 		.description("View energy, bandwidth, and staking state")
 		.argument("[address]", "TRON address (defaults to config default_address)")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid account resources TR...
+  $ trongrid account resources               # uses default_address from config
+  $ trongrid account resources TR... --json
+`,
+		)
 		.action(async (address: string | undefined) => {
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();

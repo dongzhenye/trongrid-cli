@@ -34,11 +34,20 @@ export async function fetchLatestBlock(client: ApiClient): Promise<BlockData> {
 }
 
 export function registerBlockCommands(parent: Command): void {
-	const block = parent.command("block").description("Block queries");
+	const block = parent.command("block").description("Block queries").helpGroup("Read commands:");
 
 	block
 		.command("latest")
-		.description("Get the latest block (chain head)")
+		.description("Get the latest block (chain head) (typical first step)")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid block latest
+  $ trongrid block latest --json
+  $ trongrid block latest --fields number,block_id
+`,
+		)
 		.action(async () => {
 			// Lazy import to avoid triggering program.parse() during tests
 			const { getClient, parseFields } = await import("../../index.js");

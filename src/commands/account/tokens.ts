@@ -102,6 +102,16 @@ export function registerAccountTokensCommand(account: Command, parent: Command):
 		.command("tokens")
 		.description("List TRC20 and TRC10 token balances")
 		.argument("[address]", "TRON address (defaults to config default_address)")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid account tokens TR...
+  $ trongrid account tokens                  # uses default_address from config
+  $ trongrid account tokens TR... --json     # class S2 shape with decimals + balance_major
+  $ trongrid account tokens TR... --fields contract_address,balance_major
+`,
+		)
 		.action(async (address: string | undefined) => {
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();
