@@ -96,3 +96,51 @@ export async function resolveTrc20Decimals(
 	onChainCache.set(contractAddress, fetched);
 	return fetched;
 }
+
+interface AssetIssueResponse {
+	id?: string;
+	precision?: number;
+	name?: string;
+}
+
+/**
+ * Call FullNode's /wallet/getassetissuebyid to fetch a TRC-10 asset's
+ * precision (the TRC-10 equivalent of TRC-20 decimals). Most early-era
+ * TRC-10 assets have precision 0, so missing `precision` is treated as 0
+ * rather than an error.
+ */
+export async function fetchTrc10Precision(client: ApiClient, assetId: string): Promise<number> {
+	const res = await client.post<AssetIssueResponse>("/wallet/getassetissuebyid", {
+		value: assetId,
+	});
+	return res.precision ?? 0;
+}
+
+// Module-level cache owned by resolveTrc10Decimals. Separate from the
+// TRC-20 cache because the key space (numeric asset IDs vs base58 contract
+// addresses) and lookup path differ.
+const trc10Cache = new Map<string, number>();
+
+/**
+ * Reset the TRC-10 precision cache. Test-only — mirror of the
+ * TRC-20 reset helper. Underscore prefix signals internal test infra.
+ */
+export function _resetTrc10DecimalsCacheForTests(): void {
+	trc10Cache.clear();
+}
+
+/**
+ * Resolve TRC-10 decimals (= precision) with a module-level cache.
+ * No static map — TRC-10 tokens are less numerous than TRC-20 and
+ * metadata lookups are cheap (single FullNode call per unique ID).
+ * The cache is separate from onChainCache (TRC-20) because the key
+ * space and lookup path differ.
+ */
+export async function resolveTrc10Decimals(client: ApiClient, assetId: string): Promise<number> {
+	const cached = trc10Cache.get(assetId);
+	if (cached !== undefined) return cached;
+
+	const fetched = await fetchTrc10Precision(client, assetId);
+	trc10Cache.set(assetId, fetched);
+	return fetched;
+}

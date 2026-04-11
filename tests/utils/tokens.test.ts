@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { createClient } from "../../src/api/client.js";
 import {
+	_resetTrc10DecimalsCacheForTests,
 	_resetTrc20DecimalsCacheForTests,
 	fetchOnChainDecimals,
+	fetchTrc10Precision,
 	getStaticDecimals,
+	resolveTrc10Decimals,
 	resolveTrc20Decimals,
 } from "../../src/utils/tokens.js";
 
@@ -146,5 +149,85 @@ describe("resolveTrc20Decimals", () => {
 		expect(calls).toBe(1);
 		expect(result1).toBe(18);
 		expect(result2).toBe(18);
+	});
+});
+
+describe("fetchTrc10Precision", () => {
+	const originalFetch = globalThis.fetch;
+
+	afterEach(() => {
+		globalThis.fetch = originalFetch;
+	});
+
+	it("parses the precision field from asset info", async () => {
+		globalThis.fetch = mock(() =>
+			Promise.resolve(
+				new Response(
+					JSON.stringify({
+						id: "1002000",
+						precision: 6,
+						name: "TestToken",
+					}),
+				),
+			),
+		);
+		const client = createClient({ network: "mainnet" });
+		const precision = await fetchTrc10Precision(client, "1002000");
+		expect(precision).toBe(6);
+	});
+
+	it("defaults to 0 when precision field is absent (common for early TRC-10)", async () => {
+		globalThis.fetch = mock(() =>
+			Promise.resolve(
+				new Response(
+					JSON.stringify({
+						id: "1000001",
+						name: "LegacyToken",
+					}),
+				),
+			),
+		);
+		const client = createClient({ network: "mainnet" });
+		const precision = await fetchTrc10Precision(client, "1000001");
+		expect(precision).toBe(0);
+	});
+});
+
+describe("resolveTrc10Decimals", () => {
+	const originalFetch = globalThis.fetch;
+
+	beforeEach(() => {
+		_resetTrc10DecimalsCacheForTests();
+	});
+
+	afterEach(() => {
+		globalThis.fetch = originalFetch;
+	});
+
+	it("returns on-chain precision for a TRC-10 asset", async () => {
+		globalThis.fetch = mock(() =>
+			Promise.resolve(
+				new Response(JSON.stringify({ id: "1002000", precision: 6 })),
+			),
+		);
+		const client = createClient({ network: "mainnet" });
+		const result = await resolveTrc10Decimals(client, "1002000");
+		expect(result).toBe(6);
+	});
+
+	it("memoises lookups within one process", async () => {
+		let calls = 0;
+		globalThis.fetch = mock(() => {
+			calls += 1;
+			return Promise.resolve(
+				new Response(JSON.stringify({ id: "1002000", precision: 6 })),
+			);
+		});
+		const client = createClient({ network: "mainnet" });
+		const result1 = await resolveTrc10Decimals(client, "1002000");
+		const result2 = await resolveTrc10Decimals(client, "1002000");
+		expect(calls).toBe(1);
+		expect(result1).toBe(6);
+		expect(result2).toBe(6);
 	});
 });
