@@ -66,9 +66,9 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 
 ### Follow-ups after Phase A+ docs reorg
 
-| Item | Priority | Notes |
-|------|----------|-------|
-| Extract commands design decisions + latest commands list into an independent doc (e.g., `docs/design/commands-design.md` alongside the existing `docs/design/commands.md` reference) | Medium | The commands design topic grew more complex than `architecture.md` originally anticipated. Keeping the "why" (design decisions, positional ordering rationale, head-word vocabulary) alongside the "what" (command list) in one live doc will keep them cohesive. Consider merging with `docs/design/commands.md` or creating a sibling `commands-design.md`. |
+| Item | Priority | Status | Notes |
+|------|----------|--------|-------|
+| Extract commands design decisions + latest commands list into an independent doc | Medium | ✅ Done (2026-04-11) | Merged into `docs/design/commands.md` as Part I (Design) + Part II (Reference). `architecture.md` §Command Structure slimmed to a 20-line summary with a link. |
 
 ## Phase B: First Release
 
