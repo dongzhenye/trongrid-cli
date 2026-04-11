@@ -29,7 +29,21 @@ export function createClient(options: ClientOptions): ApiClient {
 
 	async function request<T>(path: string, init: RequestInit): Promise<T> {
 		const url = `${baseUrl}${path}`;
-		const response = await fetch(url, { ...init, headers });
+		let response: Response;
+		try {
+			response = await fetch(url, { ...init, headers });
+		} catch (err) {
+			// Network-level failure (offline, DNS resolution, refused connection,
+			// TLS handshake, timeout). fetch throws TypeError with cause; we wrap
+			// it in TrongridError with status 0 (no response received) and a
+			// friendly message that names the fix. Original error preserved in
+			// upstream for --verbose.
+			throw new TrongridError(
+				`Cannot reach TronGrid API at ${baseUrl}. Check your internet connection or try a different --network. Run with --verbose for details.`,
+				0,
+				err,
+			);
+		}
 
 		if (!response.ok) {
 			let upstream: unknown;
