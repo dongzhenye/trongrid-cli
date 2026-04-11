@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import { styleText } from "node:util";
 import { Command } from "commander";
 import { type ApiClient, createClient } from "./api/client.js";
 import { resolveApiKey } from "./auth/store.js";
+import { muted } from "./output/colors.js";
 import { applyNoColorFromOptions } from "./utils/color.js";
 import { readConfig } from "./utils/config.js";
 
@@ -65,7 +65,7 @@ program.hook("preAction", (thisCommand) => {
 	const name = thisCommand.parent?.name() ?? thisCommand.name();
 	if (name === "auth" || name === "config") return;
 	if (!resolveApiKey()) {
-		console.error(styleText("dim", 'Tip: Run "trongrid auth login" for 5x faster rate limits.\n'));
+		console.error(muted('Tip: Run "trongrid auth login" for 5x faster rate limits.\n'));
 	}
 });
 

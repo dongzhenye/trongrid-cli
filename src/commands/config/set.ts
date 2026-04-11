@@ -1,5 +1,5 @@
-import { styleText } from "node:util";
 import type { Command } from "commander";
+import { muted } from "../../output/colors.js";
 import { validateAddress } from "../../utils/address.js";
 import { CONFIG_KEYS, getConfigValue, readConfig, setConfigValue } from "../../utils/config.js";
 
@@ -51,7 +51,7 @@ export function registerConfigCommands(parent: Command): void {
 			if (value !== undefined) {
 				console.log(value);
 			} else {
-				console.log(styleText("dim", "(not set)"));
+				console.log(muted("(not set)"));
 			}
 		});
 
@@ -62,7 +62,7 @@ export function registerConfigCommands(parent: Command): void {
 			const all = readConfig();
 			for (const [key, value] of Object.entries(all)) {
 				if (value !== undefined) {
-					console.log(`${styleText("dim", key.padEnd(16))}  ${value}`);
+					console.log(`${muted(key.padEnd(16))}  ${value}`);
 				}
 			}
 		});

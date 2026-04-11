@@ -1,4 +1,4 @@
-import { styleText } from "node:util";
+import { fail, muted } from "./colors.js";
 
 export function sunToTrx(sun: number): string {
 	const sign = sun < 0 ? "-" : "";
@@ -12,9 +12,7 @@ export function sunToTrx(sun: number): string {
 
 export function formatKeyValue(pairs: [string, string][]): string {
 	const maxKeyLen = Math.max(...pairs.map(([k]) => k.length));
-	return pairs
-		.map(([key, value]) => `${styleText("dim", key.padEnd(maxKeyLen))}  ${value}`)
-		.join("\n");
+	return pairs.map(([key, value]) => `${muted(key.padEnd(maxKeyLen))}  ${value}`).join("\n");
 }
 
 export function formatJson<T extends object>(data: T, fields?: string[]): string {
@@ -88,9 +86,9 @@ export function printError(
 		if (options.upstream) err.upstream = options.upstream;
 		console.error(JSON.stringify(err, null, 2));
 	} else {
-		console.error(styleText("red", `Error: ${message}`));
+		console.error(fail(`Error: ${message}`));
 		if (options.verbose && options.upstream) {
-			console.error(styleText("dim", JSON.stringify(options.upstream, null, 2)));
+			console.error(muted(JSON.stringify(options.upstream, null, 2)));
 		}
 	}
 }

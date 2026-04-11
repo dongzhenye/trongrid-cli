@@ -1,7 +1,7 @@
-import { styleText } from "node:util";
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
+import { muted } from "../../output/colors.js";
 import { printError, printListResult } from "../../output/format.js";
 import { resolveAddress } from "../../utils/resolve-address.js";
 import { formatMajor, resolveTrc10Decimals, resolveTrc20Decimals } from "../../utils/tokens.js";
@@ -38,15 +38,15 @@ interface AccountV1Response {
  */
 export function renderTokenList(tokens: TokenBalance[]): void {
 	if (tokens.length === 0) {
-		console.log(styleText("dim", "No tokens found."));
+		console.log(muted("No tokens found."));
 		return;
 	}
-	console.log(styleText("dim", `Found ${tokens.length} tokens:\n`));
+	console.log(muted(`Found ${tokens.length} tokens:\n`));
 	for (const t of tokens) {
-		const typeTag = styleText("dim", `[${t.type}]`);
+		const typeTag = muted(`[${t.type}]`);
 		const display =
 			t.balance_major !== undefined
-				? `${t.balance_major} ${styleText("dim", `(raw ${t.balance})`)}`
+				? `${t.balance_major} ${muted(`(raw ${t.balance})`)}`
 				: t.balance;
 		console.log(`  ${typeTag} ${t.contract_address.padEnd(35)}  ${display}`);
 	}
