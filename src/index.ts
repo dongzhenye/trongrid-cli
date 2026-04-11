@@ -4,6 +4,7 @@ import { styleText } from "node:util";
 import { Command } from "commander";
 import { type ApiClient, createClient } from "./api/client.js";
 import { resolveApiKey } from "./auth/store.js";
+import { applyNoColorFromOptions } from "./utils/color.js";
 import { readConfig } from "./utils/config.js";
 
 const program = new Command();
@@ -22,6 +23,7 @@ program
 export interface GlobalOptions {
 	json: boolean;
 	network: string;
+	color: boolean;
 	verbose: boolean;
 	limit: string;
 	fields?: string;
@@ -59,6 +61,7 @@ registerAuthCommands(program);
 registerConfigCommands(program);
 
 program.hook("preAction", (thisCommand) => {
+	applyNoColorFromOptions(program.opts<GlobalOptions>());
 	const name = thisCommand.parent?.name() ?? thisCommand.name();
 	if (name === "auth" || name === "config") return;
 	if (!resolveApiKey()) {
