@@ -143,12 +143,21 @@ A CLI should understand its environment without requiring flags on every call.
 - **XDG.** `~/.config/trongrid/config.json`. ✅
 - **Named environments.** We have `--network` (mainnet / shasta / nile) which is *similar* to named environments but narrower — it selects a FullNode URL but does not bundle an API key or any other per-env context. Switching from mainnet (read-heavy) to shasta (dev testing) today means re-running `auth login` or re-setting `TRONGRID_API_KEY` manually. ❌
 
-### Actions
+### Decision (2026-04-11): keep `--network`, do not migrate to `--env`
 
-- **Pre-B decision:** Decide whether `--network` stays as-is or evolves into full `--env` profiles. The article's framing is compelling for multi-tenant / multi-deployment scenarios — "an orchestrator sets `--env prod` without knowing the URL or token" — but `trongrid-cli` is TRON-only, so the three networks are the natural environment set. Two possible resolutions:
-  - **A. Keep `--network`.** Treat it as our env flag. Add per-network API key storage so the key for shasta can be different from the key for mainnet. Minimal churn.
-  - **B. Migrate to `--env`.** Rename `--network` to `--env`, store profiles as `envs: { mainnet: {...}, shasta: {...}, nile: {...} }` in `config.json`. More code churn, but gives us a future-proof slot if we ever need multi-tenant or custom-endpoint (private FullNode) support.
-- This is a **decision the user should make before Phase B**. Waiting until after ~47 commands have baked in `--network` makes it a breaking change.
+We evaluated three paths (flat `--network` / full `--env` / hybrid internal env with `--network` façade) and committed to keeping `--network` as-is.
+
+**Reasons**:
+
+1. **`--network` reads more naturally at the user surface.** TRON has three named networks; `--network shasta` is how every other TRON tool phrases it, and user muscle memory is strong.
+2. **The agent benefits the article lists do not currently exist for `trongrid-cli`:**
+   - **Per-env API keys** — shasta and nile are free testnets that do not require or support API keys. Only mainnet has keys. The `--env` framing assumes each env carries its own credentials, but we only have one credential scope in practice.
+   - **Per-env default address** — a user operates in one context at a time. The global `default_address` that Phase A+ introduced is the right shape; there is no "dev wallet" vs "prod wallet" split that a TRON user needs per network.
+   - **Output preferences** — `--json` / `--verbose` / `--fields` are per-user, not per-env. A user does not want shasta to default to JSON and mainnet to default to human; they want their preferred format everywhere.
+   - **Custom FullNode URLs / corp deployments** — not a current requirement. YAGNI.
+3. **Revisit if and when any of the four preconditions above emerge.** The migration cost from `--network` to `--env` (or to a hybrid internal shape) stays bounded: config files are private to each user, the flag surface is small, and the semantics are clean. Deferring the decision until a real driver exists is cheaper than speculative restructuring.
+
+**Commitment:** `--network` stays as the user-facing flag. Config stays flat (`{network, apiKey, default_address}`). No per-env scoping is added to `config set` / `resolveAddress`. If any of the four preconditions emerges later (e.g., a user asks for corp FullNode support), reopen this decision.
 
 ---
 
