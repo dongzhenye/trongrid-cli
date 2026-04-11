@@ -4,14 +4,19 @@ import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
 import { printError } from "../../output/format.js";
 import { resolveAddress } from "../../utils/resolve-address.js";
+import { formatMajor, resolveTrc10Decimals, resolveTrc20Decimals } from "../../utils/tokens.js";
 
+// Fields follow scenario S2 from docs/design/units.md:
+// {head} + decimals + {head}_major. The head is `balance` because this
+// represents an address's available token balance (TIP-20 `balanceOf`
+// return-parameter convention). Covers both TRC-20 and TRC-10 since both
+// are class S2 scalable quantities.
 export interface TokenBalance {
 	type: "TRC20" | "TRC10";
 	contract_address: string;
 	balance: string;
-	// Note: token_decimals and balance_major are not available from /v1/accounts/:address.
-	// Adding them requires a secondary API call per token or a static decimals map.
-	// Tracked for future improvement.
+	decimals?: number; // Undefined only on lookup failure.
+	balance_major?: string; // Undefined only on lookup failure.
 }
 
 // /v1/accounts/:address returns the account object directly in data[0]
@@ -44,6 +49,25 @@ export async function fetchAccountTokens(
 	for (const asset of account.assetV2 ?? []) {
 		results.push({ type: "TRC10", contract_address: asset.key, balance: String(asset.value) });
 	}
+
+	// Resolve decimals for BOTH TRC-20 and TRC-10 in parallel. Each type uses
+	// its own resolver (different on-chain fetch path) but the in-loop logic
+	// is uniform because both produce an integer `decimals` value.
+	await Promise.all(
+		results.map(async (t) => {
+			try {
+				const decimals =
+					t.type === "TRC20"
+						? await resolveTrc20Decimals(client, t.contract_address)
+						: await resolveTrc10Decimals(client, t.contract_address);
+				t.decimals = decimals;
+				t.balance_major = formatMajor(t.balance, decimals);
+			} catch {
+				// On lookup failure, leave the fields unset. The raw balance is
+				// still present. Don't fail the whole command for one token.
+			}
+		}),
+	);
 
 	return results;
 }

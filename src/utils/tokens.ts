@@ -25,6 +25,27 @@ export function getStaticDecimals(contractAddress: string): number | undefined {
 	return STATIC_TRC20_DECIMALS[contractAddress];
 }
 
+/**
+ * Convert a raw integer balance string into a major-unit decimal string.
+ * Uses BigInt-free string arithmetic to preserve precision above 2^53.
+ *
+ * Example: formatMajor("38927318000", 6) → "38927.318"
+ * Example: formatMajor("500000000000000000", 6) → "500000000000.0"
+ * Trailing zeros in the fractional part are trimmed except one "0"
+ * when the fractional part would otherwise be empty.
+ */
+export function formatMajor(rawBalance: string, decimals: number): string {
+	if (decimals === 0) return rawBalance;
+
+	const negative = rawBalance.startsWith("-");
+	const magnitude = negative ? rawBalance.slice(1) : rawBalance;
+	const padded = magnitude.padStart(decimals + 1, "0");
+	const intPart = padded.slice(0, padded.length - decimals) || "0";
+	const fracPart = padded.slice(padded.length - decimals).replace(/0+$/, "") || "0";
+	const result = `${intPart}.${fracPart}`;
+	return negative ? `-${result}` : result;
+}
+
 interface TriggerConstantResponse {
 	result?: { result?: boolean; message?: string };
 	constant_result?: string[];
