@@ -11,7 +11,7 @@ import type { ApiClient } from "../api/client.js";
  * Adding a token: verify contract address on TronScan and confirm the
  * decimals() value with an on-chain call before adding.
  */
-const STATIC_TRC20_DECIMALS: Record<string, number> = {
+const STATIC_TRC20_DECIMALS: Readonly<Record<string, number>> = Object.freeze({
 	TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t: 6, // USDT
 	TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8: 6, // USDC
 	TNUC9Qb1rRpS5CbWLmNMxXBjyFoydXjWFR: 6, // WTRX
@@ -19,7 +19,7 @@ const STATIC_TRC20_DECIMALS: Record<string, number> = {
 	TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S: 18, // SUN
 	TLa2f6VPqDgRE67v1736s7bJ8Ray5wYjU7: 6, // WIN
 	TAFjULxiVgT4qWk6UZwjqwZXTSaGaqnVp4: 18, // BTT
-};
+});
 
 export function getStaticDecimals(contractAddress: string): number | undefined {
 	return STATIC_TRC20_DECIMALS[contractAddress];

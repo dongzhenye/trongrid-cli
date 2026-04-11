@@ -32,10 +32,10 @@ Legend: ✅ done · ⚠️ partial · ❌ missing · N/A not applicable yet
 
 | Pillar | Sub-item | Current | Priority |
 |---|---|---|---|
-| 1. Structured discoverability | Grouped help by function (category labels) | ⚠️ | Pre-B |
-| 1. Structured discoverability | Short / Long / Examples per command | ⚠️ (Short only) | Pre-B |
-| 1. Structured discoverability | Entry-point hints (`start here`) | ❌ | Pre-B |
-| 1. Structured discoverability | `AGENTS.md` at repo root | ❌ | Pre-B |
+| 1. Structured discoverability | Grouped help by function (category labels) | ✅ (shipped in A+) | — |
+| 1. Structured discoverability | Short / Long / Examples per command | ✅ (shipped in A+) | — |
+| 1. Structured discoverability | Entry-point hints (`typical first step`) | ✅ (shipped in A+) | — |
+| 1. Structured discoverability | `AGENTS.md` at repo root | ✅ (shipped in A+) | — |
 | 1. Structured discoverability | `skills/` directory with per-command skill prompts | ❌ | Phase B |
 | 2. Agent-first interoperability | `--json` on every data command | ✅ | — |
 | 2. Agent-first interoperability | `NO_COLOR` + non-TTY auto-detection | ✅ | — |
@@ -44,15 +44,16 @@ Legend: ✅ done · ⚠️ partial · ❌ missing · N/A not applicable yet
 | 2. Agent-first interoperability | Pre-sort output by importance | ❌ | Phase B |
 | 2. Agent-first interoperability | Context-window safety: truncate / mask sensitive data | ⚠️ | Phase B |
 | 2. Agent-first interoperability | Stateless (reference IDs) | ✅ | — |
+| 2. Agent-first interoperability | Per-command credential injection (`--api-key`) | ✅ (shipped in A+) | — |
 | 3. Configuration and context | XDG config location | ✅ | — |
-| 3. Configuration and context | Named environments (`--env` with bundled URL + token) | ❌ | **Pre-B decision** |
-| 4. Error guidance | Contextual `Hint:` lines | ⚠️ | Pre-B |
-| 4. Error guidance | Fail fast on missing prerequisites | ⚠️ | Pre-B |
-| 4. Error guidance | Deterministic exit codes (0 / 1 / 2 / 3) | ❌ | Pre-B |
+| 3. Configuration and context | Named environments (`--env` with bundled URL + token) | ✅ (decided: keep `--network`, see §3) | — |
+| 4. Error guidance | Contextual `Hint:` lines | ✅ (shipped in A+) | — |
+| 4. Error guidance | Fail fast on missing prerequisites | ⚠️ | Phase B |
+| 4. Error guidance | Deterministic exit codes (0 / 1 / 2 / 3) | ✅ (shipped in A+) | — |
 | 5. Flag and argument consistency | Standardized shorthands | ✅ | — |
 | 5. Flag and argument consistency | Positional for entities, flags for modifiers | ✅ | — |
 | 5. Flag and argument consistency | Safe defaults | ✅ | — |
-| 6. Visual design | Semantic color tokens (not raw `dim` / `red`) | ❌ | Pre-B |
+| 6. Visual design | Semantic color tokens (not raw `dim` / `red`) | ✅ (shipped in A+) | — |
 | 6. Visual design | Reserve color for state, not description | ⚠️ | Phase B |
 | 6. Visual design | Whitespace over color for hierarchy | ⚠️ | — |
 | 6. Visual design | Adaptive light/dark | ❌ | Phase B |
@@ -61,7 +62,7 @@ Legend: ✅ done · ⚠️ partial · ❌ missing · N/A not applicable yet
 | 7. Versioning and lifecycle | Actor tracking on writes | N/A | Phase B |
 | 7. Versioning and lifecycle | Update notifications | ❌ | Phase C |
 
-**Summary:** 10 ✅, 9 ⚠️, 7 ❌, 3 N/A. We're in reasonable shape on pillars 2 / 3 / 5 / 7, and have concrete gaps in pillars 1 / 4 / 6. The biggest structural unknown is pillar 3's `--env` question — which needs a design call, not just code.
+**Summary after Phase A+ closure:** 18 ✅, 3 ⚠️, 3 ❌, 3 N/A. Every pre-B item surfaced by this review has been closed. Pillars 1 / 4 / 6 have moved from "concrete gaps" to "mostly done, polish remains in Phase B". The three `⚠️` items (context-window safety, reserve-color-for-state, whitespace-over-color) are genuinely partial and tracked for Phase B when the command surface grows. The three `❌` items are explicitly deferred (skills/, pre-sort by importance, adaptive light/dark palette), each to the phase where the motivating use case lands.
 
 ---
 
@@ -80,20 +81,17 @@ The `--help` output is both audiences' first contact point. Agents use it to fig
 - Examples matter more than descriptions. Humans copy-paste; agents infer flag patterns from the example.
 - External agent directives: `AGENTS.md` at the repo root, `skills/` directory for complex commands.
 
-### Current state
+### Current state (post-A+ closure)
 
-- **Grouping.** commander.js groups commands by parent in its default help output (`trongrid account --help` shows account subcommands, `trongrid --help` shows the top level). This is automatic structural grouping but not *semantic categorization* — we do not label categories like `Information` / `Write ops`. ⚠️
-- **Short descriptions.** Every command has a `.description()` string. ✅
-- **Long descriptions + examples.** Not populated. commander.js supports `.addHelpText("after", "...")` for examples per command, and we use it nowhere. ❌
-- **Entry-point hints.** Not marked anywhere. ❌
-- **AGENTS.md.** We do not ship one. ❌
-- **`skills/` directory.** Not yet. ❌
+- **Grouping.** ✅ `.helpGroup("Read commands:")` on `account` / `tx` / `block` and `.helpGroup("Authentication & Configuration:")` on `auth` / `config`. Top-level `trongrid --help` shows the two categories. Phase B can drop in additional groups (`Network status:`, `Contract ops:`) without restructuring.
+- **Short descriptions.** ✅ Every command still has `.description()`.
+- **Long descriptions + examples.** ✅ Every leaf command has `.addHelpText("after", "Examples:\n...")` with 3–4 copy-pasteable examples.
+- **Entry-point hints.** ✅ `(typical first step)` on `account view`, `tx view`, `block latest`. Visible both in the parent's subcommand listing and on the leaf's own help page.
+- **`AGENTS.md`.** ✅ Shipped at repo root. Covers invocation priority, exit codes, S1 / S2 shapes, credential injection, recommended first commands, and a "What NOT to do" list.
+- **`skills/` directory.** ❌ Not yet — deferred to Phase B if `AGENTS.md` proves insufficient.
 
-### Actions
+### Actions remaining
 
-- **Pre-B:** Decide category labels for the current ~7 commands and the Phase B target ~47. Likely groups: `Read` (account / tx / block / token / contract / sr / proposal / param), `Network` (energy / bandwidth / network), `Auth & Config` (auth / config). Mark the commands agents are most likely to start with — `account view`, `tx view`, `block latest` — as `(typical first step)`.
-- **Pre-B:** Populate Long descriptions and at least 3 examples per shipped command. Low per-command effort, large UX payoff.
-- **Pre-B:** Ship `AGENTS.md` at repo root — codify invocation rules, default env, how to parse `--json` output, the class-A/S1 and class-B/S2 field shapes, and the recommended first commands.
 - **Phase B:** Consider a `skills/` directory if command complexity grows beyond what `AGENTS.md` can comfortably hold.
 
 ---
@@ -237,16 +235,15 @@ Color should serve a functional purpose, not an aesthetic one.
 - **Whitespace over color for hierarchy.** Positioning and alignment convey structure better than colors.
 - **Adaptive light/dark.** Maintain contrast across themes.
 
-### Current state
+### Current state (post-A+ closure)
 
-- **Semantic tokens.** We use raw `styleText("dim", ...)` / `styleText("red", ...)` in scattered places. No semantic layer. ❌
-- **Reserve color for state.** `printError` uses red for error messages — correct. `styleText("dim", ...)` is used for metadata (auth tip, command hints, `(raw ...)` suffixes in account tokens rendering, type tags like `[TRC20]`). This maps loosely to `Muted`. Success state has no color (no green checkmarks). Warnings have no color. ⚠️
-- **Whitespace over color.** `formatKeyValue` aligns columns with `padEnd` for human output — good. Token rendering uses `padEnd(35)` for contract address. ⚠️ (applied but not systematically).
-- **Adaptive.** `styleText` respects `NO_COLOR` but does not adapt dark/light. We have not checked contrast on a light background. ❌
+- **Semantic tokens.** ✅ `src/output/colors.ts` exports all seven tokens (`accent`, `command`, `pass`, `warn`, `fail`, `muted`, `id`). Every prior `styleText(...)` call site has been migrated. New code using raw `styleText(...)` is a review-blocker per `AGENTS.md`.
+- **Reserve color for state.** ⚠️ `fail` is used for errors, `muted` for metadata, `pass` / `warn` used in `auth login`. No spurious coloring on descriptions or help text. Missing: green checkmarks for success states in read output (there is no success state in a read-only CLI today — becomes relevant when writes land in Phase B).
+- **Whitespace over color.** ⚠️ `formatKeyValue` aligns columns with `padEnd`; `renderTokenList` uses `padEnd(35)` for the contract address column. Applied where it matters, not systematically.
+- **Adaptive.** ❌ `styleText` respects `NO_COLOR` and non-TTY stdout, and `--no-color` is now wired through the preAction hook (see pillar 2). But we have not checked contrast on a light terminal background. Phase B audit.
 
-### Actions
+### Actions remaining
 
-- **Pre-B:** Introduce `src/output/colors.ts` with the seven semantic tokens from the article. Callers use `colors.accent("Header")` / `colors.muted("metadata")` / `colors.fail("Error")` instead of raw `styleText` calls. Migrate existing callers (printError, account tokens rendering, auth tip) to the new palette.
 - **Phase B:** When dashboard-style output lands (`block stats`, `account resources` with graph-like output), apply the palette systematically. Audit on a light terminal background — at least iTerm2 `Solarized Light`.
 - **Phase B:** Consider a small "terminal snapshot" test harness that captures rendered output (with ANSI stripped) for regression checks on the human path.
 
@@ -279,17 +276,21 @@ A CLI is not a static artifact. Versions drift, operations get interrupted, writ
 
 ## Phase A+ closure scope vs Phase B scope
 
-### Close before Phase B (pre-B)
+### Closed before Phase B (all ✅ 2026-04-11)
 
-These gaps are cheap to fix now and would be more expensive to fix once Phase B has baked ~40 more commands around them:
+These gaps were cheap to fix and would have been more expensive once Phase B baked ~40 more commands around them. All seven shipped:
 
-1. **`AGENTS.md` at repo root** — one new file, ~150 lines of content.
-2. **Grouped help categories + Long / Example per command** — touches every command's registration, but each command is 5–10 lines of additional help text.
-3. **Entry-point hints** (`(typical first step)` on `account view`, `tx view`, `block latest`).
-4. **`Hint:` line in `printError`** — 5-line signature change + ~10 call sites to enrich.
-5. **Deterministic exit codes 0 / 1 / 2 / 3** — commander's `.exitOverride()` hook + `TrongridError` status mapping.
-6. **Semantic color tokens** — new `src/output/colors.ts` module with seven exports; migrate existing callers.
-7. **`--network` vs `--env` decision** — design call, not code. Commit the decision so Phase B doesn't have to revisit.
+1. ✅ **`AGENTS.md` at repo root** — 215 lines covering invocation, credential priority, exit codes, S1/S2 shapes, "what not to do".
+2. ✅ **Grouped help categories + examples per leaf command** — `.helpGroup(...)` on the five parent commands, `.addHelpText("after", "Examples:\n...")` on every leaf.
+3. ✅ **Entry-point hints** — `(typical first step)` on `account view`, `tx view`, `block latest`.
+4. ✅ **`Hint:` line in `printError`** — `printError` gains `hint?` option; new `reportErrorAndExit` helper auto-fills default hints for network/auth/rate-limit `TrongridError` cases; per-command contextual hints via `addressErrorHint`, `hintForTxView`.
+5. ✅ **Deterministic exit codes 0 / 1 / 2 / 3** — commander's `.exitOverride()` maps parse errors to `2`, `TrongridError.exitCode` getter maps network / auth failures to `3`, everything else falls through to `1`, success is `0`.
+6. ✅ **Semantic color tokens** — `src/output/colors.ts` with `accent` / `command` / `pass` / `warn` / `fail` / `muted` / `id`; all 17 prior `styleText` call sites migrated.
+7. ✅ **`--network` vs `--env` decision** — kept `--network`. All four `--env` agent benefits the article cites do not currently exist for `trongrid-cli`. Decision reopenable if preconditions emerge. Full rationale in §3 above.
+
+### Not originally on the list but added during Phase A+ closure
+
+8. ✅ **`--api-key` flag for per-command credential injection** — highest-priority entry in the auth chain (flag > env > config). Trigger was a self-review of the `AGENTS.md` "Do not hardcode API keys" bullet: the flag pattern is valid for agent orchestration and was missing. Security trade-off (shell history / `ps aux` exposure) documented in `AGENTS.md` §9 with a recommendation matrix.
 
 ### Phase B scope (during first-release expansion)
 
