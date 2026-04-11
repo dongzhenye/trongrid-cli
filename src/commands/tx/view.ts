@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printError, printResult, sunToTrx } from "../../output/format.js";
+import { printResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
 
 interface TxViewData {
 	tx_id: string;
@@ -52,11 +52,20 @@ export async function fetchTxView(client: ApiClient, hash: string): Promise<TxVi
 }
 
 export function registerTxCommands(parent: Command): void {
-	const tx = parent.command("tx").description("Transaction queries");
+	const tx = parent.command("tx").description("Transaction queries").helpGroup("Read commands:");
 
 	tx.command("view")
-		.description("View transaction details by hash")
+		.description("View transaction details by hash (typical first step)")
 		.argument("<hash>", "Transaction hash")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid tx view 0xabc123...
+  $ trongrid tx view <hash> --json
+  $ trongrid tx view <hash> --verbose        # include upstream API detail
+`,
+		)
 		.action(async (hash: string) => {
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();
@@ -65,7 +74,7 @@ export function registerTxCommands(parent: Command): void {
 				const data = await fetchTxView(client, hash);
 
 				printResult(
-					data as unknown as Record<string, unknown>,
+					data,
 					[
 						["TX Hash", data.tx_id],
 						["Block", String(data.block_number)],
@@ -78,12 +87,19 @@ export function registerTxCommands(parent: Command): void {
 					{ json: opts.json, fields: parseFields(opts) },
 				);
 			} catch (err) {
-				printError(err instanceof Error ? err.message : String(err), {
+				reportErrorAndExit(err, {
 					json: opts.json,
 					verbose: opts.verbose,
-					upstream: (err as { upstream?: unknown }).upstream,
+					hint: hintForTxView(err),
 				});
-				process.exit(1);
 			}
 		});
+}
+
+function hintForTxView(err: unknown): string | undefined {
+	if (!(err instanceof Error)) return undefined;
+	if (err.message.toLowerCase().includes("transaction not found")) {
+		return "Check the hash is correct. If it was recently broadcast, wait a few seconds and retry. If it was on testnet, try --network shasta or --network nile.";
+	}
+	return undefined;
 }

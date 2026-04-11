@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printError, printResult } from "../../output/format.js";
+import { printResult, reportErrorAndExit } from "../../output/format.js";
 
 interface BlockData {
 	block_id: string;
@@ -34,11 +34,20 @@ export async function fetchLatestBlock(client: ApiClient): Promise<BlockData> {
 }
 
 export function registerBlockCommands(parent: Command): void {
-	const block = parent.command("block").description("Block queries");
+	const block = parent.command("block").description("Block queries").helpGroup("Read commands:");
 
 	block
 		.command("latest")
-		.description("Get the latest block (chain head)")
+		.description("Get the latest block (chain head) (typical first step)")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid block latest
+  $ trongrid block latest --json
+  $ trongrid block latest --fields number,block_id
+`,
+		)
 		.action(async () => {
 			// Lazy import to avoid triggering program.parse() during tests
 			const { getClient, parseFields } = await import("../../index.js");
@@ -49,7 +58,7 @@ export function registerBlockCommands(parent: Command): void {
 				const data = await fetchLatestBlock(client);
 
 				printResult(
-					data as unknown as Record<string, unknown>,
+					data,
 					[
 						["Block", String(data.number)],
 						["Block ID", data.block_id],
@@ -60,12 +69,10 @@ export function registerBlockCommands(parent: Command): void {
 					{ json: opts.json, fields: parseFields(opts) },
 				);
 			} catch (err) {
-				printError(err instanceof Error ? err.message : String(err), {
+				reportErrorAndExit(err, {
 					json: opts.json,
 					verbose: opts.verbose,
-					upstream: (err as { upstream?: unknown }).upstream,
 				});
-				process.exit(1);
 			}
 		});
 }

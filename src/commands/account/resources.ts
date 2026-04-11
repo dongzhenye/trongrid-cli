@@ -1,8 +1,8 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printError, printResult } from "../../output/format.js";
-import { validateAddress } from "../../utils/address.js";
+import { printResult, reportErrorAndExit } from "../../output/format.js";
+import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 
 interface ResourceData {
 	address: string;
@@ -38,17 +38,26 @@ export function registerAccountResourcesCommand(account: Command, parent: Comman
 	account
 		.command("resources")
 		.description("View energy, bandwidth, and staking state")
-		.argument("<address>", "TRON address")
-		.action(async (address: string) => {
+		.argument("[address]", "TRON address (defaults to config default_address)")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid account resources TR...
+  $ trongrid account resources               # uses default_address from config
+  $ trongrid account resources TR... --json
+`,
+		)
+		.action(async (address: string | undefined) => {
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();
 			try {
-				validateAddress(address);
+				const resolved = resolveAddress(address);
 				const client = getClient(opts);
-				const data = await fetchAccountResources(client, address);
+				const data = await fetchAccountResources(client, resolved);
 
 				printResult(
-					data as unknown as Record<string, unknown>,
+					data,
 					[
 						["Address", data.address],
 						[
@@ -63,12 +72,11 @@ export function registerAccountResourcesCommand(account: Command, parent: Comman
 					{ json: opts.json, fields: parseFields(opts) },
 				);
 			} catch (err) {
-				printError(err instanceof Error ? err.message : String(err), {
+				reportErrorAndExit(err, {
 					json: opts.json,
 					verbose: opts.verbose,
-					upstream: (err as { upstream?: unknown }).upstream,
+					hint: addressErrorHint(err),
 				});
-				process.exit(1);
 			}
 		});
 }
