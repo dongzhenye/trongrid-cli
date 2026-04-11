@@ -38,15 +38,28 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 
 ### Code quality fixes
 
-| Item | Priority | Effort |
+| Item | Priority | Status |
 |------|----------|--------|
-| `account tokens`: add `decimals` + `balance_major` to JSON output (TRC-20 + TRC-10, per scenario S2 of [`design/units.md`](./design/units.md)) | High | Medium — hybrid strategy (static map for top TRC-20s + on-chain `decimals()` fallback; TRC-10 via `/wallet/getassetissuebyid.precision`). Rationale in [`design/competitors.md`](./design/competitors.md#decision-2-token-decimals-strategy). |
-| `config set`: validate key against known config fields, reject typos | High | Small |
-| API client: wrap network errors (offline/DNS) with friendly message | Medium | Small |
-| Eliminate `as unknown as Record<string, unknown>` casts in commands | Medium | Small — make `printResult` generic or data interfaces extend Record |
-| Extract `printListResult` for array-returning commands (`account tokens`) | Medium | Small — generalize when Phase B adds more list commands |
-| Wire `--no-color` flag through `preAction` (currently a no-op) | Medium | Small — read `opts.color` in the pre-action hook and set `process.env.NO_COLOR = "1"` when false. `styleText` already auto-strips ANSI on non-TTY but does not respect the explicit flag in a real TTY. |
-| Add snapshot test for `account tokens` human-output rendering (`<major> (raw <raw>)` vs raw-only fallback) | Low | Small — mock `console.log`, assert captured string. Covers the conditional display branch added for scenario S2 and its fallback when decimals lookup fails. |
+| `account tokens`: `decimals` + `balance_major` JSON (TRC-20 + TRC-10, scenario S2) | High | ✅ Done (2026-04-11) |
+| `config set`: validate key against known config fields, reject typos | High | ✅ Done (2026-04-11) |
+| API client: wrap network errors (offline/DNS) with friendly message | Medium | ✅ Done (2026-04-11) |
+| Eliminate `as unknown as Record<string, unknown>` casts in commands | Medium | ✅ Done (2026-04-11) |
+| Extract `printListResult` for array-returning commands | Medium | ✅ Done (2026-04-11) |
+| Wire `--no-color` flag through `preAction` (currently a no-op) | Medium | ✅ Done (2026-04-11) |
+| Add snapshot test for `account tokens` human-output rendering | Low | ✅ Done (2026-04-11) |
+
+### Pre-B items from CLI best-practices review
+
+Items surfaced by the [`design/cli-best-practices.md`](./design/cli-best-practices.md) Google-CLI review and closed before Phase B expansion:
+
+| Item | Status |
+|------|--------|
+| `AGENTS.md` at repo root | ✅ Done (2026-04-11) |
+| Grouped help categories + `(typical first step)` hints + examples per leaf command | ✅ Done (2026-04-11) |
+| `Hint:` line in `printError` + `reportErrorAndExit` helper | ✅ Done (2026-04-11) |
+| Deterministic exit codes (0 / 1 / 2 / 3) | ✅ Done (2026-04-11) |
+| Semantic color tokens (`src/output/colors.ts`) | ✅ Done (2026-04-11) |
+| `--network` vs `--env` decision | ✅ Decided keep `--network` (2026-04-11) — see [`cli-best-practices.md` §3](./design/cli-best-practices.md) |
 
 ### Feature additions
 
