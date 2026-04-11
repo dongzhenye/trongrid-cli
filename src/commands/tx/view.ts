@@ -65,7 +65,7 @@ export function registerTxCommands(parent: Command): void {
 				const data = await fetchTxView(client, hash);
 
 				printResult(
-					data as unknown as Record<string, unknown>,
+					data,
 					[
 						["TX Hash", data.tx_id],
 						["Block", String(data.block_number)],

@@ -48,7 +48,7 @@ export function registerAccountResourcesCommand(account: Command, parent: Comman
 				const data = await fetchAccountResources(client, resolved);
 
 				printResult(
-					data as unknown as Record<string, unknown>,
+					data,
 					[
 						["Address", data.address],
 						[

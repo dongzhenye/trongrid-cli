@@ -55,7 +55,7 @@ export function registerAccountCommands(parent: Command): Command {
 				const data = await fetchAccountView(client, resolved);
 
 				printResult(
-					data as unknown as Record<string, unknown>,
+					data,
 					[
 						["Address", data.address],
 						["Balance", `${data.balance_trx} TRX`],

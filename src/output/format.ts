@@ -17,12 +17,15 @@ export function formatKeyValue(pairs: [string, string][]): string {
 		.join("\n");
 }
 
-export function formatJson(data: Record<string, unknown>, fields?: string[]): string {
+export function formatJson<T extends object>(data: T, fields?: string[]): string {
 	if (fields && fields.length > 0) {
+		// Dynamic key lookup requires a Record view. Typed callers keep their
+		// precise types at the API boundary; the cast is contained here.
+		const source = data as Record<string, unknown>;
 		const filtered: Record<string, unknown> = {};
 		for (const field of fields) {
-			if (field in data) {
-				filtered[field] = data[field];
+			if (field in source) {
+				filtered[field] = source[field];
 			}
 		}
 		return JSON.stringify(filtered, null, 2);
@@ -30,8 +33,8 @@ export function formatJson(data: Record<string, unknown>, fields?: string[]): st
 	return JSON.stringify(data, null, 2);
 }
 
-export function printResult(
-	data: Record<string, unknown>,
+export function printResult<T extends object>(
+	data: T,
 	humanPairs: [string, string][],
 	options: { json?: boolean; fields?: string[] },
 ): void {

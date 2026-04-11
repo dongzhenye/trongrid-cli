@@ -49,7 +49,7 @@ export function registerBlockCommands(parent: Command): void {
 				const data = await fetchLatestBlock(client);
 
 				printResult(
-					data as unknown as Record<string, unknown>,
+					data,
 					[
 						["Block", String(data.number)],
 						["Block ID", data.block_id],
