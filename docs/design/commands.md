@@ -94,6 +94,7 @@ Top-level resources are **blockchain entities with independent attributes**. Acc
 |------|-------|-------------|---------|
 | `--json` | `-j` | Output as JSON | false |
 | `--network` | `-n` | Network: mainnet, shasta, nile | mainnet |
+| `--api-key` | — | TronGrid API key for this invocation (highest priority; overrides env var and config file). Intended for agent orchestration. See `AGENTS.md` §9 for the security trade-off on interactive shells. | — |
 | `--no-color` | — | Disable colored output | false |
 | `--verbose` | `-v` | Show upstream API details in errors | false |
 | `--limit` | `-l` | Max items for list commands | 20 |

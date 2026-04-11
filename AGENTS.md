@@ -136,14 +136,36 @@ trongrid account view TR... --json --fields balance_trx,is_contract
 
 Comma-separated. Fields that do not exist in the source object are silently dropped (no error). This is the cheapest way to keep an agent's context window lean.
 
-## 9. Environment variables
+## 9. Credential injection
+
+Three ways to supply the TronGrid API key, priority highest first:
+
+| Method | Scope | Recommended for |
+|---|---|---|
+| `--api-key <key>` flag | Per-command (stateless) | **Agent orchestration** where each call injects its own credential and command logs are either absent or already filtered for secrets |
+| `TRONGRID_API_KEY` env var | Per-process | Interactive shells, CI/CD, container env — does not touch disk, does not appear in argv |
+| `trongrid auth login` | Persistent (config file) | Long-lived local development, single-user workstation |
+
+**Priority:** the flag always wins. The env var overrides the config file. With nothing set, the CLI falls back to the unauthenticated free tier (3 QPS).
+
+```bash
+# Agent / orchestrator pattern — stateless per-call
+trongrid account view TR... --api-key "$MY_INJECTED_KEY" --json
+
+# Shell pattern — per-process env
+TRONGRID_API_KEY=sk_... trongrid account view TR... --json
+
+# Interactive pattern — persistent config
+trongrid auth login && trongrid account view TR... --json
+```
+
+**Security trade-off for `--api-key`**: command-line flags appear in shell history (`~/.bash_history`, `~/.zsh_history`), process listings (`ps aux`), audit logs, and any APM tool that captures argv. In an interactive shell this exposure matters — prefer `TRONGRID_API_KEY` in that context. In an agent process where the orchestrator controls both the command construction and the log capture, the flag is the cleanest pattern and the argv exposure is a non-concern.
+
+Other environment variables:
 
 | Variable | Purpose |
 |---|---|
-| `TRONGRID_API_KEY` | Override the stored API key without `auth login` |
-| `NO_COLOR` | Suppress ANSI codes (also set automatically on non-TTY stdout) |
-
-Do not hardcode API keys in invocation strings. Use `TRONGRID_API_KEY` in the environment, or run `trongrid auth login` once interactively.
+| `NO_COLOR` | Suppress ANSI codes (also set automatically on non-TTY stdout and when `--no-color` is passed) |
 
 ---
 
@@ -209,7 +231,7 @@ src/
 - **Do not retry exit code `2`.** Usage errors will never succeed on retry; the invocation itself is malformed.
 - **Do not use `balance` as a display value.** Use `balance_trx` (S1) or `balance_major` (S2).
 - **Do not parse the raw `balance` field as a JS number for S2.** Strings can exceed `Number.MAX_SAFE_INTEGER`.
-- **Do not hardcode API keys in command strings.** Use `TRONGRID_API_KEY` in the environment or `trongrid auth login`.
+- **Do not hardcode API keys in a command string that will land in shell history.** In an interactive shell, use `TRONGRID_API_KEY` in the environment or `trongrid auth login`. The `--api-key` flag is acceptable for agent orchestration contexts where argv capture is controlled.
 - **Do not assume unset fields mean zero.** `decimals` and `balance_major` are `undefined` on lookup failure, not `0` / `""`.
 - **Do not add raw `styleText(...)` calls in new code.** Use the semantic tokens in `src/output/colors.ts`.
 - **Do not introduce a second production dependency** without updating `docs/architecture.md` §Dependencies — the one-dep commitment is load-bearing.

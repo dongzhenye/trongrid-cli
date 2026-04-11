@@ -114,7 +114,7 @@ function defaultHintFor(err: unknown): string | undefined {
 		return "Check your internet connection or try a different --network. Run with --verbose for details.";
 	}
 	if (err.status === 401 || err.status === 403) {
-		return 'Run "trongrid auth login" to set a valid API key.';
+		return 'Run "trongrid auth login" to set a valid API key, or pass --api-key <key> for one-time use.';
 	}
 	if (err.status === 429) {
 		return 'Rate limited. Run "trongrid auth login" for 5x higher limits.';

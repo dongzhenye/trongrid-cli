@@ -15,6 +15,7 @@ program
 	.version("0.1.0")
 	.option("-j, --json", "output as JSON", false)
 	.option("-n, --network <network>", "network: mainnet, shasta, nile", "mainnet")
+	.option("--api-key <key>", "TronGrid API key (highest priority; overrides env + config)")
 	.option("--no-color", "disable colored output")
 	.option("-v, --verbose", "show upstream API details in errors", false)
 	.option("-l, --limit <number>", "max items for list commands", "20")
@@ -36,6 +37,7 @@ program
 export interface GlobalOptions {
 	json: boolean;
 	network: string;
+	apiKey?: string;
 	color: boolean;
 	verbose: boolean;
 	limit: string;
@@ -45,7 +47,7 @@ export interface GlobalOptions {
 export function getClient(opts: GlobalOptions): ApiClient {
 	const config = readConfig();
 	const network = opts.network ?? config.network ?? "mainnet";
-	const apiKey = resolveApiKey();
+	const apiKey = resolveApiKey({ inlineKey: opts.apiKey });
 	return createClient({ network, apiKey });
 }
 
@@ -74,10 +76,11 @@ registerAuthCommands(program);
 registerConfigCommands(program);
 
 program.hook("preAction", (thisCommand) => {
-	applyNoColorFromOptions(program.opts<GlobalOptions>());
+	const rootOpts = program.opts<GlobalOptions>();
+	applyNoColorFromOptions(rootOpts);
 	const name = thisCommand.parent?.name() ?? thisCommand.name();
 	if (name === "auth" || name === "config") return;
-	if (!resolveApiKey()) {
+	if (!resolveApiKey({ inlineKey: rootOpts.apiKey })) {
 		console.error(muted('Tip: Run "trongrid auth login" for 5x faster rate limits.\n'));
 	}
 });
