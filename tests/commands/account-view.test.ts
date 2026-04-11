@@ -78,6 +78,12 @@ describe("account view", () => {
 
 		expect(result.is_contract).toBe(true);
 	});
+
+	it("emits decimals: 6 per class S1 bonus rule", async () => {
+		const client = createClient({ network: "mainnet" });
+		const result = await fetchAccountView(client, "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW");
+		expect(result.decimals).toBe(6);
+	});
 });
 
 // Tests for the default_address resolution helpers (resolveAddress + fetchAccountView).

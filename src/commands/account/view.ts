@@ -8,6 +8,7 @@ interface AccountViewData {
 	address: string;
 	balance: number;
 	balance_unit: "sun";
+	decimals: 6;
 	balance_trx: string;
 	is_contract: boolean;
 	create_time: number;
@@ -31,6 +32,7 @@ export async function fetchAccountView(
 		address: raw.address ?? address,
 		balance: balance,
 		balance_unit: "sun",
+		decimals: 6,
 		balance_trx: sunToTrx(balance),
 		is_contract: raw.type === "Contract",
 		create_time: raw.create_time ?? 0,
