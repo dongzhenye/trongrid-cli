@@ -40,7 +40,7 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 
 | Item | Priority | Effort |
 |------|----------|--------|
-| `account tokens`: add `decimals` + `balance_major` to JSON output (TRC-20 + TRC-10, per class S2 of [`design/units.md`](./design/units.md)) | High | Medium — hybrid strategy (static map for top TRC-20s + on-chain `decimals()` fallback; TRC-10 via `/wallet/getassetissuebyid.precision`). Rationale in [`design/competitors.md`](./design/competitors.md#decision-2-token-decimals-strategy). |
+| `account tokens`: add `decimals` + `balance_major` to JSON output (TRC-20 + TRC-10, per scenario S2 of [`design/units.md`](./design/units.md)) | High | Medium — hybrid strategy (static map for top TRC-20s + on-chain `decimals()` fallback; TRC-10 via `/wallet/getassetissuebyid.precision`). Rationale in [`design/competitors.md`](./design/competitors.md#decision-2-token-decimals-strategy). |
 | `config set`: validate key against known config fields, reject typos | High | Small |
 | API client: wrap network errors (offline/DNS) with friendly message | Medium | Small |
 | Eliminate `as unknown as Record<string, unknown>` casts in commands | Medium | Small — make `printResult` generic or data interfaces extend Record |

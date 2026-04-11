@@ -174,7 +174,7 @@ API service CLIs (gh, gcloud, aws) use resource-first. We follow gh's 2-level pa
 
 **What's sacrificed**: Option A reads slightly more naturally as a possessive ("X's tokens" / "TR... 的代币"). This loss is recovered through three compensating mechanisms — see §Coupled decisions below.
 
-**Full analysis**: Four-tool competitive evidence base, 10-dimension quantitative scoring (A 48 / B 85 / C 77), and linguistic discussion in [`competitors.md`](./competitors.md#decision-1-command-argument-ordering).
+**Full analysis**: Four-tool competitive evidence base, 10-dimension quantitative scoring (A 48 / B 85 / C 77), and linguistic discussion in [`design/competitors.md`](./design/competitors.md#decision-1-command-argument-ordering).
 
 ### Coupled decisions
 
@@ -247,52 +247,28 @@ Networks: mainnet (default), shasta, nile. Override per-command with `--network`
 | Aspect | Human Mode (default) | JSON Mode (`--json`) |
 |--------|---------------------|---------------------|
 | Format | Aligned key-value, tables, colors | Raw JSON object |
-| Units | TRX (human-readable) | Both sun + TRX (see below) |
+| Units | Major unit (TRX, token) | Raw + major + metadata per unit shape contract |
 | Colors | `styleText` (respects `NO_COLOR`) | None |
 | Errors | Friendly message + hint + upstream detail | `{"error": "...", "code": "...", "detail": "...", "upstream": {...}}` |
 | Pagination | `--limit` + summary | Full page + `next_cursor` |
 
-**Unit handling**: This is more nuanced than "human gets TRX, machine gets sun." The core problem: raw sun values without metadata cause AI agents to misinterpret amounts by 6 orders of magnitude (e.g., 35.2 TRX reported as 35.2 million TRX). This affects 20+ read tools and 6+ write tools with resource safety risk.
+**Unit handling** — the core problem: raw integer values without metadata cause agents to misread on-chain amounts by 6 orders of magnitude (e.g., 35.2 TRX reported as 35.2 million TRX). This affects 20+ read tools and 6+ write tools with resource-safety risk.
 
-CLI follows the same unit convention used in the TronGrid MCP server. The naming principle: **use the explicit unit name when possible; fall back to `_major` only when the unit is variable.**
+The full contract lives in [`design/units.md`](./design/units.md): seven orthogonal principles (P1–P7) with five named scenarios (S1–S5) as reference shortcuts. Core commitments:
 
-"Major" comes from monetary terminology — major unit (TRX, USD) vs minor unit (sun, cent). The suffix was chosen over alternatives like `_formatted` (implies string beautification, not unit conversion), `_normalized` (statistics ambiguity), and `_standard` (overloaded in tech contexts).
+- **Always provide the major-unit value** (P1) alongside raw, so human/agent communication stays grounded in natural units regardless of storage.
+- **Always provide conversion metadata when possible** (P2) — `{head}_unit` when the minor unit has an ecosystem-recognized name (`sun`), `decimals` when it does not, both when both are available.
+- **Scalable tokens (TRC-20/TRC-10)** follow S2: `{head}` + `decimals` + `{head}_major`. Head word is scenario-specific (`balance` for read-side account balances per TIP-20 `balanceOf`).
+- **Industry metrics** (prices, market caps) carry explicit unit suffixes (`marketcap_usd`, `price_usd` + `price_trx`) per P5.
+- **Upstream-locked fields** (FullNode read-through and write-side wire contracts) are preserved verbatim per P7 — correctness constraint.
 
-**A. TRX amounts** — raw sun preserved, `_trx` appended:
-
-```json
-{
-  "balance": 35216519,
-  "balance_unit": "sun",
-  "balance_trx": "35.216519"
-}
-```
-
-The major unit is always TRX, so the suffix is explicit: `_trx`. No ambiguity — the reader knows the unit from the field name alone.
-
-**B. TRC-20 token amounts** — raw integer preserved, decimals + `_major` appended:
-
-```json
-{
-  "balance": "38927318000000000",
-  "token_decimals": 6,
-  "balance_major": "38927318000.0"
-}
-```
-
-Here `_major` is a pragmatic fallback, not a preference. The ideal would be `_usdt` or `_usdc`, but token symbols are unreliable as field name suffixes — they can contain Unicode characters (Chinese token names), special characters, or even collide with existing field names. `_major` is the stable, universal suffix that works for any token.
-
-**C. Other units** — explicit unit annotation in field names to prevent ambiguity:
-- Single-unit fields: `marketcap_usd` (not `marketcap`)
-- Multi-unit fields: `price_usd`, `price_trx` side by side
-
-**D. Write operations** (transaction construction): raw sun/integer values are the required input format. Field names stay unchanged for FullNode compatibility. Unit guidance provided in help text and command descriptions only.
+See `design/units.md` §2 for the principles, §4 for scenarios, and §5 for a worked example.
 
 | Scenario | Human mode | JSON mode |
 |----------|-----------|-----------|
-| TRX amounts | `35.22 TRX` | `balance` (sun) + `balance_trx` + `balance_unit` |
-| TRC-20 tokens | `38,927.318 USDT` | `balance` (raw) + `balance_major` + `token_decimals` |
-| Prices | `$0.067` | `price_usd` + `price_trx` |
+| TRX amounts | `35.22 TRX` | `balance` (sun) + `balance_unit` + `decimals` + `balance_trx` (S1) |
+| TRC-20/TRC-10 tokens | `38,927.318 USDT` | `balance` (raw) + `balance_major` + `decimals` |
+| Prices | `$0.067` | `price_usd` + `price_trx` (optional) |
 | Transaction input | N/A | `amount` in sun (raw, FullNode-compatible) |
 
 Human mode shows only the major-unit value. JSON mode always includes both raw and major values with explicit unit metadata — agents never need to guess or convert.
