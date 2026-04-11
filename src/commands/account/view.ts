@@ -1,13 +1,14 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printError, printResult, sunToTrx } from "../../output/format.js";
-import { validateAddress } from "../../utils/address.js";
+import { printResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
+import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 
 interface AccountViewData {
 	address: string;
 	balance: number;
 	balance_unit: "sun";
+	decimals: 6;
 	balance_trx: string;
 	is_contract: boolean;
 	create_time: number;
@@ -31,6 +32,7 @@ export async function fetchAccountView(
 		address: raw.address ?? address,
 		balance: balance,
 		balance_unit: "sun",
+		decimals: 6,
 		balance_trx: sunToTrx(balance),
 		is_contract: raw.type === "Contract",
 		create_time: raw.create_time ?? 0,
@@ -38,22 +40,35 @@ export async function fetchAccountView(
 }
 
 export function registerAccountCommands(parent: Command): Command {
-	const account = parent.command("account").description("Address queries");
+	const account = parent
+		.command("account")
+		.description("Address queries")
+		.helpGroup("Read commands:");
 
 	account
 		.command("view")
-		.description("View account balance, type, and activation status")
-		.argument("<address>", "TRON address (Base58 or Hex)")
-		.action(async (address: string) => {
+		.description("View account balance, type, and activation status (typical first step)")
+		.argument("[address]", "TRON address (defaults to config default_address)")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid account view TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW
+  $ trongrid account view                   # uses default_address from config
+  $ trongrid account view TR... --json      # machine-readable output (class S1 shape)
+  $ trongrid account view TR... --fields balance_trx,is_contract
+`,
+		)
+		.action(async (address: string | undefined) => {
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();
 			try {
-				validateAddress(address);
+				const resolved = resolveAddress(address);
 				const client = getClient(opts);
-				const data = await fetchAccountView(client, address);
+				const data = await fetchAccountView(client, resolved);
 
 				printResult(
-					data as unknown as Record<string, unknown>,
+					data,
 					[
 						["Address", data.address],
 						["Balance", `${data.balance_trx} TRX`],
@@ -63,12 +78,11 @@ export function registerAccountCommands(parent: Command): Command {
 					{ json: opts.json, fields: parseFields(opts) },
 				);
 			} catch (err) {
-				printError(err instanceof Error ? err.message : String(err), {
+				reportErrorAndExit(err, {
 					json: opts.json,
 					verbose: opts.verbose,
-					upstream: (err as { upstream?: unknown }).upstream,
+					hint: addressErrorHint(err),
 				});
-				process.exit(1);
 			}
 		});
 

@@ -38,23 +38,50 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 
 ### Code quality fixes
 
-| Item | Priority | Effort |
+| Item | Priority | Status |
 |------|----------|--------|
-| `account tokens`: add `token_decimals` + `balance_major` to JSON output | High | Medium — needs static decimals map for top tokens or secondary API call |
-| `config set`: validate key against known config fields, reject typos | High | Small |
-| API client: wrap network errors (offline/DNS) with friendly message | Medium | Small |
-| Eliminate `as unknown as Record<string, unknown>` casts in commands | Medium | Small — make `printResult` generic or data interfaces extend Record |
-| Extract `printListResult` for array-returning commands (`account tokens`) | Medium | Small — generalize when Phase B adds more list commands |
+| `account tokens`: `decimals` + `balance_major` JSON (TRC-20 + TRC-10, scenario S2) | High | ✅ Done (2026-04-11) |
+| `config set`: validate key against known config fields, reject typos | High | ✅ Done (2026-04-11) |
+| API client: wrap network errors (offline/DNS) with friendly message | Medium | ✅ Done (2026-04-11) |
+| Eliminate `as unknown as Record<string, unknown>` casts in commands | Medium | ✅ Done (2026-04-11) |
+| Extract `printListResult` for array-returning commands | Medium | ✅ Done (2026-04-11) |
+| Wire `--no-color` flag through `preAction` (currently a no-op) | Medium | ✅ Done (2026-04-11) |
+| Add snapshot test for `account tokens` human-output rendering | Low | ✅ Done (2026-04-11) |
+
+### Pre-B items from CLI best-practices review
+
+Items surfaced by the [`design/cli-best-practices.md`](./design/cli-best-practices.md) Google-CLI review and closed before Phase B expansion:
+
+| Item | Status |
+|------|--------|
+| `AGENTS.md` at repo root | ✅ Done (2026-04-11) |
+| Grouped help categories + `(typical first step)` hints + examples per leaf command | ✅ Done (2026-04-11) |
+| `Hint:` line in `printError` + `reportErrorAndExit` helper | ✅ Done (2026-04-11) |
+| Deterministic exit codes (0 / 1 / 2 / 3) | ✅ Done (2026-04-11) |
+| Semantic color tokens (`src/output/colors.ts`) | ✅ Done (2026-04-11) |
+| `--network` vs `--env` decision | ✅ Decided keep `--network` (2026-04-11) — see [`cli-best-practices.md` §3](./design/cli-best-practices.md) |
+
+### Feature additions
+
+| Item | Priority | Effort | Notes |
+|------|----------|--------|-------|
+| Default address in config (`trongrid config set default_address <addr>`) | High | Small–Medium | Makes `<address>` positional optional across `account` / `tx` commands. Architectural dependency of the action-first ordering decision in [`architecture.md`](./architecture.md#positional-argument-ordering). Also resolves the MCP optimization sync item below. |
 
 ### Design research
 
-| Item | Priority | Notes |
-|------|----------|-------|
-| Competitor CLI analysis (solana-cli, cast/foundry, sui, aptos) | High | Learn proven UX patterns, avoid reinventing |
-| TronScan + TronGrid MCP/Skills review (4 products) | High | Critique weaknesses, absorb strengths |
-| Google CLI design best practices article review | Medium | User has a specific article to review against our code |
-| Command argument ordering: `account tokens <addr>` vs `account <addr> tokens` | Medium | UX decision — research how other CLIs handle this |
-| MCP optimization sync (address defaults, etc.) | Medium | Port applicable MCP improvements to CLI |
+| Item | Priority | Status | Notes |
+|------|----------|--------|-------|
+| Competitor CLI analysis (cast, solana, wallet-cli, aptos) | High | ✅ Done (2026-04-10) | See [`design/competitors.md`](./design/competitors.md). `sui` dropped in favor of aptos; `wallet-cli` added as TRON ecosystem incumbent. |
+| Command argument ordering | Medium | ✅ Decided (2026-04-10) | Action-first (Option B). See [`architecture.md`](./architecture.md#positional-argument-ordering). |
+| MCP optimization sync (address defaults, etc.) | Medium | 🟡 Partially resolved | Default address committed under Feature additions above. Any remaining MCP→CLI items TBD after MCP/Skills review. |
+| TronScan + TronGrid MCP/Skills review (4 products) | High | Pending | User has provided 2 of 4 links (TronScan MCP + Skills). TronGrid MCP + Skills links still needed. |
+| Google CLI design best practices article review | High | ✅ Done (2026-04-11) | Article cross-checked against our current state in [`design/cli-best-practices.md`](./design/cli-best-practices.md). Gap items split into "close before Phase B" (AGENTS.md, grouped help, entry-point hints, `Hint:` in printError, exit codes 0/1/2/3, semantic color tokens, `--network` vs `--env` decision) and "Phase B scope" (pre-sort, SIGINT, actor tracking, light/dark). |
+
+### Follow-ups after Phase A+ docs reorg
+
+| Item | Priority | Status | Notes |
+|------|----------|--------|-------|
+| Extract commands design decisions + latest commands list into an independent doc | Medium | ✅ Done (2026-04-11) | Merged into `docs/design/commands.md` as Part I (Design) + Part II (Reference). `architecture.md` §Command Structure slimmed to a 20-line summary with a link. |
 
 ## Phase B: First Release
 
@@ -62,11 +89,12 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 
 **Work**:
 1. Implement remaining commands (all resources from command map)
-2. Polish human output formatting (alignment, colors, unit conversion)
-3. Error messages with upstream detail and actionable hints
-4. README with usage examples
-5. `npm publish` — package name `trongrid`
-6. Announce release
+2. Polish human output formatting (alignment, colors, unit conversion). **Writing guideline**: help text and docs phrase commands possessively ("show the tokens of `<address>`") even though grammar is action-first — see [`architecture.md` §Coupled decisions](./architecture.md#coupled-decisions).
+3. Error messages with upstream detail and actionable hints (aptos-style: name the fix, not just the problem)
+4. **Smart identifier routing**: `trongrid <addr|hash|number>` without subcommand auto-routes to `account view` / `tx view` / `block view`. Compensates for action-first grammar; gives tronscan-URL shortcut for power users. See [`architecture.md` §Coupled decisions](./architecture.md#coupled-decisions).
+5. README with usage examples
+6. `npm publish` — package name `trongrid`
+7. Announce release
 
 **Exit criteria**:
 - All ~47 commands functional
@@ -107,7 +135,7 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 - Completion scripts (bash/zsh/fish)
 
 ### P3: Ecosystem integration
-- Claude Code Plugin (bundles CLI + MCP + Skills as unified entry point)
+- Agent platform plugins — publish to plugin marketplaces (Claude Code plugins first, others as they mature) that wrap the CLI for one-step install and usage. Analogous to how `gh` CLI is exposed via GitHub plugins, or how tools get surfaced through MCP. Bundles CLI + MCP + Skills as a unified entry point. Caveat: marketplace review is gated and approval is uncertain — worth trying, but not a blocker.
 - MCP server mode (if demand emerges — a TronGrid MCP server already exists)
 
 ## Version Strategy

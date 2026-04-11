@@ -35,7 +35,7 @@ For a data-driven analysis of why TypeScript + npm is the right distribution str
 |-----|---------|
 | [Product Design](./docs/product.md) | User scenarios, gap analysis, design philosophy |
 | [Architecture](./docs/architecture.md) | Tech decisions with evidence and rationale |
-| [Command Reference](./docs/commands.md) | Full command map and global flags |
+| [Commands — Design and Reference](./docs/design/commands.md) | Command grammar design decisions + full command map and global flags |
 | [Roadmap](./docs/roadmap.md) | Phase A (foundation) to Phase C (expand) |
 
 ## License
