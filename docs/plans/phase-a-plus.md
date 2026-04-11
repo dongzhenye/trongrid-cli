@@ -12,7 +12,7 @@
 
 - [`architecture.md` §Positional argument ordering](../architecture.md#positional-argument-ordering) — why default address is committed
 - [`architecture.md` §Output Design](../architecture.md#output-design) — TRC20 JSON shape contract (`balance`, `token_decimals`, `balance_major`)
-- [`competitors.md` §Decision 2](../competitors.md#decision-2-token-decimals-strategy) — rationale for the hybrid decimals strategy
+- [`design/competitors.md` §Decision 2](../design/competitors.md#decision-2-token-decimals-strategy) — rationale for the hybrid decimals strategy
 - [`roadmap.md` Phase A+](../roadmap.md#phase-a--post-foundation-improvements) — scope and priority
 
 **Out of scope:**
@@ -591,7 +591,7 @@ Commit message header: `feat: make address optional in account resources`
 
 **Files:**
 
-- Modify: `docs/commands.md`
+- Modify: `docs/design/commands.md` (moved from `docs/commands.md` in a later commit; use the current path)
 
 - [ ] **Step 1: Update the account section to show `[address]` instead of `<address>`:**
 
@@ -610,7 +610,7 @@ Leave the other `account <cmd>` entries (txs, transfers, delegations, permission
 - [ ] **Step 2: Commit**
 
 ```bash
-git add docs/commands.md
+git add docs/design/commands.md
 git commit -m "$(cat <<'EOF'
 docs: mark account view/tokens/resources address as optional
 

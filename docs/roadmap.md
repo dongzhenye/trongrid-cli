@@ -40,7 +40,7 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 
 | Item | Priority | Effort |
 |------|----------|--------|
-| `account tokens`: add `token_decimals` + `balance_major` to JSON output | High | Medium — hybrid strategy (static map for top tokens + on-chain `decimals()` fallback). Rationale in [`competitors.md`](./competitors.md#decision-2-token-decimals-strategy). |
+| `account tokens`: add `decimals` + `balance_major` to JSON output (TRC-20 + TRC-10, per class S2 of [`design/units.md`](./design/units.md)) | High | Medium — hybrid strategy (static map for top TRC-20s + on-chain `decimals()` fallback; TRC-10 via `/wallet/getassetissuebyid.precision`). Rationale in [`design/competitors.md`](./design/competitors.md#decision-2-token-decimals-strategy). |
 | `config set`: validate key against known config fields, reject typos | High | Small |
 | API client: wrap network errors (offline/DNS) with friendly message | Medium | Small |
 | Eliminate `as unknown as Record<string, unknown>` casts in commands | Medium | Small — make `printResult` generic or data interfaces extend Record |
@@ -56,7 +56,7 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 
 | Item | Priority | Status | Notes |
 |------|----------|--------|-------|
-| Competitor CLI analysis (cast, solana, wallet-cli, aptos) | High | ✅ Done (2026-04-10) | See [`competitors.md`](./competitors.md). `sui` dropped in favor of aptos; `wallet-cli` added as TRON ecosystem incumbent. |
+| Competitor CLI analysis (cast, solana, wallet-cli, aptos) | High | ✅ Done (2026-04-10) | See [`design/competitors.md`](./design/competitors.md). `sui` dropped in favor of aptos; `wallet-cli` added as TRON ecosystem incumbent. |
 | Command argument ordering | Medium | ✅ Decided (2026-04-10) | Action-first (Option B). See [`architecture.md`](./architecture.md#positional-argument-ordering). |
 | MCP optimization sync (address defaults, etc.) | Medium | 🟡 Partially resolved | Default address committed under Feature additions above. Any remaining MCP→CLI items TBD after MCP/Skills review. |
 | TronScan + TronGrid MCP/Skills review (4 products) | High | Pending | User has provided 2 of 4 links (TronScan MCP + Skills). TronGrid MCP + Skills links still needed. |
