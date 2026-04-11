@@ -103,7 +103,11 @@ export function registerAccountTokensCommand(account: Command, parent: Command):
 					console.log(styleText("dim", `Found ${tokens.length} tokens:\n`));
 					for (const t of tokens) {
 						const typeTag = styleText("dim", `[${t.type}]`);
-						console.log(`  ${typeTag} ${t.contract_address.padEnd(35)}  ${t.balance}`);
+						const display =
+							t.balance_major !== undefined
+								? `${t.balance_major} ${styleText("dim", `(raw ${t.balance})`)}`
+								: t.balance;
+						console.log(`  ${typeTag} ${t.contract_address.padEnd(35)}  ${display}`);
 					}
 				}
 			} catch (err) {
