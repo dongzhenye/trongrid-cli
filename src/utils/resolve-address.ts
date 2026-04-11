@@ -28,3 +28,24 @@ export function resolveAddress(
 	validateAddress(fallback);
 	return fallback;
 }
+
+/**
+ * Map an address-related error to an actionable hint string for use in
+ * `reportErrorAndExit`. Returns `undefined` when the error is not
+ * address-related, so the caller can fall back to other hint sources.
+ *
+ * Recognized error patterns:
+ *   - "Invalid TRON address" (from validateAddress)
+ *   - "No address provided" (from resolveAddress with no default)
+ */
+export function addressErrorHint(err: unknown): string | undefined {
+	if (!(err instanceof Error)) return undefined;
+	const msg = err.message.toLowerCase();
+	if (msg.includes("invalid tron address")) {
+		return "Base58 addresses start with T (34 chars); hex addresses start with 41 (42 chars).";
+	}
+	if (msg.includes("no address provided")) {
+		return 'Pass an address as an argument, or run "trongrid config set default_address <addr>".';
+	}
+	return undefined;
+}

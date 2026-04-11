@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printError, printResult, sunToTrx } from "../../output/format.js";
+import { printResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
 
 interface TxViewData {
 	tx_id: string;
@@ -78,12 +78,19 @@ export function registerTxCommands(parent: Command): void {
 					{ json: opts.json, fields: parseFields(opts) },
 				);
 			} catch (err) {
-				printError(err instanceof Error ? err.message : String(err), {
+				reportErrorAndExit(err, {
 					json: opts.json,
 					verbose: opts.verbose,
-					upstream: (err as { upstream?: unknown }).upstream,
+					hint: hintForTxView(err),
 				});
-				process.exit(1);
 			}
 		});
+}
+
+function hintForTxView(err: unknown): string | undefined {
+	if (!(err instanceof Error)) return undefined;
+	if (err.message.toLowerCase().includes("transaction not found")) {
+		return "Check the hash is correct. If it was recently broadcast, wait a few seconds and retry. If it was on testnet, try --network shasta or --network nile.";
+	}
+	return undefined;
 }

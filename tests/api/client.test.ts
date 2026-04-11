@@ -124,3 +124,26 @@ describe("ApiClient", () => {
 		}
 	});
 });
+
+describe("TrongridError.exitCode", () => {
+	it("returns 3 for network failure (status 0)", () => {
+		const err = new TrongridError("Cannot reach TronGrid API", 0);
+		expect(err.exitCode).toBe(3);
+	});
+
+	it("returns 3 for auth failure (401)", () => {
+		const err = new TrongridError("Unauthorized", 401);
+		expect(err.exitCode).toBe(3);
+	});
+
+	it("returns 3 for forbidden (403)", () => {
+		const err = new TrongridError("Forbidden", 403);
+		expect(err.exitCode).toBe(3);
+	});
+
+	it("returns 1 for general HTTP errors (404, 500, etc.)", () => {
+		expect(new TrongridError("Not Found", 404).exitCode).toBe(1);
+		expect(new TrongridError("Server Error", 500).exitCode).toBe(1);
+		expect(new TrongridError("Rate Limited", 429).exitCode).toBe(1);
+	});
+});

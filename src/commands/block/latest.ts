@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printError, printResult } from "../../output/format.js";
+import { printResult, reportErrorAndExit } from "../../output/format.js";
 
 interface BlockData {
 	block_id: string;
@@ -60,12 +60,10 @@ export function registerBlockCommands(parent: Command): void {
 					{ json: opts.json, fields: parseFields(opts) },
 				);
 			} catch (err) {
-				printError(err instanceof Error ? err.message : String(err), {
+				reportErrorAndExit(err, {
 					json: opts.json,
 					verbose: opts.verbose,
-					upstream: (err as { upstream?: unknown }).upstream,
 				});
-				process.exit(1);
 			}
 		});
 }

@@ -1,3 +1,4 @@
+import { TrongridError } from "../api/client.js";
 import { fail, muted } from "./colors.js";
 
 export function sunToTrx(sun: number): string {
@@ -79,16 +80,76 @@ export function printListResult<T extends object>(
 
 export function printError(
 	message: string,
-	options: { json?: boolean; verbose?: boolean; upstream?: unknown },
+	options: {
+		json?: boolean;
+		verbose?: boolean;
+		upstream?: unknown;
+		hint?: string;
+	},
 ): void {
 	if (options.json) {
 		const err: Record<string, unknown> = { error: message };
+		if (options.hint) err.hint = options.hint;
 		if (options.upstream) err.upstream = options.upstream;
 		console.error(JSON.stringify(err, null, 2));
 	} else {
 		console.error(fail(`Error: ${message}`));
+		if (options.hint) {
+			console.error(muted(`Hint: ${options.hint}`));
+		}
 		if (options.verbose && options.upstream) {
 			console.error(muted(JSON.stringify(options.upstream, null, 2)));
 		}
 	}
+}
+
+/**
+ * Default hint for common {@link TrongridError} shapes. Caller-supplied hints
+ * always win; this fallback fires only when the caller did not pass an
+ * explicit hint and the error is a network / auth / rate-limit case.
+ */
+function defaultHintFor(err: unknown): string | undefined {
+	if (!(err instanceof TrongridError)) return undefined;
+	if (err.status === 0) {
+		return "Check your internet connection or try a different --network. Run with --verbose for details.";
+	}
+	if (err.status === 401 || err.status === 403) {
+		return 'Run "trongrid auth login" to set a valid API key.';
+	}
+	if (err.status === 429) {
+		return 'Rate limited. Run "trongrid auth login" for 5x higher limits.';
+	}
+	return undefined;
+}
+
+/**
+ * Print an error and exit with a deterministic code, per scheme in
+ * `docs/design/cli-best-practices.md` §4.
+ *
+ *   - {@link TrongridError} → `err.exitCode` (3 for network / auth, 1 otherwise)
+ *   - Any other error → 1 (general)
+ *
+ * The caller passes a contextual `hint` so the rendered output includes an
+ * actionable next step. If no hint is passed and the error is a common
+ * network / auth / rate-limit case, a reasonable default is used.
+ *
+ * This helper replaces the old `printError(...); process.exit(1)`
+ * boilerplate at every command action's catch block.
+ */
+export function reportErrorAndExit(
+	err: unknown,
+	options: { json?: boolean; verbose?: boolean; hint?: string },
+): never {
+	const message = err instanceof Error ? err.message : String(err);
+	const upstream =
+		err instanceof TrongridError ? err.upstream : (err as { upstream?: unknown }).upstream;
+	const hint = options.hint ?? defaultHintFor(err);
+	printError(message, {
+		json: options.json,
+		verbose: options.verbose,
+		upstream,
+		hint,
+	});
+	const exitCode = err instanceof TrongridError ? err.exitCode : 1;
+	process.exit(exitCode);
 }

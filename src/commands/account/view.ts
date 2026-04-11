@@ -1,8 +1,8 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printError, printResult, sunToTrx } from "../../output/format.js";
-import { resolveAddress } from "../../utils/resolve-address.js";
+import { printResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
+import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 
 interface AccountViewData {
 	address: string;
@@ -65,12 +65,11 @@ export function registerAccountCommands(parent: Command): Command {
 					{ json: opts.json, fields: parseFields(opts) },
 				);
 			} catch (err) {
-				printError(err instanceof Error ? err.message : String(err), {
+				reportErrorAndExit(err, {
 					json: opts.json,
 					verbose: opts.verbose,
-					upstream: (err as { upstream?: unknown }).upstream,
+					hint: addressErrorHint(err),
 				});
-				process.exit(1);
 			}
 		});
 

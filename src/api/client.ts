@@ -9,6 +9,22 @@ export class TrongridError extends Error {
 		super(message);
 		this.name = "TrongridError";
 	}
+
+	/**
+	 * Deterministic process exit code, per the four-level scheme documented in
+	 * `docs/design/cli-best-practices.md` §4:
+	 *   0 — success
+	 *   1 — general / unexpected error
+	 *   2 — usage error (bad flag / missing argument) — set by commander's exitOverride
+	 *   3 — network or auth failure — this getter
+	 */
+	get exitCode(): number {
+		// Network-level failure: fetch itself threw (offline, DNS, refused, timeout).
+		if (this.status === 0) return 3;
+		// Auth failure from upstream.
+		if (this.status === 401 || this.status === 403) return 3;
+		return 1;
+	}
 }
 
 export interface ApiClient {

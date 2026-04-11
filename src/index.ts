@@ -18,7 +18,20 @@ program
 	.option("--no-color", "disable colored output")
 	.option("-v, --verbose", "show upstream API details in errors", false)
 	.option("-l, --limit <number>", "max items for list commands", "20")
-	.option("-f, --fields <fields>", "select output fields (JSON mode)");
+	.option("-f, --fields <fields>", "select output fields (JSON mode)")
+	// Deterministic exit code scheme (see docs/design/cli-best-practices.md §4):
+	//   0 — success (help / version display included)
+	//   1 — general / unexpected error (thrown by TrongridError with non-auth status)
+	//   2 — usage error (unknown flag / subcommand / missing argument)
+	//   3 — network or auth failure (TrongridError with status 0 / 401 / 403)
+	// This override maps commander's own parse errors to exit code 2.
+	.exitOverride((err) => {
+		const code = err.code ?? "";
+		if (code === "commander.helpDisplayed" || code === "commander.version") {
+			process.exit(0);
+		}
+		process.exit(2);
+	});
 
 export interface GlobalOptions {
 	json: boolean;
