@@ -1,6 +1,11 @@
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { createClient } from "../../src/api/client.js";
-import { fetchOnChainDecimals, getStaticDecimals } from "../../src/utils/tokens.js";
+import {
+	_resetTrc20DecimalsCacheForTests,
+	fetchOnChainDecimals,
+	getStaticDecimals,
+	resolveTrc20Decimals,
+} from "../../src/utils/tokens.js";
 
 describe("getStaticDecimals", () => {
 	it("returns 6 for USDT", () => {
@@ -79,5 +84,67 @@ describe("fetchOnChainDecimals", () => {
 		await expect(
 			fetchOnChainDecimals(client, "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"),
 		).rejects.toThrow(/unexpected decimals\(\) hex/i);
+	});
+});
+
+describe("resolveTrc20Decimals", () => {
+	const originalFetch = globalThis.fetch;
+
+	beforeEach(() => {
+		_resetTrc20DecimalsCacheForTests();
+	});
+
+	afterEach(() => {
+		globalThis.fetch = originalFetch;
+	});
+
+	it("returns the static value without hitting the network for known tokens", async () => {
+		const fetchMock = mock(() => {
+			throw new Error("should not be called");
+		});
+		globalThis.fetch = fetchMock;
+		const client = createClient({ network: "mainnet" });
+		const result = await resolveTrc20Decimals(client, "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t");
+		expect(result).toBe(6);
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("falls back to on-chain for unknown tokens", async () => {
+		globalThis.fetch = mock(() =>
+			Promise.resolve(
+				new Response(
+					JSON.stringify({
+						result: { result: true },
+						constant_result: ["0000000000000000000000000000000000000000000000000000000000000012"],
+					}),
+				),
+			),
+		);
+		const client = createClient({ network: "mainnet" });
+		const result = await resolveTrc20Decimals(client, "TXYZnewtokenaddressnewtokenaddressxx");
+		expect(result).toBe(18);
+	});
+
+	it("memoises on-chain lookups within one process", async () => {
+		let calls = 0;
+		globalThis.fetch = mock(() => {
+			calls += 1;
+			return Promise.resolve(
+				new Response(
+					JSON.stringify({
+						result: { result: true },
+						constant_result: ["0000000000000000000000000000000000000000000000000000000000000012"],
+					}),
+				),
+			);
+		});
+		const client = createClient({ network: "mainnet" });
+		// Use a distinct address for readability (kept even though cache is now
+		// reset per-test via beforeEach).
+		const result1 = await resolveTrc20Decimals(client, "TXYZmemoaddressformemoaddressmemo1");
+		const result2 = await resolveTrc20Decimals(client, "TXYZmemoaddressformemoaddressmemo1");
+		expect(calls).toBe(1);
+		expect(result1).toBe(18);
+		expect(result2).toBe(18);
 	});
 });

@@ -60,3 +60,39 @@ export async function fetchOnChainDecimals(
 	}
 	return decimals;
 }
+
+const onChainCache = new Map<string, number>();
+
+/**
+ * Reset the TRC-20 on-chain decimals cache. Test-only — do not call
+ * in production code. Exported with an underscore prefix to signal that
+ * this is internal test infrastructure.
+ */
+export function _resetTrc20DecimalsCacheForTests(): void {
+	onChainCache.clear();
+}
+
+/**
+ * Resolve TRC20 decimals with a hybrid strategy:
+ *   1. Static map for top tokens (no network call).
+ *   2. Module-level memoisation cache for previously-seen unknowns.
+ *   3. On-chain decimals() call as the source of truth for cache misses.
+ *
+ * The module-level cache is intentionally process-local; it has no TTL.
+ * trongrid CLI processes are short-lived, so persistent caching is
+ * overkill. Multi-command shell sessions re-fetch once per process.
+ */
+export async function resolveTrc20Decimals(
+	client: ApiClient,
+	contractAddress: string,
+): Promise<number> {
+	const fromStatic = getStaticDecimals(contractAddress);
+	if (fromStatic !== undefined) return fromStatic;
+
+	const cached = onChainCache.get(contractAddress);
+	if (cached !== undefined) return cached;
+
+	const fetched = await fetchOnChainDecimals(client, contractAddress);
+	onChainCache.set(contractAddress, fetched);
+	return fetched;
+}
