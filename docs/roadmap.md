@@ -45,6 +45,8 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 | API client: wrap network errors (offline/DNS) with friendly message | Medium | Small |
 | Eliminate `as unknown as Record<string, unknown>` casts in commands | Medium | Small — make `printResult` generic or data interfaces extend Record |
 | Extract `printListResult` for array-returning commands (`account tokens`) | Medium | Small — generalize when Phase B adds more list commands |
+| Wire `--no-color` flag through `preAction` (currently a no-op) | Medium | Small — read `opts.color` in the pre-action hook and set `process.env.NO_COLOR = "1"` when false. `styleText` already auto-strips ANSI on non-TTY but does not respect the explicit flag in a real TTY. |
+| Add snapshot test for `account tokens` human-output rendering (`<major> (raw <raw>)` vs raw-only fallback) | Low | Small — mock `console.log`, assert captured string. Covers the conditional display branch added for scenario S2 and its fallback when decimals lookup fails. |
 
 ### Feature additions
 
@@ -67,7 +69,6 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 | Item | Priority | Notes |
 |------|----------|-------|
 | Extract commands design decisions + latest commands list into an independent doc (e.g., `docs/design/commands-design.md` alongside the existing `docs/design/commands.md` reference) | Medium | The commands design topic grew more complex than `architecture.md` originally anticipated. Keeping the "why" (design decisions, positional ordering rationale, head-word vocabulary) alongside the "what" (command list) in one live doc will keep them cohesive. Consider merging with `docs/design/commands.md` or creating a sibling `commands-design.md`. |
-| Update Confluence workspace "TronGrid CLI" (currently blank) | Medium | Populate with: (a) project basics — repo link, goals, phase status; (b) sub-doc mirroring `docs/design/units.md` (unit shape contract); (c) sub-doc mirroring the commands design + list work above. User action — requires Confluence access; happens outside the repo. |
 
 ## Phase B: First Release
 
