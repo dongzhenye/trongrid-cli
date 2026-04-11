@@ -62,6 +62,13 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 | TronScan + TronGrid MCP/Skills review (4 products) | High | Pending | User has provided 2 of 4 links (TronScan MCP + Skills). TronGrid MCP + Skills links still needed. |
 | Google CLI design best practices article review | Medium | Pending | User has a specific article to review against our code. |
 
+### Follow-ups after Phase A+ docs reorg
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| Extract commands design decisions + latest commands list into an independent doc (e.g., `docs/design/commands-design.md` alongside the existing `docs/design/commands.md` reference) | Medium | The commands design topic grew more complex than `architecture.md` originally anticipated. Keeping the "why" (design decisions, positional ordering rationale, head-word vocabulary) alongside the "what" (command list) in one live doc will keep them cohesive. Consider merging with `docs/design/commands.md` or creating a sibling `commands-design.md`. |
+| Update Confluence workspace "TronGrid CLI" (currently blank) | Medium | Populate with: (a) project basics — repo link, goals, phase status; (b) sub-doc mirroring `docs/design/units.md` (unit shape contract); (c) sub-doc mirroring the commands design + list work above. User action — requires Confluence access; happens outside the repo. |
+
 ## Phase B: First Release
 
 **Goal**: Feature-complete release. ~47 commands across 13 resources.

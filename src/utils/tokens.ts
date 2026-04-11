@@ -108,6 +108,13 @@ interface AssetIssueResponse {
  * precision (the TRC-10 equivalent of TRC-20 decimals). Most early-era
  * TRC-10 assets have precision 0, so missing `precision` is treated as 0
  * rather than an error.
+ *
+ * Note: FullNode returns `{}` (not HTTP 4xx) for unknown asset IDs, so
+ * `res.precision ?? 0` cannot distinguish a valid TRC-10 with precision 0
+ * from a completely invalid ID. Callers that need this distinction must
+ * check `res.id` before using the return value. Out of scope for the
+ * current account-tokens use case, where every asset ID comes from the
+ * account's own assetV2 list and is guaranteed to exist.
  */
 export async function fetchTrc10Precision(client: ApiClient, assetId: string): Promise<number> {
 	const res = await client.post<AssetIssueResponse>("/wallet/getassetissuebyid", {
