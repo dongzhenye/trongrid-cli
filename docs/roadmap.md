@@ -62,7 +62,7 @@ Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
 | Command argument ordering | Medium | ✅ Decided (2026-04-10) | Action-first (Option B). See [`architecture.md`](./architecture.md#positional-argument-ordering). |
 | MCP optimization sync (address defaults, etc.) | Medium | 🟡 Partially resolved | Default address committed under Feature additions above. Any remaining MCP→CLI items TBD after MCP/Skills review. |
 | TronScan + TronGrid MCP/Skills review (4 products) | High | Pending | User has provided 2 of 4 links (TronScan MCP + Skills). TronGrid MCP + Skills links still needed. |
-| Google CLI design best practices article review | Medium | Pending | User has a specific article to review against our code. |
+| Google CLI design best practices article review | High | ✅ Done (2026-04-11) | Article cross-checked against our current state in [`design/cli-best-practices.md`](./design/cli-best-practices.md). Gap items split into "close before Phase B" (AGENTS.md, grouped help, entry-point hints, `Hint:` in printError, exit codes 0/1/2/3, semantic color tokens, `--network` vs `--env` decision) and "Phase B scope" (pre-sort, SIGINT, actor tracking, light/dark). |
 
 ### Follow-ups after Phase A+ docs reorg
 
