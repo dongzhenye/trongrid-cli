@@ -560,15 +560,15 @@ If 2+ years of real usage data shows trongrid has evolved into an "address-centr
 
    ```json
    {
-     "contract": "TR7NHq...jLj6t",
-     "symbol": "USDT",
-     "amount": "1234000",          // raw, string — never JS float
+     "type": "TRC20",
+     "contract_address": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+     "balance": "1234000",
      "decimals": 6,
-     "balance_major": "1.234"      // string form, precision-safe
+     "balance_major": "1.234"
    }
    ```
 
-   Borrows spl-token's `amount` / `decimals` / `uiAmountString` pattern but names them for clarity.
+   Follows scenario S2 in [`units.md`](./units.md): `{head}` + `decimals` + `{head}_major`. For `account tokens` the head word is `balance` (not `amount`) because the field represents an address's currently available token balance, aligning with the TIP-20 / EIP-20 standard `balanceOf(address) returns (uint256 balance)`. The word `amount` is reserved for write-side parameters (e.g., `transfer(to, amount)`) to keep read and write vocabularies distinct.
 4. **Human output**: formatted by default (`1.234 USDT`), with `--raw` flag to show `1234000`.
 5. **Document the tradeoff**: trongrid-cli's decision doc should state explicitly that we accept the ~1 extra RPC call for unknown tokens as the cost of human-friendly output.
 
@@ -629,7 +629,7 @@ Based on this research, the following Phase A+ decisions cluster into "ready to 
 3. **Nest subcommands only when earned** (5+ verbs per resource).
 4. **Network short aliases**: `-um` / `-us` / `-un`.
 5. **Non-TTY auto-detection → JSON**.
-6. **Token decimals: hybrid strategy** (static map + on-chain fallback + new JSON fields `amount` / `decimals` / `balance_major`). Implements the `account tokens` improvement in `docs/roadmap.md` Phase A+ → Code quality fixes.
+6. **Token decimals: hybrid strategy** (static map for TRC-20 + on-chain fallback + TRC-10 via `/wallet/getassetissuebyid.precision`). `account tokens` JSON gains `decimals` + `balance_major` under the class B `{head}`/`decimals`/`{head}_major` shape; for this scenario `{head} = "balance"` per the read-side TRC-20 convention. Implements the `account tokens` improvement in `docs/roadmap.md` Phase A+ → Code quality fixes.
 7. **Never emit JS floats in JSON** — always strings for numeric amounts.
 8. **Actionable error messages** — apply during Phase B implementation review.
 9. **Command argument ordering: Option B** (action-first positional). Canonical decision in [`architecture.md` §Positional argument ordering](./architecture.md#positional-argument-ordering). Evidence and scoring above in §Decision 1.
