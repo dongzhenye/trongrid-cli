@@ -33,7 +33,7 @@ export async function fetchLatestBlock(client: ApiClient): Promise<BlockData> {
 	};
 }
 
-export function registerBlockCommands(parent: Command): void {
+export function registerBlockCommands(parent: Command): Command {
 	const block = parent.command("block").description("Block queries").helpGroup("Read commands:");
 
 	block
@@ -75,4 +75,6 @@ Examples:
 				});
 			}
 		});
+
+	return block;
 }
