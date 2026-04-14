@@ -38,7 +38,8 @@ export async function fetchBlockView(
 	const raw = await client.post<RawBlock>(path, body);
 
 	if (!raw.blockID || !raw.block_header?.raw_data) {
-		throw new Error(`Block not found: ${id.kind === "number" ? id.value : id.value}`);
+		const label = id.kind === "number" ? `number ${id.value}` : `hash ${id.value}`;
+		throw new Error(`Block not found: ${label}.`);
 	}
 
 	const rd = raw.block_header.raw_data;
@@ -74,7 +75,7 @@ export function registerBlockViewCommand(block: Command, parent: Command): void 
 			`
 Examples:
   $ trongrid block view 70000000
-  $ trongrid block view 000000000427d540abc123...
+  $ trongrid block view <64-hex-char-block-id>
   $ trongrid block view 70000000 --json
   $ trongrid block view 70000000 --confirmed       # irreversible state (~60s lag)
 `,
