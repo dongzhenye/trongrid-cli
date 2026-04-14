@@ -95,6 +95,7 @@ Items surfaced by the [`design/cli-best-practices.md`](./design/cli-best-practic
 5. README with usage examples
 6. `npm publish` — package name `trongrid`
 7. Announce release
+8. **Live competitor parity matrix** — ship `docs/design/competitor-parity.md`: a structured (table-form) command-by-command / endpoint-by-endpoint mapping `trongrid-cli ↔ TronGrid MCP ↔ TronScan MCP`. Source-of-truth for: (a) where we have a unique advantage worth advertising in README/release notes, (b) where competitors cover something we don't (gap → enhancement candidate), (c) where shapes/conventions diverge (intentional vs drift). Refresh cadence: quarterly minimum, plus on any competitor major-version release. Seeded from [`mcp-skills-review.md`](./design/mcp-skills-review.md) but distinct artifact: review = one-time decision input, parity matrix = live monitoring surface.
 
 **Exit criteria**:
 - All ~47 commands functional
