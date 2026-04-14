@@ -4,7 +4,7 @@
 
 ```
 Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
-   5-10 commands           ~47 commands          New channels + features
+   5-10 commands           ~48 commands          New channels + features
    Validate arch           First public release  Community growth
 ```
 
@@ -85,7 +85,7 @@ Items surfaced by the [`design/cli-best-practices.md`](./design/cli-best-practic
 
 ## Phase B: First Release
 
-**Goal**: Feature-complete release. ~47 commands across 13 resources.
+**Goal**: Feature-complete release. ~48 commands across 13 resources.
 
 **Work**:
 1. Implement remaining commands (all resources from command map)
@@ -98,7 +98,7 @@ Items surfaced by the [`design/cli-best-practices.md`](./design/cli-best-practic
 8. **Live competitor parity matrix** — ship `docs/design/competitor-parity.md`: a structured (table-form) command-by-command / endpoint-by-endpoint mapping `trongrid-cli ↔ TronGrid MCP ↔ TronScan MCP`. Source-of-truth for: (a) where we have a unique advantage worth advertising in README/release notes, (b) where competitors cover something we don't (gap → enhancement candidate), (c) where shapes/conventions diverge (intentional vs drift). Refresh cadence: quarterly minimum, plus on any competitor major-version release. Seeded from [`mcp-skills-review.md`](./design/mcp-skills-review.md) but distinct artifact: review = one-time decision input, parity matrix = live monitoring surface.
 
 **Exit criteria**:
-- All ~47 commands functional
+- All ~48 commands functional
 - `npx trongrid` works zero-install
 - README covers installation + auth + 5 usage examples
 - Users can use it productively
