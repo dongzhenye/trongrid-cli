@@ -66,6 +66,7 @@ export { program };
 
 import { registerAccountResourcesCommand } from "./commands/account/resources.js";
 import { registerAccountTokensCommand } from "./commands/account/tokens.js";
+import { registerAccountTxsCommand } from "./commands/account/txs.js";
 import { registerAccountCommands } from "./commands/account/view.js";
 import { registerAuthCommands } from "./commands/auth/login.js";
 // Import commands (added as tasks implement them)
@@ -79,6 +80,7 @@ registerBlockViewCommand(block, program);
 const account = registerAccountCommands(program);
 registerAccountTokensCommand(account, program);
 registerAccountResourcesCommand(account, program);
+registerAccountTxsCommand(account, program);
 registerTxCommands(program);
 registerAuthCommands(program);
 registerConfigCommands(program);
