@@ -20,6 +20,7 @@ program
 	.option("-v, --verbose", "show upstream API details in errors", false)
 	.option("-l, --limit <number>", "max items for list commands", "20")
 	.option("-f, --fields <fields>", "select output fields (JSON mode)")
+	.option("--confirmed", "read confirmed (irreversible, ~60s lag) state instead of latest", false)
 	// Deterministic exit code scheme (see docs/design/cli-best-practices.md §4):
 	//   0 — success (help / version display included)
 	//   1 — general / unexpected error (thrown by TrongridError with non-auth status)
@@ -42,6 +43,7 @@ export interface GlobalOptions {
 	verbose: boolean;
 	limit: string;
 	fields?: string;
+	confirmed: boolean;
 }
 
 export function getClient(opts: GlobalOptions): ApiClient {
