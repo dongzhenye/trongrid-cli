@@ -20,6 +20,8 @@ program
 	.option("-v, --verbose", "show upstream API details in errors", false)
 	.option("-l, --limit <number>", "max items for list commands", "20")
 	.option("-f, --fields <fields>", "select output fields (JSON mode)")
+	.option("-r, --reverse", "reverse the command's default sort direction", false)
+	.option("--sort-by <field>", "override the command's default sort field")
 	.option("--confirmed", "read confirmed (irreversible, ~60s lag) state instead of latest", false)
 	// Deterministic exit code scheme (see docs/design/cli-best-practices.md §4):
 	//   0 — success (help / version display included)
@@ -44,6 +46,8 @@ export interface GlobalOptions {
 	limit: string;
 	fields?: string;
 	confirmed: boolean;
+	reverse: boolean;
+	sortBy?: string;
 }
 
 export function getClient(opts: GlobalOptions): ApiClient {

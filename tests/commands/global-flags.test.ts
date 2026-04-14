@@ -16,3 +16,19 @@ describe("global --confirmed flag", () => {
 		expect(program.opts().confirmed).toBe(false);
 	});
 });
+
+describe("global sort flags", () => {
+	it("parses --reverse / -r", () => {
+		const program = new Command();
+		program.option("-r, --reverse", "reverse default sort", false);
+		program.parse(["node", "cli", "-r"], { from: "node" });
+		expect(program.opts().reverse).toBe(true);
+	});
+
+	it("parses --sort-by <field>", () => {
+		const program = new Command();
+		program.option("--sort-by <field>", "override sort field");
+		program.parse(["node", "cli", "--sort-by", "fee"], { from: "node" });
+		expect(program.opts().sortBy).toBe("fee");
+	});
+});
