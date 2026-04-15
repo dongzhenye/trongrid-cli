@@ -94,8 +94,13 @@ interface AssetIssueFull {
 }
 
 async function fetchTrc10(client: ApiClient, assetId: string): Promise<TokenViewData> {
+	// `visible: true` asks FullNode to return name / abbr / owner_address as
+	// UTF-8 strings instead of hex-encoded byte sequences. Without it,
+	// `name` comes back as e.g. "426974546f7272656e74" (hex of "BitTorrent")
+	// and `abbr` as "425454" (hex of "BTT").
 	const raw = await client.post<AssetIssueFull>("/wallet/getassetissuebyid", {
 		value: assetId,
+		visible: true,
 	});
 	if (!raw.id) {
 		throw new Error(`Token not found: ${assetId}`);

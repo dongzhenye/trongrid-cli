@@ -52,10 +52,12 @@ describe("fetchTokenView — TRC-10", () => {
 		globalThis.fetch = originalFetch;
 	});
 
-	it("fetches metadata via /wallet/getassetissuebyid", async () => {
+	it("fetches metadata via /wallet/getassetissuebyid with visible:true", async () => {
 		let capturedUrl: string | undefined;
-		globalThis.fetch = mock((url: string) => {
+		let capturedBody: string | undefined;
+		globalThis.fetch = mock((url: string, init?: RequestInit) => {
 			capturedUrl = url;
+			capturedBody = init?.body as string | undefined;
 			return Promise.resolve(
 				new Response(
 					JSON.stringify({
@@ -74,6 +76,13 @@ describe("fetchTokenView — TRC-10", () => {
 		const result = await fetchTokenView(client, { kind: "trc10", assetId: "1002000" });
 
 		expect(capturedUrl).toContain("/wallet/getassetissuebyid");
+		// visible:true is required so name/abbr come back as UTF-8 strings,
+		// not hex-encoded byte sequences. Without it, "BitTorrent" would arrive
+		// as "426974546f7272656e74".
+		expect(JSON.parse(capturedBody ?? "{}")).toMatchObject({
+			value: "1002000",
+			visible: true,
+		});
 		expect(result).toMatchObject({
 			type: "TRC10",
 			contract_address: "1002000",
