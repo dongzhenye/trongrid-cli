@@ -69,16 +69,22 @@ export function formatJson<T extends object>(data: T, fields?: string[]): string
 	return JSON.stringify(data, null, 2);
 }
 
+export type HumanPair = [key: string, label: string, value: string];
+
 export function printResult<T extends object>(
 	data: T,
-	humanPairs: [string, string][],
+	humanPairs: HumanPair[],
 	options: { json?: boolean; fields?: string[] },
 ): void {
 	if (options.json) {
 		console.log(formatJson(data, options.fields));
-	} else {
-		console.log(formatKeyValue(humanPairs));
+		return;
 	}
+	const fields = options.fields;
+	const filtered =
+		fields && fields.length > 0 ? humanPairs.filter(([key]) => fields.includes(key)) : humanPairs;
+	// formatKeyValue still takes [label, value][]; drop the key for display.
+	console.log(formatKeyValue(filtered.map(([, label, value]) => [label, value])));
 }
 
 export function formatJsonList<T extends object>(items: T[], fields?: string[]): string {
