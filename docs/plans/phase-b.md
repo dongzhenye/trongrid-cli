@@ -1,6 +1,6 @@
 # Phase B: First Release — Progress & Plan
 
-**Living doc.** Last updated: 2026-04-15.
+**Living doc.** Last updated: 2026-04-15 (Wave 1 merged).
 
 **Next-session one-liner**: `读 docs/plans/phase-b.md 继续 Phase B`
 
@@ -12,8 +12,8 @@ That line is self-contained — this doc briefs a cold agent on state, locked-in
 
 | | |
 |---|---|
-| Branch tip | `feat/phase-b-wave-1` — 12 commits ahead of `main` (Wave 1 unmerged; open PR pending) |
-| Tests | 156/156 passing (102 baseline + 54 new from Wave 1) |
+| `main` tip | `6a5aaf9` — Merge PR #5 (Phase B Wave 1) |
+| Tests | 169/169 passing (102 baseline + 67 new from Wave 1) |
 | Working tree | clean |
 | Prod deps | 1 — `commander` |
 | Shipped public commands | 10 commands / 6 resources — adds `block view`, `account txs`, `token view` (+ `token` resource) on top of Phase A+ surface |
@@ -31,9 +31,9 @@ Shipped in PR #3:
 - 5 decisions propagated into `commands.md` / `units.md` / `architecture.md` / `roadmap.md`.
 - Live competitor parity matrix added to roadmap as Phase B item #8 (distinct artifact from the one-time review; build during Phase B).
 
-### Session 2 — Wave 1 implementation (2026-04-15) ✅ shipped on `feat/phase-b-wave-1`
+### Session 2 — Wave 1 implementation (2026-04-15) ✅ merged via PR #5
 
-**Plan**: `docs/plans/phase-b-wave-1.md` — 9 atomic tasks (3 per command) + 2 review-feedback fix-ups + 1 indentation-fix. 12 commits total.
+**Plan**: `docs/plans/phase-b-wave-1.md` — 9 atomic tasks (3 per command), 2 review-feedback fix-ups, 1 indentation-fix, plus 4 trial-feedback follow-ups (timestamp formatter, TRC-10 hex decode, Bun ANSI strip guard, `UsageError` for sort exit-2). 23 commits total on the merged branch.
 
 **Commands shipped** (branch `feat/phase-b-wave-1`, PR pending):
 
