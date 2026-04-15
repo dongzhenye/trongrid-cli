@@ -16,7 +16,7 @@
 - [`design/units.md`](../design/units.md) — JSON unit shape contract (P1–P7 + S1–S5); the authoritative source for `account tokens` class S2 shape and `account view` class S1 shape
 - [`architecture.md` §Output Design](../architecture.md#output-design) — project-level summary linking to `design/units.md`
 - [`design/competitors.md` §Decision 2](../design/competitors.md#decision-2-token-decimals-strategy) — rationale for the hybrid decimals strategy
-- [`roadmap.md` Phase A+](../roadmap.md#phase-a--post-foundation-improvements) — scope and priority
+- [`roadmap.md` Phase B](../roadmap.md#phase-b--post-foundation-improvements-%E2%9C%85-pre-publish-untagged) — scope and priority (renamed from "Phase A+" 2026-04-15)
 
 **Out of scope:**
 

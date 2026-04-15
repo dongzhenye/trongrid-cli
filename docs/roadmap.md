@@ -27,7 +27,7 @@
 ```
 Phase A–C  (pre-publish, merged)       Architecture validation
 Phase D–H  (pre-publish, in flight)    Command surface fill-out
-Phase I    (FIRST npm publish, v0.2.0) Distribution begins
+Phase I    (FIRST npm publish, v0.1.0) Distribution begins
 Phase J–O  (expand)                    Auth UX, distribution, gaps, advanced
 ```
 
@@ -156,7 +156,7 @@ Plan details: [`plans/phase-d.md`](./plans/phase-d.md) (to be written post-brain
 
 **Open question**: does the first public release include write-side (`tx broadcast`, freeze/unfreeze, delegate, vote, etc.) or stay read-only? Decision blockers: `--yes` / `--confirm` UX, SIGINT handling, actor tracking, and secret-key workflow. Scope locks at Phase G close.
 
-## Phase I — Parity matrix + README + first npm publish (will release as v0.2.0)
+## Phase I — Parity matrix + README + first npm publish (will release as v0.1.0)
 
 **Goal**: Ship the live competitor parity matrix, finalize README, and cut the first tagged release to npm.
 
@@ -218,7 +218,7 @@ Following [SemVer](https://semver.org/). Conservative versioning — stay in `0.
 | Version | Milestone |
 |---------|-----------|
 | (untagged) | Phases A–H — pre-publish, behavior-complete on each phase close |
-| 0.2.0 | **Phase I — first npm publish** (parity matrix + README + tag) |
-| 0.3.0+ | Phase J onward — each code-changing phase cuts a patch or minor bump |
+| 0.1.0 | **Phase I — first npm publish** (parity matrix + README + tag) |
+| 0.2.0+ | Phase J onward — each code-changing phase cuts a minor bump |
 
-Release numbers don't retro-start at `0.1.0` because pre-publish phases don't consume version space. The first tagged release begins at `0.2.0` to leave `0.1.x` free for post-publish emergency patches if needed. No `1.0.0` — there is no reason to promise backward compatibility for a CLI that should stay free to evolve.
+Pre-publish phases don't consume version space — the first tagged release begins at `0.1.0`, the SemVer convention for a new package. Phases J–O cut sequential minor bumps as code-changing phases close. No `1.0.0` — there is no reason to promise backward compatibility for a CLI that should stay free to evolve.
