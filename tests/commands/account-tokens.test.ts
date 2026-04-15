@@ -317,7 +317,7 @@ describe("renderTokenList (human output)", () => {
 		expect(captured[0]).toContain("No tokens found");
 	});
 
-	it("shows 'Found N tokens' header for a non-empty list", () => {
+	it("shows singular 'Found 1 token' header when n=1", () => {
 		const tokens: TokenBalance[] = [
 			{
 				type: "TRC20",
@@ -328,7 +328,29 @@ describe("renderTokenList (human output)", () => {
 			},
 		];
 		renderTokenList(tokens);
-		expect(captured[0]).toContain("Found 1 tokens");
+		expect(captured[0]).toContain("Found 1 token");
+		expect(captured[0]).not.toMatch(/Found 1 tokens/);
+	});
+
+	it("shows plural 'Found N tokens' header when n>1", () => {
+		const tokens: TokenBalance[] = [
+			{
+				type: "TRC20",
+				contract_address: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+				balance: "1234000",
+				decimals: 6,
+				balance_major: "1.234",
+			},
+			{
+				type: "TRC10",
+				contract_address: "1000001",
+				balance: "42",
+				decimals: 0,
+				balance_major: "42",
+			},
+		];
+		renderTokenList(tokens);
+		expect(captured[0]).toContain("Found 2 tokens");
 	});
 
 	it("renders `<major> (raw <raw>)` when balance_major is set", () => {
@@ -345,7 +367,8 @@ describe("renderTokenList (human output)", () => {
 		// First line is the header, second line is the token row.
 		const row = captured[1];
 		expect(row).toContain("[TRC20]");
-		expect(row).toContain("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t");
+		// Addresses now render in both-ends truncated form (4+4).
+		expect(row).toContain("TR7N...Lj6t");
 		expect(row).toContain("1.234");
 		expect(row).toContain("(raw 1234000)");
 	});
@@ -362,7 +385,7 @@ describe("renderTokenList (human output)", () => {
 		renderTokenList(tokens);
 		const row = captured[1];
 		expect(row).toContain("[TRC20]");
-		expect(row).toContain("TXYZunknownunknownunknownunknowxxxx");
+		expect(row).toContain("TXYZ...xxxx");
 		expect(row).toContain("500000");
 		expect(row).not.toContain("(raw");
 	});

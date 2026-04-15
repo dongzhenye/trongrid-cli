@@ -2,6 +2,12 @@ import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
 import { muted } from "../../output/colors.js";
+import {
+	alignNumber,
+	computeColumnWidths,
+	renderColumns,
+	truncateAddress,
+} from "../../output/columns.js";
 import { printListResult, reportErrorAndExit } from "../../output/format.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 import { formatMajor, resolveTrc10Decimals, resolveTrc20Decimals } from "../../utils/tokens.js";
@@ -41,14 +47,28 @@ export function renderTokenList(tokens: TokenBalance[]): void {
 		console.log(muted("No tokens found."));
 		return;
 	}
-	console.log(muted(`Found ${tokens.length} tokens:\n`));
-	for (const t of tokens) {
-		const typeTag = muted(`[${t.type}]`);
-		const display =
-			t.balance_major !== undefined
-				? `${t.balance_major} ${muted(`(raw ${t.balance})`)}`
-				: t.balance;
-		console.log(`  ${typeTag} ${t.contract_address.padEnd(35)}  ${display}`);
+	const noun = tokens.length === 1 ? "token" : "tokens";
+	console.log(muted(`Found ${tokens.length} ${noun}:\n`));
+
+	// Column order: type tag | contract (truncated) | balance_major | raw annotation
+	const cells: string[][] = tokens.map((t) => [
+		`[${t.type}]`,
+		truncateAddress(t.contract_address, 4, 4),
+		t.balance_major ?? t.balance,
+		t.balance_major !== undefined ? muted(`(raw ${t.balance})`) : "",
+	]);
+
+	const balanceCol = 2;
+	const balanceWidth = Math.max(...cells.map((c) => (c[balanceCol] ?? "").length));
+	for (const row of cells) {
+		const cur = row[balanceCol] ?? "";
+		row[balanceCol] = alignNumber(cur, balanceWidth);
+	}
+
+	const widths = computeColumnWidths(cells);
+	const lines = renderColumns(cells, widths);
+	for (const line of lines) {
+		console.log(`  ${line}`);
 	}
 }
 
