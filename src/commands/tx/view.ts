@@ -76,13 +76,13 @@ Examples:
 				printResult(
 					data,
 					[
-						["TX Hash", data.tx_id],
-						["Block", String(data.block_number)],
-						["Time", formatTimestamp(data.timestamp)],
-						["Status", data.status],
-						["Type", data.contract_type],
-						["Fee", `${data.fee_trx} TRX`],
-						["Energy Used", String(data.energy_used)],
+						["tx_id", "TX Hash", data.tx_id],
+						["block_number", "Block", String(data.block_number)],
+						["timestamp", "Time", formatTimestamp(data.timestamp)],
+						["status", "Status", data.status],
+						["contract_type", "Type", data.contract_type],
+						["fee_trx", "Fee", `${data.fee_trx} TRX`],
+						["energy_used", "Energy Used", String(data.energy_used)],
 					],
 					{ json: opts.json, fields: parseFields(opts) },
 				);

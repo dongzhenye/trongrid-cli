@@ -56,15 +56,22 @@ Examples:
 				const client = getClient(opts);
 				const data = await fetchAccountResources(client, resolved);
 
+				// Composite keys "energy" / "bandwidth" aggregate two JSON fields
+				// each (used + limit). They filter human mode cleanly, but
+				// `--fields energy --json` returns {} because the JSON object
+				// has no "energy" key — it has energy_used / energy_limit.
+				// Tracked in roadmap under "composite filter keys" follow-up.
 				printResult(
 					data,
 					[
-						["Address", data.address],
+						["address", "Address", data.address],
 						[
+							"energy",
 							"Energy",
 							`${data.energy_used.toLocaleString()} / ${data.energy_limit.toLocaleString()}`,
 						],
 						[
+							"bandwidth",
 							"Bandwidth",
 							`${data.bandwidth_used.toLocaleString()} / ${data.bandwidth_limit.toLocaleString()}`,
 						],

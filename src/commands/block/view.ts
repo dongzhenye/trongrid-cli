@@ -91,12 +91,12 @@ Examples:
 				printResult(
 					data,
 					[
-						["Block", String(data.number)],
-						["Block ID", data.block_id],
-						["Parent Hash", data.parent_hash],
-						["Time", formatTimestamp(data.timestamp)],
-						["Producer", data.witness_address],
-						["Transactions", String(data.tx_count)],
+						["number", "Block", String(data.number)],
+						["block_id", "Block ID", data.block_id],
+						["parent_hash", "Parent Hash", data.parent_hash],
+						["timestamp", "Time", formatTimestamp(data.timestamp)],
+						["witness_address", "Producer", data.witness_address],
+						["tx_count", "Transactions", String(data.tx_count)],
 					],
 					{ json: opts.json, fields: parseFields(opts) },
 				);

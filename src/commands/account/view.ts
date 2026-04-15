@@ -1,10 +1,16 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { formatTimestamp, printResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
+import {
+	formatTimestamp,
+	type HumanPair,
+	printResult,
+	reportErrorAndExit,
+	sunToTrx,
+} from "../../output/format.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 
-interface AccountViewData {
+export interface AccountViewData {
 	address: string;
 	balance: number;
 	balance_unit: "sun";
@@ -39,6 +45,20 @@ export async function fetchAccountView(
 	};
 }
 
+/**
+ * Build the human-mode display pairs for `account view`. Exported so that
+ * `--fields` filtering tests can exercise the real key/label mapping used
+ * by the command, without duplicating it in test fixtures.
+ */
+export function buildAccountViewPairs(data: AccountViewData): HumanPair[] {
+	return [
+		["address", "Address", data.address],
+		["balance_trx", "Balance", `${data.balance_trx} TRX`],
+		["is_contract", "Type", data.is_contract ? "Contract" : "EOA"],
+		["create_time", "Created", data.create_time ? formatTimestamp(data.create_time) : "Unknown"],
+	];
+}
+
 export function registerAccountCommands(parent: Command): Command {
 	const account = parent
 		.command("account")
@@ -67,16 +87,10 @@ Examples:
 				const client = getClient(opts);
 				const data = await fetchAccountView(client, resolved);
 
-				printResult(
-					data,
-					[
-						["Address", data.address],
-						["Balance", `${data.balance_trx} TRX`],
-						["Type", data.is_contract ? "Contract" : "EOA"],
-						["Created", data.create_time ? formatTimestamp(data.create_time) : "Unknown"],
-					],
-					{ json: opts.json, fields: parseFields(opts) },
-				);
+				printResult(data, buildAccountViewPairs(data), {
+					json: opts.json,
+					fields: parseFields(opts),
+				});
 			} catch (err) {
 				reportErrorAndExit(err, {
 					json: opts.json,
