@@ -43,10 +43,14 @@ export function addressErrorHint(err: unknown): string | undefined {
 	if (!(err instanceof Error)) return undefined;
 	const msg = err.message.toLowerCase();
 	if (msg.includes("invalid tron address")) {
-		return "Base58 addresses start with T (34 chars); hex addresses start with 41 (42 chars).";
+		// Distinct from the error's format spec: tell the user *where* to get a
+		// known-good address, rather than restating what a valid one looks like.
+		return "Copy the address from tronscan.org or your wallet (in TronLink, the top-left address button copies it).";
 	}
 	if (msg.includes("no address provided")) {
-		return 'Pass an address as an argument, or run "trongrid config set default_address <addr>".';
+		// Distinct from the error's one-shot instructions: explain the *payoff*
+		// of setting a default so the user understands why it's worth doing.
+		return 'Set it once with "trongrid config set default_address <addr>" and every account command will default to it.';
 	}
 	return undefined;
 }

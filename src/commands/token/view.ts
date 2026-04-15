@@ -125,17 +125,30 @@ export async function fetchTokenView(
 	return id.kind === "trc10" ? fetchTrc10(client, id.assetId) : fetchTrc20(client, id.address);
 }
 
-function hintForTokenView(err: unknown): string | undefined {
+/**
+ * Contextual hint for `token view` errors. Recognized patterns:
+ *   - "unknown token symbol"  → lists the verified symbol set inline
+ *   - 0x hex address           → explains how to convert via tronscan
+ *   - "not yet implemented"    → points at the GitHub issue tracker
+ *   - "token not found"        → suggests cross-check venue
+ * Returns undefined for any other error so `reportErrorAndExit` can
+ * fall through to its own defaults.
+ */
+export function hintForTokenView(err: unknown): string | undefined {
 	if (!(err instanceof Error)) return undefined;
 	const msg = err.message.toLowerCase();
 	if (msg.includes("unknown token symbol")) {
 		return "Verified symbols: USDT, USDC, WTRX, JST, SUN, WIN, BTT. Pass the contract address directly for others.";
 	}
 	if (msg.includes("0x") && msg.includes("hex")) {
-		return "Base58 (T...) is required in Wave 1. 0x-hex support will land in a later wave.";
+		// Distinct from the error's "pass Base58 instead": explain *how* to
+		// convert a 0x hex address to Base58 so the user isn't stuck guessing.
+		return "Convert 0x hex to Base58 on tronscan.org (paste into the search bar — it auto-resolves to T...).";
 	}
 	if (msg.includes("not yet implemented")) {
-		return "Wave 1 supports TRC-10 and TRC-20 only. TRC-721 / TRC-1155 will land in a later wave.";
+		// Distinct from the error's scope statement: point at the tracking
+		// channel so users who need the missing standard can watch for it.
+		return "TRC-721 / TRC-1155 are not yet implemented. Open a GitHub issue with your use case so support can be prioritized.";
 	}
 	if (msg.includes("token not found")) {
 		return "Check the asset ID or address. Cross-check on tronscan.org.";
