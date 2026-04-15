@@ -1,3 +1,5 @@
+import { UsageError } from "../output/format.js";
+
 export type SortDirection = "asc" | "desc";
 
 export interface SortConfig<T> {
@@ -32,7 +34,9 @@ export function applySort<T>(items: T[], config: SortConfig<T>, opts: SortOption
 	const fieldDir = config.fieldDirections[field];
 	if (!fieldDir) {
 		const known = Object.keys(config.fieldDirections).join(", ");
-		throw new Error(`Unknown sort field: "${field}". Valid fields for this command: ${known}.`);
+		throw new UsageError(
+			`Unknown sort field: "${field}". Valid fields for this command: ${known}.`,
+		);
 	}
 	const direction: SortDirection = opts.reverse ? (fieldDir === "asc" ? "desc" : "asc") : fieldDir;
 
