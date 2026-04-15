@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { UsageError } from "../../src/output/format.js";
 import { detectBlockIdentifier } from "../../src/utils/block-identifier.js";
 
 describe("detectBlockIdentifier", () => {
@@ -37,5 +38,9 @@ describe("detectBlockIdentifier", () => {
 
 	it("rejects negative numbers", () => {
 		expect(() => detectBlockIdentifier("-1")).toThrow(/invalid block identifier/i);
+	});
+
+	it("throws UsageError (not plain Error) for bad input", () => {
+		expect(() => detectBlockIdentifier("not-a-block")).toThrow(UsageError);
 	});
 });

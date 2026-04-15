@@ -1,3 +1,4 @@
+import { UsageError } from "../output/format.js";
 import { validateAddress } from "./address.js";
 import { CONFIG_PATH, getConfigValue } from "./config.js";
 
@@ -19,7 +20,7 @@ export function resolveAddress(
 	}
 	const fallback = getConfigValue(configPath, "default_address");
 	if (!fallback) {
-		throw new Error(
+		throw new UsageError(
 			"No address provided and no default is configured.\n" +
 				"  Pass an address as an argument, or run:\n" +
 				"    trongrid config set default_address <addr>",

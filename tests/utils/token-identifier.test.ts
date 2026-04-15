@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { UsageError } from "../../src/output/format.js";
 import { detectTokenIdentifier } from "../../src/utils/token-identifier.js";
 
 describe("detectTokenIdentifier", () => {
@@ -61,5 +62,9 @@ describe("detectTokenIdentifier", () => {
 
 	it("rejects garbage input", () => {
 		expect(() => detectTokenIdentifier("!!!")).toThrow(/invalid token identifier/i);
+	});
+
+	it("throws UsageError (not plain Error) for bad input", () => {
+		expect(() => detectTokenIdentifier("!!!")).toThrow(UsageError);
 	});
 });

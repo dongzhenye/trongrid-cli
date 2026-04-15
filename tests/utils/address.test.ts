@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { isValidAddress } from "../../src/utils/address.js";
+import { UsageError } from "../../src/output/format.js";
+import { isValidAddress, validateAddress } from "../../src/utils/address.js";
 
 describe("isValidAddress", () => {
   it("accepts valid Base58 address", () => {
@@ -20,5 +21,15 @@ describe("isValidAddress", () => {
 
   it("rejects ethereum address (0x prefix)", () => {
     expect(isValidAddress("0x1234567890abcdef1234567890abcdef12345678")).toBe(false);
+  });
+});
+
+describe("validateAddress error type", () => {
+  it("throws UsageError (not plain Error) on bad input", () => {
+    expect(() => validateAddress("NOT_AN_ADDRESS")).toThrow(UsageError);
+  });
+
+  it("empty string throws UsageError", () => {
+    expect(() => validateAddress("")).toThrow(UsageError);
   });
 });

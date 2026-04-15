@@ -1,3 +1,4 @@
+import { UsageError } from "../output/format.js";
 import { resolveSymbolToAddress } from "./tokens.js";
 
 export type TokenIdentifier =
@@ -32,31 +33,33 @@ export function detectTokenIdentifier(
 	typeOverride?: TokenTypeOverride,
 ): TokenIdentifier {
 	if (!input) {
-		throw new Error("Token identifier required: pass an asset ID, contract address, or symbol.");
+		throw new UsageError(
+			"Token identifier required: pass an asset ID, contract address, or symbol.",
+		);
 	}
 
 	if (typeOverride === "trc721" || typeOverride === "trc1155") {
-		throw new Error(
+		throw new UsageError(
 			`${typeOverride.toUpperCase()} is not yet implemented. Wave 1 supports TRC-10 and TRC-20 only.`,
 		);
 	}
 
 	if (HEX_ADDR_0X.test(input)) {
-		throw new Error(
+		throw new UsageError(
 			`0x-prefixed hex addresses are not yet supported in Wave 1. Pass the Base58 address (T...) instead.`,
 		);
 	}
 
 	if (typeOverride === "trc10") {
 		if (!TRC10_NUMERIC.test(input)) {
-			throw new Error(`Invalid TRC-10 asset ID: "${input}". Expected 1–7 digits.`);
+			throw new UsageError(`Invalid TRC-10 asset ID: "${input}". Expected 1–7 digits.`);
 		}
 		return { kind: "trc10", assetId: input };
 	}
 
 	if (typeOverride === "trc20") {
 		if (!BASE58_ADDR.test(input)) {
-			throw new Error(
+			throw new UsageError(
 				`Invalid TRC-20 address: "${input}". Expected 34-char Base58 starting with T.`,
 			);
 		}
@@ -72,14 +75,14 @@ export function detectTokenIdentifier(
 	if (SYMBOL.test(input)) {
 		const addr = resolveSymbolToAddress(input);
 		if (!addr) {
-			throw new Error(
+			throw new UsageError(
 				`Unknown token symbol: "${input}". Pass the contract address directly, or see docs/design/commands.md for the list of verified symbols.`,
 			);
 		}
 		return { kind: "trc20", address: addr };
 	}
 
-	throw new Error(
+	throw new UsageError(
 		`Invalid token identifier: "${input}". Expected a TRC-10 asset ID (1–7 digits), a TRC-20 Base58 address (T...), or a known token symbol.`,
 	);
 }

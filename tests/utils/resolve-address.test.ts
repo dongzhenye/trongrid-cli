@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { UsageError } from "../../src/output/format.js";
 import { setConfigValue } from "../../src/utils/config.js";
 import { resolveAddress } from "../../src/utils/resolve-address.js";
 
@@ -36,5 +37,9 @@ describe("resolveAddress", () => {
 		expect(() => resolveAddress(undefined, TEST_CONFIG)).toThrow(
 			/no address provided[\s\S]*trongrid config set default_address/i,
 		);
+	});
+
+	it("throws UsageError (not plain Error) when nothing is set", () => {
+		expect(() => resolveAddress(undefined, TEST_CONFIG)).toThrow(UsageError);
 	});
 });
