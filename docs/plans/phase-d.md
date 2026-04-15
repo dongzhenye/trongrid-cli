@@ -1621,7 +1621,7 @@ Sort:
 				const resolved = resolveAddress(address);
 				const client = getClient(opts);
 				// NOTE: --confirmed is accepted globally but has no effect here —
-				// /v1/accounts/:address/transferrecords has no /walletsolidity
+				// /v1/accounts/:address/transactions/trc20 has no /walletsolidity
 				// mirror. Flag uniformity preserved; tracked as Phase D follow-up.
 				const rows = await fetchAccountTransfers(client, resolved, {
 					limit: Number.parseInt(opts.limit, 10),

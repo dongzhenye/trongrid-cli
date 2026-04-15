@@ -195,7 +195,7 @@ src/
 ├── auth/
 │   └── store.ts                # API key resolution + storage
 ├── commands/
-│   ├── account/                # account view/tokens/resources/txs
+│   ├── account/                # account view/tokens/resources/txs/transfers/delegations/permissions
 │   ├── auth/                   # auth login/logout/status
 │   ├── block/                  # block latest + view (Phase B: stats/range/events)
 │   ├── config/                 # config set/get/list
