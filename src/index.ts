@@ -73,6 +73,7 @@ import { registerAuthCommands } from "./commands/auth/login.js";
 import { registerBlockCommands } from "./commands/block/latest.js";
 import { registerBlockViewCommand } from "./commands/block/view.js";
 import { registerConfigCommands } from "./commands/config/set.js";
+import { registerTokenCommands } from "./commands/token/view.js";
 import { registerTxCommands } from "./commands/tx/view.js";
 
 const block = registerBlockCommands(program);
@@ -81,6 +82,7 @@ const account = registerAccountCommands(program);
 registerAccountTokensCommand(account, program);
 registerAccountResourcesCommand(account, program);
 registerAccountTxsCommand(account, program);
+registerTokenCommands(program);
 registerTxCommands(program);
 registerAuthCommands(program);
 registerConfigCommands(program);
