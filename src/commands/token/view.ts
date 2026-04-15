@@ -169,6 +169,9 @@ Unknown symbols are rejected — pass the contract address instead.
 			try {
 				const id = detectTokenIdentifier(input, localOpts.type);
 				const client = getClient(opts);
+				// NOTE: --confirmed has no effect here — triggerconstantcontract and
+				// getassetissuebyid have no /walletsolidity mirror. Accepted silently
+				// for flag uniformity; tracked in docs/plans/phase-b.md as a follow-up.
 				const data = await fetchTokenView(client, id);
 
 				printResult(
