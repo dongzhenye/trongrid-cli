@@ -97,4 +97,14 @@ program.hook("preAction", (thisCommand) => {
 	}
 });
 
+// Render full help when invoked with no subcommand. Without this,
+// commander defaults to printing the Options block only, which is
+// inconsistent with `trongrid --help` (which prints Options + Commands).
+// Humans exploring the tool benefit from auto-discovery of the full
+// command tree; agents already use --help explicitly and aren't affected.
+// Closes Phase C trial walkthrough item #9.
+program.action(() => {
+	program.outputHelp();
+});
+
 program.parse();
