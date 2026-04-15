@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { createClient } from "../../src/api/client.js";
-import { fetchAccountView } from "../../src/commands/account/view.js";
+import { buildAccountViewPairs, fetchAccountView } from "../../src/commands/account/view.js";
+import { printResult } from "../../src/output/format.js";
 import { setConfigValue } from "../../src/utils/config.js";
 import { resolveAddress } from "../../src/utils/resolve-address.js";
 
@@ -83,6 +84,41 @@ describe("account view", () => {
 		const client = createClient({ network: "mainnet" });
 		const result = await fetchAccountView(client, "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW");
 		expect(result.decimals).toBe(6);
+	});
+
+	// --fields integration: exercises the same human-pair builder used by the
+	// CLI action, to lock in that `trongrid account view --fields address,balance_trx`
+	// narrows the human-mode output to exactly those two rows. Pairs with the
+	// generic printResult filter test in tests/output/fields-human.test.ts, but
+	// this one uses the real command's key/label mapping instead of a synthetic
+	// fixture, so any drift in view.ts's pairs would be caught here.
+	it("--fields filters human output to selected keys", async () => {
+		const client = createClient({ network: "mainnet" });
+		const data = await fetchAccountView(client, "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW");
+
+		const captured: string[] = [];
+		const origLog = console.log;
+		console.log = (msg: string) => captured.push(msg);
+		try {
+			printResult(data, buildAccountViewPairs(data), {
+				json: false,
+				fields: ["address", "balance_trx"],
+			});
+		} finally {
+			console.log = origLog;
+		}
+
+		expect(captured.length).toBe(1);
+		const output = captured[0] ?? "";
+		// Rows that should be present.
+		expect(output).toContain("Address");
+		expect(output).toContain("TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW");
+		expect(output).toContain("Balance");
+		expect(output).toContain("50 TRX");
+		// Rows that must be filtered out.
+		expect(output).not.toContain("Type");
+		expect(output).not.toContain("Created");
+		expect(output).not.toContain("EOA");
 	});
 });
 

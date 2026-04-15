@@ -182,12 +182,20 @@ Unknown symbols are rejected — pass the contract address instead.
 				printResult(
 					data,
 					[
-						["Type", data.type],
-						[data.type === "TRC10" ? "Asset ID" : "Contract", data.contract_address],
-						["Name", data.name],
-						["Symbol", data.symbol],
-						["Decimals", String(data.decimals)],
-						["Total Supply", `${data.total_supply_major} ${data.symbol || ""}`.trim()],
+						["type", "Type", data.type],
+						[
+							"contract_address",
+							data.type === "TRC10" ? "Asset ID" : "Contract",
+							data.contract_address,
+						],
+						["name", "Name", data.name],
+						["symbol", "Symbol", data.symbol],
+						["decimals", "Decimals", String(data.decimals)],
+						[
+							"total_supply_major",
+							"Total Supply",
+							`${data.total_supply_major} ${data.symbol || ""}`.trim(),
+						],
 					],
 					{ json: opts.json, fields: parseFields(opts) },
 				);
