@@ -195,19 +195,23 @@ src/
 ├── auth/
 │   └── store.ts                # API key resolution + storage
 ├── commands/
-│   ├── account/                # account view/tokens/resources
+│   ├── account/                # account view/tokens/resources/txs
 │   ├── auth/                   # auth login/logout/status
-│   ├── block/                  # block latest (Phase B: view/stats/range/events)
+│   ├── block/                  # block latest + view (Phase B: stats/range/events)
 │   ├── config/                 # config set/get/list
+│   ├── token/                  # token view (Phase B: holders/transfers/balance/allowance)
 │   └── tx/                     # tx view (Phase B: decode/internals/transfers/broadcast/pending)
 ├── output/
 │   ├── colors.ts               # semantic color tokens (Google CLI design pillar 6)
 │   └── format.ts               # printResult / printListResult / reportErrorAndExit
 └── utils/
     ├── address.ts              # TRON address validation
+    ├── block-identifier.ts     # block number/hash dispatch
     ├── color.ts                # --no-color wiring
     ├── config.ts               # ~/.config/trongrid/config.json read/write
     ├── resolve-address.ts      # [address] optional → default_address fallback
+    ├── sort.ts                 # generic applySort for list commands
+    ├── token-identifier.ts     # TRC-10 / TRC-20 / symbol dispatch (with phishing guard)
     └── tokens.ts               # TRC-20 / TRC-10 decimals resolvers
 ```
 
