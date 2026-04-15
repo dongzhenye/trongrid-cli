@@ -119,6 +119,8 @@ Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 
 - [ ] `account approvals <owner>` — pending TRON-eco-vs-TronGrid-only positioning decision; event-log scan approach documented but not executed
 - [ ] composite filter keys (e.g. `energy` / `bandwidth` on `account resources`) work in human mode but silently return `{}` in `--json` mode because the JSON object has no such top-level field. Either (a) split display rows to match JSON fields, (b) document the human-only key surface, or (c) expose derived nested objects on the response shape. Surfaced during Phase D P2 code review.
+- [ ] `printListResult` does not apply `--fields` in human mode — only the JSON branch filters. List commands (`account transfers`, `account tokens`, `account txs`, and future list commands) silently ignore `--fields` when rendering human output. Surfaced during Phase D M1.3. Fix requires either a per-row field-projection hook on the renderer callback, or a parallel `HumanPair`-style mechanism for list-item display pairs.
+- [ ] `applySort` string-compares primitive values — numeric fields stored as decimal strings (e.g. `amount` in `CenteredTransferRow`) will sort lexicographically and give wrong results for mixed-width values ("100" < "99"). Current consumers get away with it because fixtures use equal-width strings; real TRC-20 transfer amounts will not. Fix: declare field types in `SortConfig` (`"number" | "string" | "bigint"`) and cast per-field inside the comparator. Surfaced during Phase D M1.3.
 
 **Exit criteria**: all plumbing items ✅, three new commands functional on mainnet + shasta, `account resources` accepts optional address, `tsc` build + lint clean, all tests passing.
 
