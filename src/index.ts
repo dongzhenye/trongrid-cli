@@ -20,6 +20,9 @@ program
 	.option("-v, --verbose", "show upstream API details in errors", false)
 	.option("-l, --limit <number>", "max items for list commands", "20")
 	.option("-f, --fields <fields>", "select output fields (JSON mode)")
+	.option("-r, --reverse", "reverse the command's default sort direction", false)
+	.option("--sort-by <field>", "override the command's default sort field")
+	.option("--confirmed", "read confirmed (irreversible, ~60s lag) state instead of latest", false)
 	// Deterministic exit code scheme (see docs/design/cli-best-practices.md §4):
 	//   0 — success (help / version display included)
 	//   1 — general / unexpected error (thrown by TrongridError with non-auth status)
@@ -42,6 +45,9 @@ export interface GlobalOptions {
 	verbose: boolean;
 	limit: string;
 	fields?: string;
+	confirmed: boolean;
+	reverse: boolean;
+	sortBy?: string;
 }
 
 export function getClient(opts: GlobalOptions): ApiClient {
@@ -60,17 +66,23 @@ export { program };
 
 import { registerAccountResourcesCommand } from "./commands/account/resources.js";
 import { registerAccountTokensCommand } from "./commands/account/tokens.js";
+import { registerAccountTxsCommand } from "./commands/account/txs.js";
 import { registerAccountCommands } from "./commands/account/view.js";
 import { registerAuthCommands } from "./commands/auth/login.js";
 // Import commands (added as tasks implement them)
 import { registerBlockCommands } from "./commands/block/latest.js";
+import { registerBlockViewCommand } from "./commands/block/view.js";
 import { registerConfigCommands } from "./commands/config/set.js";
+import { registerTokenCommands } from "./commands/token/view.js";
 import { registerTxCommands } from "./commands/tx/view.js";
 
-registerBlockCommands(program);
+const block = registerBlockCommands(program);
+registerBlockViewCommand(block, program);
 const account = registerAccountCommands(program);
 registerAccountTokensCommand(account, program);
 registerAccountResourcesCommand(account, program);
+registerAccountTxsCommand(account, program);
+registerTokenCommands(program);
 registerTxCommands(program);
 registerAuthCommands(program);
 registerConfigCommands(program);

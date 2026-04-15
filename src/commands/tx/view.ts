@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
+import { formatTimestamp, printResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
 
 interface TxViewData {
 	tx_id: string;
@@ -78,7 +78,7 @@ Examples:
 					[
 						["TX Hash", data.tx_id],
 						["Block", String(data.block_number)],
-						["Time", new Date(data.timestamp).toISOString()],
+						["Time", formatTimestamp(data.timestamp)],
 						["Status", data.status],
 						["Type", data.contract_type],
 						["Fee", `${data.fee_trx} TRX`],
