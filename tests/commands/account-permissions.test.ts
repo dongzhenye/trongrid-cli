@@ -1,7 +1,16 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { mkdirSync, rmSync } from "node:fs";
+import { join } from "node:path";
 import { createClient } from "../../src/api/client.js";
-import { fetchAccountPermissions } from "../../src/commands/account/permissions.js";
-import { UsageError } from "../../src/output/format.js";
+import {
+	type AccountPermissions,
+	fetchAccountPermissions,
+	rejectSortFlags,
+	renderPermissions,
+} from "../../src/commands/account/permissions.js";
+import { formatJson, UsageError } from "../../src/output/format.js";
+import { setConfigValue } from "../../src/utils/config.js";
+import { resolveAddress } from "../../src/utils/resolve-address.js";
 
 function mockFetchOnce(fixture: unknown): () => void {
 	const origFetch = globalThis.fetch;
@@ -211,5 +220,228 @@ describe("fetchAccountPermissions", () => {
 		} finally {
 			restore();
 		}
+	});
+});
+
+// ---------- renderPermissions (human output) ----------
+
+const SUBJECT_ADDR = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+
+function mkPermissions(overrides: Partial<AccountPermissions> = {}): AccountPermissions {
+	return {
+		address: SUBJECT_ADDR,
+		owner: {
+			type: "Owner",
+			permission_name: "owner",
+			threshold: 1,
+			keys: [{ address: "TOnlyKey111111111111111111111111111", weight: 1 }],
+		},
+		active: [
+			{
+				type: "Active",
+				id: 0,
+				permission_name: "active",
+				threshold: 1,
+				keys: [{ address: "TOnlyKey111111111111111111111111111", weight: 1 }],
+			},
+		],
+		witness: null,
+		...overrides,
+	};
+}
+
+describe("renderPermissions (human render)", () => {
+	const originalNoColor = process.env.NO_COLOR;
+	const originalLog = console.log;
+	let captured: string[];
+
+	beforeEach(() => {
+		process.env.NO_COLOR = "1";
+		captured = [];
+		console.log = (msg?: unknown) => {
+			captured.push(typeof msg === "string" ? msg : String(msg));
+		};
+	});
+
+	afterEach(() => {
+		console.log = originalLog;
+		if (originalNoColor !== undefined) {
+			process.env.NO_COLOR = originalNoColor;
+		} else {
+			delete process.env.NO_COLOR;
+		}
+	});
+
+	it("single-key owner, no extra active, no witness → minimal render", () => {
+		renderPermissions(mkPermissions());
+		const joined = captured.join("\n");
+		expect(joined).toContain(`Address: ${SUBJECT_ADDR}`);
+		expect(joined).toContain("normal account");
+		expect(joined).toContain("Owner permission:");
+		expect(joined).toContain("threshold: 1");
+		expect(joined).toContain("Active permission #0");
+		expect(joined).not.toContain("Witness permission");
+	});
+
+	it("multi-sig (2-of-3) owner renders threshold 2 with three weight rows", () => {
+		const data = mkPermissions({
+			owner: {
+				type: "Owner",
+				permission_name: "owner",
+				threshold: 2,
+				keys: [
+					{ address: "THighAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", weight: 3 },
+					{ address: "TMidBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", weight: 2 },
+					{ address: "TLowCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC", weight: 1 },
+				],
+			},
+		});
+		renderPermissions(data);
+		const joined = captured.join("\n");
+		expect(joined).toContain("Owner permission:");
+		expect(joined).toContain("threshold: 2");
+		expect(joined).toContain("weight 3");
+		expect(joined).toContain("weight 2");
+		expect(joined).toContain("weight 1");
+	});
+
+	it("multi-permission active renders numbered sections #0 / #1 / #2", () => {
+		const data = mkPermissions({
+			active: [
+				{
+					type: "Active",
+					id: 0,
+					permission_name: "active0",
+					threshold: 1,
+					keys: [{ address: "TA11111111111111111111111111111111", weight: 1 }],
+				},
+				{
+					type: "Active",
+					id: 1,
+					permission_name: "active1",
+					threshold: 1,
+					keys: [{ address: "TB22222222222222222222222222222222", weight: 1 }],
+				},
+				{
+					type: "Active",
+					id: 2,
+					permission_name: "hot-wallet",
+					threshold: 1,
+					keys: [{ address: "TC33333333333333333333333333333333", weight: 1 }],
+				},
+			],
+		});
+		renderPermissions(data);
+		const joined = captured.join("\n");
+		expect(joined).toContain("Active permission #0 (active0)");
+		expect(joined).toContain("Active permission #1 (active1)");
+		expect(joined).toContain("Active permission #2 (hot-wallet)");
+	});
+
+	it("witness present renders an extra Witness permission section and flags SR account", () => {
+		const data = mkPermissions({
+			witness: {
+				type: "Witness",
+				permission_name: "witness",
+				threshold: 1,
+				keys: [{ address: "TSRWitnessXXXXXXXXXXXXXXXXXXXXXXXXX", weight: 1 }],
+			},
+		});
+		renderPermissions(data);
+		const joined = captured.join("\n");
+		expect(joined).toContain("SR account");
+		expect(joined).toContain("Witness permission:");
+	});
+
+	it("witness absent → no Witness permission line at all (silent omission)", () => {
+		renderPermissions(mkPermissions({ witness: null }));
+		const joined = captured.join("\n");
+		expect(joined).not.toContain("Witness permission");
+	});
+});
+
+// ---------- --json output (structured object, not array) ----------
+
+describe("account permissions --json output", () => {
+	it("--json returns { owner, active, witness } shape, not an array", () => {
+		const data = mkPermissions({
+			witness: {
+				type: "Witness",
+				permission_name: "witness",
+				threshold: 1,
+				keys: [{ address: "TSRWitnessXXXXXXXXXXXXXXXXXXXXXXXXX", weight: 1 }],
+			},
+		});
+		const raw = formatJson(data);
+		const parsed = JSON.parse(raw) as unknown;
+		expect(Array.isArray(parsed)).toBe(false);
+		expect(typeof parsed).toBe("object");
+		const obj = parsed as Record<string, unknown>;
+		expect(obj.address).toBe(SUBJECT_ADDR);
+		expect(obj.owner).toBeDefined();
+		expect(Array.isArray(obj.active)).toBe(true);
+		expect(obj.witness).toBeDefined();
+	});
+
+	it("--json --fields owner,witness filters top-level keys", () => {
+		const data = mkPermissions({
+			witness: {
+				type: "Witness",
+				permission_name: "witness",
+				threshold: 1,
+				keys: [{ address: "TSRWitnessXXXXXXXXXXXXXXXXXXXXXXXXX", weight: 1 }],
+			},
+		});
+		const raw = formatJson(data, ["owner", "witness"]);
+		const parsed = JSON.parse(raw) as Record<string, unknown>;
+		expect(Object.keys(parsed).sort()).toEqual(["owner", "witness"]);
+		expect(parsed.address).toBeUndefined();
+		expect(parsed.active).toBeUndefined();
+		expect(parsed.owner).toBeDefined();
+		expect(parsed.witness).toBeDefined();
+	});
+});
+
+// ---------- rejectSortFlags (action-level UsageError) ----------
+
+describe("rejectSortFlags (--sort-by / --reverse rejection)", () => {
+	it("throws UsageError with a distinct hint on --sort-by", () => {
+		expect(() => rejectSortFlags({ sortBy: "weight" })).toThrow(UsageError);
+		try {
+			rejectSortFlags({ sortBy: "weight" });
+		} catch (err) {
+			expect(err).toBeInstanceOf(UsageError);
+			expect((err as Error).message).toContain("permissions are structured");
+			expect((err as Error).message).toContain("--json | jq");
+		}
+	});
+
+	it("throws UsageError on --reverse", () => {
+		expect(() => rejectSortFlags({ reverse: true })).toThrow(UsageError);
+	});
+
+	it("accepts empty opts (no flags → no throw)", () => {
+		expect(() => rejectSortFlags({})).not.toThrow();
+		expect(() => rejectSortFlags({ sortBy: undefined, reverse: false })).not.toThrow();
+	});
+});
+
+// ---------- default_address resolution ----------
+
+describe("account permissions default_address resolution", () => {
+	const TEST_DIR = join(import.meta.dirname, ".tmp-account-permissions-default-test");
+	const TEST_CONFIG = join(TEST_DIR, "config.json");
+
+	beforeEach(() => {
+		mkdirSync(TEST_DIR, { recursive: true });
+		setConfigValue(TEST_CONFIG, "default_address", SUBJECT_ADDR);
+	});
+
+	afterEach(() => {
+		rmSync(TEST_DIR, { recursive: true, force: true });
+	});
+
+	it("uses config default_address when argument is omitted", () => {
+		expect(resolveAddress(undefined, TEST_CONFIG)).toBe(SUBJECT_ADDR);
 	});
 });

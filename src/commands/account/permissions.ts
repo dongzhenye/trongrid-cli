@@ -116,6 +116,20 @@ export function renderPermissions(data: AccountPermissions): void {
 	}
 }
 
+/**
+ * Guard that rejects `--sort-by` / `--reverse` on the permissions command.
+ * Exported for testability so the integration suite can exercise the check
+ * without spinning up commander. Kept as a one-liner over a boolean-return
+ * so callers don't forget to throw.
+ */
+export function rejectSortFlags(opts: { sortBy?: string; reverse?: boolean }): void {
+	if (opts.sortBy !== undefined || opts.reverse) {
+		throw new UsageError(
+			"--sort-by / --reverse are not supported on account permissions: permissions are structured, not a flat list. Use --json | jq to reorder.",
+		);
+	}
+}
+
 function renderBlock(label: string, block: PermissionBlock): void {
 	console.log(muted(`${label}:`));
 	console.log(`  threshold: ${block.threshold}`);
@@ -154,11 +168,7 @@ Note:
 			const { getClient, parseFields } = await import("../../index.js");
 			const opts = parent.opts<GlobalOptions>();
 			try {
-				if (opts.sortBy !== undefined || opts.reverse) {
-					throw new UsageError(
-						"--sort-by / --reverse are not supported on account permissions: permissions are structured, not a flat list. Use --json | jq to reorder.",
-					);
-				}
+				rejectSortFlags(opts);
 				const resolved = resolveAddress(address);
 				const client = getClient(opts);
 				const data = await fetchAccountPermissions(client, resolved);
