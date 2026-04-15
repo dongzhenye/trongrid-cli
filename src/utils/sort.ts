@@ -25,26 +25,16 @@ export interface SortOptions {
  * Does not mutate `items`. Throws if --sort-by names a field that has no
  * declared direction (prevents silent typo bugs).
  */
-export function applySort<T>(
-	items: T[],
-	config: SortConfig<T>,
-	opts: SortOptions,
-): T[] {
+export function applySort<T>(items: T[], config: SortConfig<T>, opts: SortOptions): T[] {
 	if (items.length === 0) return items;
 
 	const field = (opts.sortBy ?? config.defaultField) as keyof T & string;
 	const fieldDir = config.fieldDirections[field];
 	if (!fieldDir) {
 		const known = Object.keys(config.fieldDirections).join(", ");
-		throw new Error(
-			`Unknown sort field: "${field}". Valid fields for this command: ${known}.`,
-		);
+		throw new Error(`Unknown sort field: "${field}". Valid fields for this command: ${known}.`);
 	}
-	const direction: SortDirection = opts.reverse
-		? fieldDir === "asc"
-			? "desc"
-			: "asc"
-		: fieldDir;
+	const direction: SortDirection = opts.reverse ? (fieldDir === "asc" ? "desc" : "asc") : fieldDir;
 
 	const sorted = [...items].sort((a, b) => {
 		const av = a[field];
