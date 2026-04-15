@@ -1,4 +1,6 @@
-# Phase A+: Default Address and Token Decimals — Implementation Plan
+# Phase B — Default Address and Token Decimals (Post-Foundation Improvements)
+
+> **Convention update 2026-04-15.** This plan was originally titled "Phase A+". It has been regularized to **Phase B** per [`meta/WORKFLOW.md §2`](https://github.com/dongzhenye/meta) (one-level phase letters, no sub-phases or `+` suffixes). Body text and historical task logs still contain the original "Phase A+" language in places — those references describe what was shipped at the time and are left untouched per the mid-stream-convention-change rule ("don't rewrite shipped history, doc-layer regularization + a note at the top is sufficient"). For the full cross-walk see the top of [`../roadmap.md`](../roadmap.md).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
