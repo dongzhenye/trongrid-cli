@@ -87,6 +87,15 @@ Items surfaced by the [`design/cli-best-practices.md`](./design/cli-best-practic
 
 **Goal**: Feature-complete release. ~48 commands across 13 resources.
 
+### Wave 1 trial feedback (uncovered 2026-04-15, schedule into later waves)
+
+| # | Item | Priority | Suggested wave | Notes |
+|---|---|---|---|---|
+| 1 | `account tokens` default display includes symbol | High | Wave 3 (token family polish) | Current output shows `[TRC20] <34-char address>  1.234 (raw 1234000)`. Users (human + agent) cannot tell which token that is without cross-referencing the address. Proposed: show resolved symbol as the primary identifier; address moves to secondary. Resolution order: `STATIC_SYMBOL_TO_ADDRESS` reverse map → on-chain `symbol()` via `triggerconstantcontract` (batch-parallel with existing `decimals()` call — no extra round-trip cost) → `Unknown` fallback. For TRC-10, use `abbr` from the existing `/wallet/getassetissuebyid` response (already fetched for decimals). |
+| 2 | `account tokens` sorted by USD value desc (TronScan parity) | Medium | Blocked on price feed API (see Phase C `token price`) | When a token price feed is available, `account tokens` default sort becomes `balance_usd desc` (largest position first). Per the sort convention, the column would show `balance_usd` with `--sort-by balance_major` / `--sort-by symbol` as overrides. Until the API lands, the enhancement is blocked and the current "fetched order" default stays. Cross-reference: Phase C P1 gap list below, and the already-deferred `account tokens` sort-by-value item in `cli-best-practices.md §2 Actions` (Phase B: pre-sort). |
+| 3 | `--fields` behavior in human mode (currently silent no-op) | High | Wave 2 | Declared globally but ignored outside `--json`. Worst outcome: flag appears to work, does nothing. Three options discussed — Option A (apply to both modes by threading a `key` through `humanPairs`) is recommended before Wave 2 bakes the current 2-tuple shape into more commands. Low-risk signature change (`[string, string][] → [string, string, string][]` or use a 3-field object); each existing command gains one `key` per row. Clarify the help text from "select output fields (JSON mode)" to just "select output fields" once implemented. |
+
+
 **Work**:
 1. Implement remaining commands (all resources from command map)
 2. Polish human output formatting (alignment, colors, unit conversion). **Writing guideline**: help text and docs phrase commands possessively ("show the tokens of `<address>`") even though grammar is action-first — see [`architecture.md` §Coupled decisions](./architecture.md#coupled-decisions).
