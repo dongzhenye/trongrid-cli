@@ -1,3 +1,5 @@
+import { UsageError } from "../output/format.js";
+
 export type BlockIdentifier = { kind: "number"; value: number } | { kind: "hash"; value: string };
 
 const HEX64 = /^[0-9a-fA-F]{64}$/;
@@ -14,7 +16,7 @@ const NUMERIC = /^\d+$/;
  */
 export function detectBlockIdentifier(input: string): BlockIdentifier {
 	if (!input) {
-		throw new Error("Block identifier required: pass a number or hash.");
+		throw new UsageError("Block identifier required: pass a number or hash.");
 	}
 	// Check hex (64-char, optionally 0x-prefixed) BEFORE numeric so that a
 	// 64-digit all-decimal string (e.g. "000...000") is classified as a hash,
@@ -27,14 +29,14 @@ export function detectBlockIdentifier(input: string): BlockIdentifier {
 	// hashes (e.g. 63 hex chars), not block numbers. Reject them explicitly so
 	// the user gets a useful error rather than a silently wrong block lookup.
 	if (stripped.length >= 16) {
-		throw new Error(
+		throw new UsageError(
 			`Invalid block identifier: "${input}". Expected a block number (digits) or block hash (64 hex chars, optional 0x prefix).`,
 		);
 	}
 	if (NUMERIC.test(input)) {
 		return { kind: "number", value: Number.parseInt(input, 10) };
 	}
-	throw new Error(
+	throw new UsageError(
 		`Invalid block identifier: "${input}". Expected a block number (digits) or block hash (64 hex chars, optional 0x prefix).`,
 	);
 }
