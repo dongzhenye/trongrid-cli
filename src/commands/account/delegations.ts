@@ -8,7 +8,12 @@ import {
 	renderColumns,
 	truncateAddress,
 } from "../../output/columns.js";
-import { formatTimestamp, printListResult, reportErrorAndExit } from "../../output/format.js";
+import {
+	formatTimestamp,
+	printListResult,
+	reportErrorAndExit,
+	sunToTrx,
+} from "../../output/format.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 import { applySort, type SortConfig, type SortOptions } from "../../utils/sort.js";
 
@@ -36,14 +41,98 @@ export interface DelegationRow {
 	lock: boolean;
 }
 
+interface IndexV2Response {
+	toAccounts?: string[];
+	fromAccounts?: string[];
+}
+
+interface DelegatedResourceV2Response {
+	delegatedResource?: Array<{
+		from?: string;
+		to?: string;
+		frozen_balance_for_bandwidth?: number;
+		frozen_balance_for_energy?: number;
+		expire_time_for_bandwidth?: number;
+		expire_time_for_energy?: number;
+	}>;
+}
+
 export async function fetchAccountDelegations(
 	client: ApiClient,
 	address: string,
 ): Promise<DelegationRow[]> {
-	// Stub for M2.1; real impl in M2.2.
-	void client;
-	void address;
-	throw new Error("fetchAccountDelegations: not implemented (M2.1 scaffold)");
+	const index = await client.post<IndexV2Response>("/wallet/getdelegatedresourceaccountindexv2", {
+		value: address,
+		visible: true,
+	});
+
+	const outPairs = (index.toAccounts ?? []).map((to) => ({ from: address, to }));
+	const inPairs = (index.fromAccounts ?? []).map((from) => ({ from, to: address }));
+	const allPairs = [...outPairs, ...inPairs];
+
+	const results = await Promise.all(
+		allPairs.map(async (pair) => {
+			const detail = await client.post<DelegatedResourceV2Response>(
+				"/wallet/getdelegatedresourcev2",
+				{ fromAddress: pair.from, toAddress: pair.to, visible: true },
+			);
+			return { pair, detail };
+		}),
+	);
+
+	const rows: DelegationRow[] = [];
+	for (const { pair, detail } of results) {
+		const isOut = pair.from === address;
+		for (const d of detail.delegatedResource ?? []) {
+			if (d.frozen_balance_for_bandwidth && d.frozen_balance_for_bandwidth > 0) {
+				rows.push(
+					makeRow(
+						pair,
+						"BANDWIDTH",
+						d.frozen_balance_for_bandwidth,
+						d.expire_time_for_bandwidth ?? 0,
+						isOut,
+					),
+				);
+			}
+			if (d.frozen_balance_for_energy && d.frozen_balance_for_energy > 0) {
+				rows.push(
+					makeRow(
+						pair,
+						"ENERGY",
+						d.frozen_balance_for_energy,
+						d.expire_time_for_energy ?? 0,
+						isOut,
+					),
+				);
+			}
+		}
+	}
+	return rows;
+}
+
+function makeRow(
+	pair: { from: string; to: string },
+	resource: "BANDWIDTH" | "ENERGY",
+	frozen: number,
+	expireMs: number,
+	isOut: boolean,
+): DelegationRow {
+	const expireSec = Math.floor(expireMs / 1000);
+	const now = Math.floor(Date.now() / 1000);
+	return {
+		direction: isOut ? "out" : "in",
+		from: pair.from,
+		to: pair.to,
+		resource,
+		amount: frozen,
+		amount_unit: "sun",
+		decimals: 6,
+		amount_trx: sunToTrx(frozen),
+		expire_time: expireSec,
+		expire_time_iso: new Date(expireMs).toISOString(),
+		lock: expireSec > now,
+	};
 }
 
 const DELEGATIONS_SORT_CONFIG: SortConfig<DelegationRow> = {
