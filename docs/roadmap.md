@@ -1,160 +1,215 @@
 # Roadmap
 
+> **Convention update 2026-04-15.** This roadmap follows the flat-phase convention in [`meta/WORKFLOW.md §2`](https://github.com/dongzhenye/meta). Phase letters are continuous across project lifetime; waves / sub-phases are explicitly not used. Git tags are only cut on code-changing phases **after** the first npm publish (Phase I) — prior phases are marked ✅ without a tag.
+>
+> Cross-walk from the pre-2026-04-15 labels:
+>
+> | Old label | New phase | Theme |
+> |---|---|---|
+> | Phase A | **Phase A** | Foundation |
+> | Phase A+ | **Phase B** | Post-Foundation Improvements |
+> | Phase B Wave 1 | **Phase C** | `block view` + `account txs` + `token view` |
+> | Phase B Wave 2 | **Phase D** | Account list family + Phase-C trial plumbing |
+> | Phase B Wave 3 | **Phase E** | Token family polish |
+> | Phase B Wave 4 | **Phase F** | Contract family |
+> | Phase B Wave 5 | **Phase G** | Governance + stats |
+> | Phase B Wave 6 | **Phase H** | Write-side (scope TBD) |
+> | Phase B Wave N | **Phase I** | Parity matrix + README + first npm publish |
+> | Phase C (Expand) P0 | **Phase J** | OAuth auth UX |
+> | Phase C (Expand) P1 distribution | **Phase K** | Homebrew + GH Releases binaries |
+> | Phase C (Expand) P1 gap commands | **Phase L** | `token price` / `account tags` / `contract creator` |
+> | Phase C (Expand) P2 dynamic symbols | **Phase M** | Runtime verified-token resolution |
+> | Phase C (Expand) P2 advanced | **Phase N** | Schema introspection, aliases, completions |
+> | Phase C (Expand) P3 | **Phase O** | Plugin marketplace, MCP server mode (conditional) |
+
 ## Overview
 
 ```
-Phase A (Foundation)  →  Phase B (Release)  →  Phase C (Expand)
-   5-10 commands           ~48 commands          New channels + features
-   Validate arch           First public release  Community growth
+Phase A–C  (pre-publish, merged)       Architecture validation
+Phase D–H  (pre-publish, in flight)    Command surface fill-out
+Phase I    (FIRST npm publish, v0.1.0) Distribution begins
+Phase J–O  (expand)                    Auth UX, distribution, gaps, advanced
 ```
 
-## Phase A: Foundation
+Phases are one-level; tasks inside each phase are a single-level flat checklist. Position encodes priority — open-phase letters are not stable promises.
 
-**Goal**: Validate architecture, core data flow, and output formatting.
+## Phase A — Foundation ✅ (pre-publish, untagged)
 
-**Scope**: 5-10 core commands covering the most common workflows.
+**Goal**: Validate architecture, core data flow, and output formatting through 5–10 core commands.
 
-| Command | Why First |
-|---------|-----------|
-| `account view` | Most frequent query — validates data flow end to end |
-| `account tokens` | TRC20 balance — validates multi-API aggregation |
-| `account resources` | Energy/bandwidth — validates resource formatting |
-| `tx view` | Transaction lookup — validates hash-based query |
-| `block latest` | Chain head — simplest command, validates connectivity |
-| `auth login/status` | Auth — validates credential flow |
-| `config set/get` | Config — validates persistence |
+**Shipped**: `account view`, `account tokens`, `account resources`, `tx view`, `block latest`, `auth login/logout/status`, `config set/get/list`.
 
-**Exit criteria**:
-- All commands work on mainnet + shasta
-- `--json` output is stable and parseable
-- Auth flow works (manual key entry)
-- CI passes (lint + test + build)
+- [x] All commands work on mainnet + shasta
+- [x] `--json` output stable and parseable
+- [x] Auth flow via manual key entry
+- [x] CI green (lint + test + build)
 
-**Not included**: No npm publish. Architecture validation only.
+Not included: no npm publish. Architecture validation only. Plan details: [`plans/phase-a.md`](./plans/phase-a.md).
 
-## Phase A+ : Post-Foundation Improvements
+## Phase B — Post-Foundation Improvements ✅ (pre-publish, untagged)
 
-**Goal**: Address code review findings and design research before expanding to Phase B.
+**Goal**: Address code-review findings and design research before expanding the command surface.
 
-### Code quality fixes
+- [x] `account tokens`: `decimals` + `balance_major` JSON (TRC-20 + TRC-10, scenario S2)
+- [x] `config set`: validate key against known config fields, reject typos
+- [x] API client: wrap network errors (offline/DNS) with friendly message
+- [x] Eliminate `as unknown as Record<string, unknown>` casts in commands
+- [x] Extract `printListResult` for array-returning commands
+- [x] Wire `--no-color` flag through `preAction`
+- [x] Snapshot test for `account tokens` human-output rendering
+- [x] `AGENTS.md` at repo root
+- [x] Grouped help categories + `(typical first step)` hints + examples per leaf command
+- [x] `Hint:` line in `printError` + `reportErrorAndExit` helper
+- [x] Deterministic exit codes (0 / 1 / 2 / 3)
+- [x] Semantic color tokens (`src/output/colors.ts`)
+- [x] `--network` vs `--env` decision (kept `--network`)
+- [x] Default address in config (`trongrid config set default_address`)
+- [x] Competitor CLI analysis (cast, solana, wallet-cli, aptos)
+- [x] Command argument ordering decision (action-first)
+- [x] MCP optimization sync (address defaults)
+- [x] TronScan + TronGrid MCP/Skills review (4 products → 8 Adopt / 6 Avoid patterns)
+- [x] Google CLI design best-practices article review
+- [x] Extract commands design into Part I (Design) + Part II (Reference)
 
-| Item | Priority | Status |
-|------|----------|--------|
-| `account tokens`: `decimals` + `balance_major` JSON (TRC-20 + TRC-10, scenario S2) | High | ✅ Done (2026-04-11) |
-| `config set`: validate key against known config fields, reject typos | High | ✅ Done (2026-04-11) |
-| API client: wrap network errors (offline/DNS) with friendly message | Medium | ✅ Done (2026-04-11) |
-| Eliminate `as unknown as Record<string, unknown>` casts in commands | Medium | ✅ Done (2026-04-11) |
-| Extract `printListResult` for array-returning commands | Medium | ✅ Done (2026-04-11) |
-| Wire `--no-color` flag through `preAction` (currently a no-op) | Medium | ✅ Done (2026-04-11) |
-| Add snapshot test for `account tokens` human-output rendering | Low | ✅ Done (2026-04-11) |
+Plan details: [`plans/phase-b.md`](./plans/phase-b.md).
 
-### Pre-B items from CLI best-practices review
+## Phase C — Block view + Account txs + Token view ✅ (pre-publish, untagged)
 
-Items surfaced by the [`design/cli-best-practices.md`](./design/cli-best-practices.md) Google-CLI review and closed before Phase B expansion:
+**Goal**: Ship three user-confirmed read commands together with global-flag scaffolding (`--confirmed`, `--reverse`/`-r`, `--sort-by`, `--type`) and one new utility module (`token-identifier`).
 
-| Item | Status |
-|------|--------|
-| `AGENTS.md` at repo root | ✅ Done (2026-04-11) |
-| Grouped help categories + `(typical first step)` hints + examples per leaf command | ✅ Done (2026-04-11) |
-| `Hint:` line in `printError` + `reportErrorAndExit` helper | ✅ Done (2026-04-11) |
-| Deterministic exit codes (0 / 1 / 2 / 3) | ✅ Done (2026-04-11) |
-| Semantic color tokens (`src/output/colors.ts`) | ✅ Done (2026-04-11) |
-| `--network` vs `--env` decision | ✅ Decided keep `--network` (2026-04-11) — see [`cli-best-practices.md` §3](./design/cli-best-practices.md) |
+- [x] `block view <number|hash>` with auto number/hash dispatch + `--confirmed` swap
+- [x] `account txs [address]` with `/v1/accounts/:address/transactions`, default-address fallback
+- [x] `token view <id|address|symbol>` with TRC-10 / TRC-20 auto-dispatch
+- [x] Global `--confirmed` flag (default off, per Q1)
+- [x] Global `--reverse` / `-r` + `--sort-by` flags (per Q3)
+- [x] `applySort<T>` client-side sort utility with per-field inherent direction
+- [x] `block-identifier` + `token-identifier` dispatch utilities
+- [x] `STATIC_SYMBOL_TO_ADDRESS` reverse map (7 verified symbols)
+- [x] 67 new tests (102 → 169 passing)
 
-### Feature additions
+**Trial feedback** (uncovered 2026-04-15 during Phase C walkthrough) is distributed across Phases D/E/L below rather than accumulating as a sediment bucket here.
 
-| Item | Priority | Effort | Notes |
-|------|----------|--------|-------|
-| Default address in config (`trongrid config set default_address <addr>`) | High | Small–Medium | Makes `<address>` positional optional across `account` / `tx` commands. Architectural dependency of the action-first ordering decision in [`architecture.md`](./architecture.md#positional-argument-ordering). Also resolves the MCP optimization sync item below. |
+Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 
-### Design research
+## Phase D — Account list family + Phase-C trial plumbing (in flight)
 
-| Item | Priority | Status | Notes |
-|------|----------|--------|-------|
-| Competitor CLI analysis (cast, solana, wallet-cli, aptos) | High | ✅ Done (2026-04-10) | See [`design/competitors.md`](./design/competitors.md). `sui` dropped in favor of aptos; `wallet-cli` added as TRON ecosystem incumbent. |
-| Command argument ordering | Medium | ✅ Decided (2026-04-10) | Action-first (Option B). See [`architecture.md`](./architecture.md#positional-argument-ordering). |
-| MCP optimization sync (address defaults, etc.) | Medium | 🟡 Partially resolved | Default address committed under Feature additions above. Any remaining MCP→CLI items TBD after MCP/Skills review. |
-| TronScan + TronGrid MCP/Skills review (4 products) | High | Pending | User has provided 2 of 4 links (TronScan MCP + Skills). TronGrid MCP + Skills links still needed. |
-| Google CLI design best practices article review | High | ✅ Done (2026-04-11) | Article cross-checked against our current state in [`design/cli-best-practices.md`](./design/cli-best-practices.md). Gap items split into "close before Phase B" (AGENTS.md, grouped help, entry-point hints, `Hint:` in printError, exit codes 0/1/2/3, semantic color tokens, `--network` vs `--env` decision) and "Phase B scope" (pre-sort, SIGINT, actor tracking, light/dark). |
+**Goal**: Land the cross-cutting plumbing fixes from Phase C trial walkthrough, then ship three new account list commands on top of the cleaned foundation. `account approvals` deferred pending TRON-eco-vs-TronGrid-only positioning decision.
 
-### Follow-ups after Phase A+ docs reorg
+**Shape**: two logical PRs — Phase D-prep (plumbing only, touches existing files) then Phase D-main (three new commands + `account resources` consistency pass).
 
-| Item | Priority | Status | Notes |
-|------|----------|--------|-------|
-| Extract commands design decisions + latest commands list into an independent doc | Medium | ✅ Done (2026-04-11) | Merged into `docs/design/commands.md` as Part I (Design) + Part II (Reference). `architecture.md` §Command Structure slimmed to a 20-line summary with a link. |
+**Plumbing pre-pass** (from Phase C trial items #3–#11, Wave-2-tagged):
 
-## Phase B: First Release
+- [ ] `--fields` thread `key` through `humanPairs` so it applies symmetrically to `--json` and human output (was silent no-op in human mode) — must land first before more commands bake the 2-tuple shape
+- [ ] Error / Hint redundancy audit: `hintForX` helpers + `addressErrorHint` rebalanced so `Error:` and `Hint:` lines carry distinct information
+- [ ] List headers: fix `Found 1 tokens` / `Found 1 transactions` plural hardcoding; shared helper if a third caller lands
+- [ ] `applySort` stable tie-breaker: `tieBreakField` per `SortConfig`
+- [ ] `UsageError` sweep: `validateAddress`, `detectBlockIdentifier`, `detectTokenIdentifier`, and any other bad-user-input validator throws `UsageError` (exit code 2, not 1)
+- [ ] Sub-command help retains `helpGroup` categories (investigation: check if commander.js supports it on sub-command containers)
+- [ ] Bare `trongrid` (no command) renders full help instead of truncated options-only
+- [ ] `renderTxs` export + test coverage parity with `renderTokenList`
 
-**Goal**: Feature-complete release. ~48 commands across 13 resources.
+**Commands**:
 
-### Wave 1 trial feedback (uncovered 2026-04-15, schedule into later waves)
+- [ ] `account transfers <address>` — TRC-10/20 token transfer history via `/v1/accounts/:address/transferrecords`; timestamp range flags (`--before` / `--after`) as new pagination convention
+- [ ] `account delegations <address>` — Stake 2.0 delegations in + out via `/wallet/getdelegatedresourcev2` family
+- [ ] `account permissions <address>` — multi-sig owner / active / witness keys via `/wallet/getaccount` (structured render, not `applySort` — permissions are grouped by role, not a flat list)
+- [ ] `account resources` optional-address consistency pass (last account command still requiring `<address>`)
 
-| # | Item | Priority | Suggested wave | Notes |
-|---|---|---|---|---|
-| 1 | `account tokens` default display includes symbol | High | Wave 3 (token family polish) | Current output shows `[TRC20] <34-char address>  1.234 (raw 1234000)`. Users (human + agent) cannot tell which token that is without cross-referencing the address. Proposed: show resolved symbol as the primary identifier; address moves to secondary. Resolution order: `STATIC_SYMBOL_TO_ADDRESS` reverse map → on-chain `symbol()` via `triggerconstantcontract` (batch-parallel with existing `decimals()` call — no extra round-trip cost) → `Unknown` fallback. For TRC-10, use `abbr` from the existing `/wallet/getassetissuebyid` response (already fetched for decimals). |
-| 2 | `account tokens` sorted by USD value desc (TronScan parity) | Medium | Blocked on price feed API (see Phase C `token price`) | When a token price feed is available, `account tokens` default sort becomes `balance_usd desc` (largest position first). Per the sort convention, the column would show `balance_usd` with `--sort-by balance_major` / `--sort-by symbol` as overrides. Until the API lands, the enhancement is blocked and the current "fetched order" default stays. Cross-reference: Phase C P1 gap list below, and the already-deferred `account tokens` sort-by-value item in `cli-best-practices.md §2 Actions` (Phase B: pre-sort). |
-| 3 | `--fields` behavior in human mode (currently silent no-op) | High | Wave 2 | Declared globally but ignored outside `--json`. Worst outcome: flag appears to work, does nothing. Three options discussed — Option A (apply to both modes by threading a `key` through `humanPairs`) is recommended before Wave 2 bakes the current 2-tuple shape into more commands. Low-risk signature change (`[string, string][] → [string, string, string][]` or use a 3-field object); each existing command gains one `key` per row. Clarify the help text from "select output fields (JSON mode)" to just "select output fields" once implemented. |
-| 4 | Error / Hint redundancy across most validation errors | Medium | Wave 2 | Many commands currently emit `Error: <symptom-restated-as-fix>` followed by `Hint: <same-fix-rephrased>`. Examples: `account view INVALID`, `block view abcd`, `token view scamcoin`, `token view 0x...`, `token view --type trc721` — both lines say the same thing. Good pattern (already used by `tx view <missing-hash>` and network 429): error states the symptom tersely, hint adds a *distinct* actionable insight ("if recently broadcast, wait", "try --network shasta"). Audit all `hintForX` helpers and `addressErrorHint`; rebalance error/hint split per `cli-best-practices.md §4`. |
-| 5 | List headers always plural (`Found 1 tokens`, `Found 1 transactions`) | Low | Wave 2 | `renderTokenList` and `renderTxs` hardcode the `s`. Trivial: `${n} ${n === 1 ? "token" : "tokens"}`. Same fix for any future list renderer; consider a shared helper if a third one lands. |
-| 6 | `account tokens` lookup-failure entries lose all unit context | Medium | Wave 3 (with token symbol display) | When TRC-20 `decimals()` lookup fails, current output drops `(raw N)` annotation and shows only the bare integer (e.g. `888888000000000000000000`). User cannot tell whether it's a "real" amount or a raw value needing decode. Add a marker like `[?]` or `(decimals unresolved)` so consumers know the value is not displayable. Folded into the symbol-display work for the same `renderTokenList` pass. |
-| 7 | `account tokens` redundant `(raw N)` when major == raw | Low | Wave 3 (with token symbol display) | TRC-10 with precision=0 outputs `1000 (raw 1000)`. Suppress the `(raw)` annotation when `balance_major === balance` to reduce noise. |
-| 8 | Sub-command help loses `helpGroup` categories | Low | Wave 2 investigation | `trongrid --help` shows "Read commands:" / "Authentication & Configuration:" groups. `trongrid account --help` shows a flat Commands list. Likely commander.js limitation but worth checking if `.helpGroup()` works on sub-command containers too — if so, mechanical fix per command. |
-| 9 | Bare `trongrid` (no command) shows truncated help | Low | Wave 2 | `trongrid` (no args) prints Options only; `trongrid --help` prints Options + Commands. Inconsistent. Two acceptable fixes: (a) render full help (better for new humans), (b) exit 2 with "no command specified" hint (better for agents). Pick (a) — agents already have `--help`; humans benefit more from auto-discovery of available commands when they fumble. |
-| 10 | `--sort-by` ties produce visually arbitrary order | Low | Wave 2 | `account txs --sort-by fee` puts all 0-fee txs in input order — looks random. Add a stable secondary sort by `timestamp desc` for ties. Generalize: `applySort` could take an optional `tieBreakField` per `SortConfig`. |
-| 11 | Other usage-error validators still exit 1 (should be 2) | Medium | Wave 2 | A3 introduced `UsageError` but only `applySort` adopted it. `validateAddress`, `detectBlockIdentifier`, `detectTokenIdentifier`, and any other "bad user input" validator should also throw `UsageError` so they exit 2. Mechanical sweep — one-line change per validator. |
+**Deferred**:
 
+- [ ] `account approvals <owner>` — pending TRON-eco-vs-TronGrid-only positioning decision; event-log scan approach documented but not executed
 
-**Work**:
-1. Implement remaining commands (all resources from command map)
-2. Polish human output formatting (alignment, colors, unit conversion). **Writing guideline**: help text and docs phrase commands possessively ("show the tokens of `<address>`") even though grammar is action-first — see [`architecture.md` §Coupled decisions](./architecture.md#coupled-decisions).
-3. Error messages with upstream detail and actionable hints (aptos-style: name the fix, not just the problem)
-4. **Smart identifier routing**: `trongrid <addr|hash|number>` without subcommand auto-routes to `account view` / `tx view` / `block view`. Compensates for action-first grammar; gives tronscan-URL shortcut for power users. See [`architecture.md` §Coupled decisions](./architecture.md#coupled-decisions).
-5. README with usage examples
-6. `npm publish` — package name `trongrid`
-7. Announce release
-8. **Live competitor parity matrix** — ship `docs/design/competitor-parity.md`: a structured (table-form) command-by-command / endpoint-by-endpoint mapping `trongrid-cli ↔ TronGrid MCP ↔ TronScan MCP`. Source-of-truth for: (a) where we have a unique advantage worth advertising in README/release notes, (b) where competitors cover something we don't (gap → enhancement candidate), (c) where shapes/conventions diverge (intentional vs drift). Refresh cadence: quarterly minimum, plus on any competitor major-version release. Seeded from [`mcp-skills-review.md`](./design/mcp-skills-review.md) but distinct artifact: review = one-time decision input, parity matrix = live monitoring surface.
+**Exit criteria**: all plumbing items ✅, three new commands functional on mainnet + shasta, `account resources` accepts optional address, `tsc` build + lint clean, all tests passing.
 
-**Exit criteria**:
-- All ~48 commands functional
-- `npx trongrid` works zero-install
-- README covers installation + auth + 5 usage examples
-- Users can use it productively
+Plan details: [`plans/phase-d.md`](./plans/phase-d.md) (to be written post-brainstorm).
 
-**Launch bar**: This is the minimum viable public release. Not Phase A.
+## Phase E — Token family polish
 
-## Phase C: Expand
+**Goal**: Ship the remaining `token` subcommands and close the token-display trial items from Phase C.
 
-**Priority order**:
+- [ ] `token holders <id|address|symbol>` — top holders + distribution
+- [ ] `token transfers <id|address|symbol>` — transfer history of a single token
+- [ ] `token balance <token> <address>` — specific-token balance check
+- [ ] `token allowance <token> <owner> <spender>` — one-pair approval lookup
+- [ ] `account tokens` default display shows resolved symbol as primary identifier (Phase C trial #1); address moves to secondary; on-chain `symbol()` fallback batched with existing `decimals()` call
+- [ ] `account tokens` lookup-failure entries keep unit context with a `[?]` / `(decimals unresolved)` marker (trial #6)
+- [ ] `account tokens` suppress redundant `(raw N)` when major equals raw (trial #7)
 
-### P0: Auth UX upgrade
-- OAuth/device flow for `trongrid auth login`
-- Requires TronGrid platform to support the auth flow
-- Eliminates "copy key from dashboard" friction
+## Phase F — Contract family
 
-### P1: Distribution channels
-- Homebrew formula (covers non-Node.js macOS users)
-- Binary download via GitHub Releases (universal fallback)
+- [ ] `contract view <address>` — ABI, bytecode, runtime info
+- [ ] `contract call <address> <method> [args]` — read-only call
+- [ ] `contract estimate <address> <method> [args]` — energy estimation
+- [ ] `contract events <address>` — recent event logs
+- [ ] `contract history <address>` — transaction history
 
-### P1: Gap commands
-- `token price` — when price feed API is available
-- `account tags` — when address tagging API exists
-- `contract creator` — when creator endpoint is built
+## Phase G — Governance + stats
 
-### P2: Dynamic token symbol resolution
-- Replace the static verified token map (~20 tokens) with runtime fetch from TronScan's verified token list
-- Local cache with TTL to avoid repeated API calls
-- Handle symbol collisions (multiple tokens with the same symbol — prompt user to disambiguate)
+- [ ] `sr list` / `sr view <address>` — Super Representatives
+- [ ] `proposal list` / `proposal view <id>` — governance proposals
+- [ ] `param list` / `param view <name>` — chain parameters
+- [ ] `energy price` / `energy calc <amount>` — energy resource pricing
+- [ ] `bandwidth price` — bandwidth pricing
+- [ ] `network status` / `network maintenance` / `network burn` — node + chain status
 
-### P2: Advanced features
-- Schema introspection (`trongrid schema <command>` — machine-readable command schema, per Google principle #2)
-- `--fields` field masks for context window discipline (e.g., `--fields address,balance`)
-- Command aliases and shortcuts
-- Pipe-friendly defaults (auto-detect non-TTY → JSON)
-- Completion scripts (bash/zsh/fish)
+## Phase H — Write-side (scope TBD)
 
-### P3: Ecosystem integration
-- Agent platform plugins — publish to plugin marketplaces (Claude Code plugins first, others as they mature) that wrap the CLI for one-step install and usage. Analogous to how `gh` CLI is exposed via GitHub plugins, or how tools get surfaced through MCP. Bundles CLI + MCP + Skills as a unified entry point. Caveat: marketplace review is gated and approval is uncertain — worth trying, but not a blocker.
-- MCP server mode (if demand emerges — a TronGrid MCP server already exists)
+**Open question**: does the first public release include write-side (`tx broadcast`, freeze/unfreeze, delegate, vote, etc.) or stay read-only? Decision blockers: `--yes` / `--confirm` UX, SIGINT handling, actor tracking, and secret-key workflow. Scope locks at Phase G close.
+
+## Phase I — Parity matrix + README + first npm publish (will release as v0.1.0)
+
+**Goal**: Ship the live competitor parity matrix, finalize README, and cut the first tagged release to npm.
+
+- [ ] `docs/design/competitor-parity.md` — live structured command-by-command / endpoint-by-endpoint mapping (`trongrid-cli ↔ TronGrid MCP ↔ TronScan MCP`); source-of-truth for README strengths + gap-tracking
+- [ ] README — installation + auth + 5 usage examples + link to `AGENTS.md`
+- [ ] `package.json` name + author + keywords finalized (see [npm Name & Org](memory) open item)
+- [ ] Dry-run publish + local install test (`npx trongrid@latest`)
+- [ ] `npm publish`
+- [ ] First `git tag v0.2.0` + GitHub Release
+- [ ] Announce
+
+**This is the first tagged release.** Phases A–H ship behavior-complete but untagged because there is no distribution contract to honor pre-publish (empty-diff tags would pollute the eventual registry).
+
+## Phase J — Auth UX upgrade
+
+**Goal**: Replace manual key entry with OAuth / device-flow login. Blocked on TronGrid platform support.
+
+- [ ] `trongrid auth login` via device flow
+- [ ] Refresh-token rotation
+- [ ] `trongrid auth status` shows auth provider + expiry
+
+## Phase K — Distribution channels
+
+- [ ] Homebrew formula (covers non-Node.js macOS users)
+- [ ] GitHub Releases binaries (universal fallback)
+
+## Phase L — Gap commands
+
+Commands representing identified user needs that depend on endpoints not yet available upstream. Shipped when the underlying API lands.
+
+- [ ] `token price <address>` — price feed API
+- [ ] `account tags <address>` — address labels (exchange, scam)
+- [ ] `contract creator <address>` — creator address + creation tx
+- [ ] `account tokens` sorted by USD value desc (Phase C trial #2, blocked on price feed)
+
+## Phase M — Dynamic token symbol resolution
+
+- [ ] Replace static verified-token map with runtime fetch from TronScan verified token list
+- [ ] Local cache with TTL
+- [ ] Symbol collision handling (disambiguation prompt)
+
+## Phase N — Advanced UX
+
+- [ ] `trongrid schema <command>` — machine-readable command schema (per Google CLI principle #2)
+- [ ] `--fields` field-mask examples in `AGENTS.md`
+- [ ] Command aliases and shortcuts
+- [ ] Pipe-friendly defaults (auto-detect non-TTY → JSON)
+- [ ] Completion scripts (bash/zsh/fish)
+
+## Phase O — Ecosystem integration
+
+- [ ] Agent platform plugins — publish to plugin marketplaces (Claude Code plugins first, others as they mature); wraps CLI + AGENTS.md as a unified entry point; marketplace review is gated
+- [ ] MCP server mode — conditional; only if CLI + AGENTS.md surface leaves LLM callers with CLI-unsolvable pain
 
 ## Version Strategy
 
@@ -162,8 +217,8 @@ Following [SemVer](https://semver.org/). Conservative versioning — stay in `0.
 
 | Version | Milestone |
 |---------|-----------|
-| 0.1.x | Phase A — foundation |
-| 0.2.x | Phase B — first release |
-| 0.3.x | Phase C — expansion |
+| (untagged) | Phases A–H — pre-publish, behavior-complete on each phase close |
+| 0.1.0 | **Phase I — first npm publish** (parity matrix + README + tag) |
+| 0.2.0+ | Phase J onward — each code-changing phase cuts a minor bump |
 
-Minor version (`0.x`) bumps per phase. Patch version (`0.x.y`) bumps for fixes and incremental additions within a phase. No `1.0.0` — there is no reason to promise backward compatibility for a CLI tool that should stay free to evolve.
+Pre-publish phases don't consume version space — the first tagged release begins at `0.1.0`, the SemVer convention for a new package. Phases J–O cut sequential minor bumps as code-changing phases close. No `1.0.0` — there is no reason to promise backward compatibility for a CLI that should stay free to evolve.
