@@ -224,8 +224,8 @@ src/
 | [`docs/design/competitors.md`](./docs/design/competitors.md) | CLI competitor research (cast / solana / wallet-cli / aptos) |
 | [`docs/design/cli-best-practices.md`](./docs/design/cli-best-practices.md) | CLI best-practices checklist for humans + agents |
 | [`docs/architecture.md`](./docs/architecture.md) | Project-wide tech decisions summary |
-| [`docs/roadmap.md`](./docs/roadmap.md) | Phase A → B → C with current status |
-| [`docs/plans/phase-a-plus.md`](./docs/plans/phase-a-plus.md) | Active implementation plan for the current phase |
+| [`docs/roadmap.md`](./docs/roadmap.md) | Flat phase list (A–O) + cross-walk from old labels |
+| [`docs/plans/status.md`](./docs/plans/status.md) | Rolling session handoff — points at current active phase plan |
 
 ---
 
