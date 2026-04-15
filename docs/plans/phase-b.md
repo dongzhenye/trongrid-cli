@@ -1,6 +1,6 @@
 # Phase B: First Release — Progress & Plan
 
-**Living doc.** Last updated: 2026-04-14.
+**Living doc.** Last updated: 2026-04-15.
 
 **Next-session one-liner**: `读 docs/plans/phase-b.md 继续 Phase B`
 
@@ -12,11 +12,11 @@ That line is self-contained — this doc briefs a cold agent on state, locked-in
 
 | | |
 |---|---|
-| `main` tip | `a8cacdf` — Merge PR #3 (Phase B prep) |
-| Tests | 102/102 passing (unchanged since Phase A+ close) |
+| Branch tip | `feat/phase-b-wave-1` — 12 commits ahead of `main` (Wave 1 unmerged; open PR pending) |
+| Tests | 156/156 passing (102 baseline + 54 new from Wave 1) |
 | Working tree | clean |
 | Prod deps | 1 — `commander` |
-| Shipped public commands | 7 commands / 5 resources (`block latest`, `account view/tokens/resources`, `tx view`, `auth login/logout/status`, `config set/get/list`) |
+| Shipped public commands | 10 commands / 6 resources — adds `block view`, `account txs`, `token view` (+ `token` resource) on top of Phase A+ surface |
 | Phase B target surface | ~48 commands / 13 resources (+1 from Q2 resolution) |
 
 ---
@@ -31,30 +31,50 @@ Shipped in PR #3:
 - 5 decisions propagated into `commands.md` / `units.md` / `architecture.md` / `roadmap.md`.
 - Live competitor parity matrix added to roadmap as Phase B item #8 (distinct artifact from the one-time review; build during Phase B).
 
-### Session 2 — Wave 1 implementation plan (next) ⏳
+### Session 2 — Wave 1 implementation (2026-04-15) ✅ shipped on `feat/phase-b-wave-1`
 
-**Output target**: `docs/plans/phase-b-wave-1.md`
+**Plan**: `docs/plans/phase-b-wave-1.md` — 9 atomic tasks (3 per command) + 2 review-feedback fix-ups + 1 indentation-fix. 12 commits total.
 
-**Scope — 3 commands, user-confirmed**:
+**Commands shipped** (branch `feat/phase-b-wave-1`, PR pending):
 
-1. `block view <number|hash>` — natural complement to `block latest`, minimal new API surface
-2. `account txs <address>` — "what did this address do recently" is a top agent query
-3. `token view <id|address|symbol>` — first use of Q4 auto-detection + Q1 token verified-symbol resolution path
+1. `block view <number|hash>` — auto-detects number vs hash; `--confirmed` swaps to `/walletsolidity/*`.
+2. `account txs [address]` — lists `/v1/accounts/:address/transactions`; default sort `timestamp desc`; `[address]` falls back to `default_address`.
+3. `token view <id|address|symbol>` — auto-dispatch TRC-10 (numeric) vs TRC-20 (Base58 / verified symbol); `--type` override; four-way parallel `triggerconstantcontract` for TRC-20 metadata.
 
-**Prerequisite consult**: `~/projects/ai-usage/analyze.py` — user's preliminary research on default-sort vs custom group/filter/sort relationships. Needed for per-command sort field decisions (e.g., `account txs` default sort field — timestamp desc is obvious; but `token view --json` large response shape choices less so). Ask user to confirm path / permission before reading.
+**Plumbing introduced** (reusable by later waves):
 
-**Execution model** (proven on Phase A+): each command → `superpowers:subagent-driven-development` task triad (implementer → spec review → code quality review). Commit atomically per command.
+- Global flags `--confirmed`, `-r, --reverse`, `--sort-by <field>` (defined once, adopted per command).
+- `src/utils/block-identifier.ts` — number/hash dispatch util.
+- `src/utils/sort.ts` — generic `applySort<T>` with per-field inherent direction; `--reverse` flips; `--sort-by` overrides. Used by `account txs`, available for Wave 2 list commands.
+- `src/utils/token-identifier.ts` — TRC-10 / TRC-20 / symbol dispatch with phishing guard on unknown symbols.
+- `STATIC_SYMBOL_TO_ADDRESS` reverse map (7 verified symbols: USDT, USDC, WTRX, JST, SUN, WIN, BTT).
 
-**Not in Wave 1**: write-side (transfers, broadcast, stake ops) — they bring pre-B concerns (`--yes`/`--confirm`, SIGINT, actor-tracking) deferred to Wave 2+.
+**Wave 1 scope rejected** (tracked for later waves):
 
-### Session 3 onward — remaining waves
+- 0x-prefixed 40-hex token addresses — needs Base58check conversion (no new deps). Rejected with user-facing hint.
+- TRC-721 / TRC-1155 — `--type` parsed but rejected as NYI. Wave 3+.
+- `--confirmed` on `account txs` and `token view` — TronGrid v1 endpoints have no `/walletsolidity` mirror. Flag accepted silently; documented via inline `// NOTE:` comments. Follow-up once upstream exposes mirrors or we proxy via FullNode.
 
-Sequencing decided at Wave 1 close. Rough groupings under consideration:
+**Test growth**: 102 → 156 (+54). Lint clean. `tsc` build clean.
 
-- Wave 2: account list family (`txs` done → `transfers`, `delegations`, `permissions`, `approvals`) — shared list-command patterns
-- Wave 3: token family polish (`holders`, `transfers`, `balance`, `allowance`)
-- Wave 4: contract (`view`, `call`, `estimate`, `events`, `history`)
-- Wave 5: governance + stats (`sr`, `proposal`, `param`, `energy`, `bandwidth`, `network`)
+### Session 3 — Wave 2 (next) ⏳
+
+**Focus**: account list family — `transfers`, `delegations`, `permissions`, `approvals` (the last per Q2 resolution). Shared list-command pattern now exists (`applySort` + `resolveAddress` + `printListResult` + `renderFn`); Wave 2 is mostly fetch + sort-config declarations.
+
+**Also in Session 3 scope**:
+
+- Decide whether `account resources` moves to `[address]` optional form (currently required) — consistency pass now that `default_address` fallback is cheap.
+- First use of `fingerprint` / timestamp-range pagination (`account transfers` supports `min_timestamp` / `max_timestamp`) — establish the `--before` / `--after` flag convention if needed.
+- Review Wave 1 `renderTxs` — export + test coverage parity with `renderTokenList`. Code-quality reviewer flagged this as Minor; rolling into Wave 2 while adjacent files are touched.
+
+**Execution model**: unchanged — `superpowers:subagent-driven-development` triad per command.
+
+### Wave sequencing (tentative, reassess at each wave close)
+
+- Wave 2: account list family — `transfers`, `delegations`, `permissions`, `approvals`
+- Wave 3: token family polish — `holders`, `transfers`, `balance`, `allowance`
+- Wave 4: contract — `view`, `call`, `estimate`, `events`, `history`
+- Wave 5: governance + stats — `sr`, `proposal`, `param`, `energy`, `bandwidth`, `network`
 - Wave 6: write side (if Phase B scope includes it — see open item below)
 - Wave N: live competitor parity matrix (roadmap #8) + npm publish prep + README
 
