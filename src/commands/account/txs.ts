@@ -67,6 +67,7 @@ const TXS_SORT_CONFIG: SortConfig<AccountTxRow> = {
 		block_number: "desc",
 		fee: "desc",
 	},
+	tieBreakField: "timestamp",
 };
 
 export function sortTxs(items: AccountTxRow[], opts: SortOptions): AccountTxRow[] {

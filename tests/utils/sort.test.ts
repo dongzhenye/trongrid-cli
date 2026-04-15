@@ -67,3 +67,60 @@ describe("applySort", () => {
 		expect(input.map((x) => x.id)).toEqual(["a", "b", "c"]);
 	});
 });
+
+describe("applySort tieBreakField", () => {
+	interface Row {
+		primary: number;
+		tie: number;
+	}
+
+	it("breaks ties using tieBreakField per its own direction", () => {
+		const rows: Row[] = [
+			{ primary: 5, tie: 100 },
+			{ primary: 5, tie: 300 },
+			{ primary: 5, tie: 200 },
+			{ primary: 3, tie: 999 },
+		];
+		const sorted = applySort(
+			rows,
+			{
+				defaultField: "primary",
+				fieldDirections: { primary: "desc", tie: "desc" },
+				tieBreakField: "tie",
+			},
+			{},
+		);
+		expect(sorted.map((r) => r.tie)).toEqual([300, 200, 100, 999]);
+	});
+
+	it("leaves input order for ties when no tieBreakField", () => {
+		const rows: Row[] = [
+			{ primary: 5, tie: 100 },
+			{ primary: 5, tie: 300 },
+			{ primary: 5, tie: 200 },
+		];
+		const sorted = applySort(
+			rows,
+			{ defaultField: "primary", fieldDirections: { primary: "desc", tie: "desc" } },
+			{},
+		);
+		expect(sorted.map((r) => r.tie)).toEqual([100, 300, 200]);
+	});
+
+	it("ignores tieBreakField when it equals the primary sort field", () => {
+		const rows: Row[] = [
+			{ primary: 5, tie: 100 },
+			{ primary: 3, tie: 200 },
+		];
+		const sorted = applySort(
+			rows,
+			{
+				defaultField: "primary",
+				fieldDirections: { primary: "desc", tie: "desc" },
+				tieBreakField: "primary",
+			},
+			{},
+		);
+		expect(sorted.map((r) => r.primary)).toEqual([5, 3]);
+	});
+});

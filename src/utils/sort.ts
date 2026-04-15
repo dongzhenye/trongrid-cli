@@ -7,6 +7,12 @@ export interface SortConfig<T> {
 	defaultField: keyof T & string;
 	/** Map of field → inherent default direction. */
 	fieldDirections: Readonly<Record<string, SortDirection>>;
+	/**
+	 * Optional secondary sort field applied when the primary comparator
+	 * returns 0. Uses its own inherent direction from `fieldDirections`.
+	 * Ignored if it equals the active primary field (would be a no-op).
+	 */
+	tieBreakField?: keyof T & string;
 }
 
 export interface SortOptions {
@@ -41,13 +47,24 @@ export function applySort<T>(items: T[], config: SortConfig<T>, opts: SortOption
 	const direction: SortDirection = opts.reverse ? (fieldDir === "asc" ? "desc" : "asc") : fieldDir;
 
 	const sorted = [...items].sort((a, b) => {
-		const av = a[field];
-		const bv = b[field];
-		if (av === bv) return 0;
-		if (av === undefined || av === null) return 1;
-		if (bv === undefined || bv === null) return -1;
-		const cmp = av < bv ? -1 : 1;
-		return direction === "asc" ? cmp : -cmp;
+		const primaryCmp = compareField(a, b, field, direction);
+		if (primaryCmp !== 0) return primaryCmp;
+
+		const tbField = config.tieBreakField;
+		if (!tbField || tbField === field) return 0;
+		const tbDir = config.fieldDirections[tbField];
+		if (!tbDir) return 0;
+		return compareField(a, b, tbField, tbDir);
 	});
 	return sorted;
+}
+
+function compareField<T>(a: T, b: T, field: keyof T & string, direction: SortDirection): number {
+	const av = a[field];
+	const bv = b[field];
+	if (av === bv) return 0;
+	if (av === undefined || av === null) return 1;
+	if (bv === undefined || bv === null) return -1;
+	const cmp = av < bv ? -1 : 1;
+	return direction === "asc" ? cmp : -cmp;
 }
