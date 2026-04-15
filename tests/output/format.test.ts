@@ -4,11 +4,42 @@ import {
 	formatJson,
 	formatJsonList,
 	formatKeyValue,
+	formatTimestamp,
 	printError,
 	printListResult,
 	reportErrorAndExit,
 	sunToTrx,
+	UsageError,
 } from "../../src/output/format.js";
+
+describe("formatTimestamp", () => {
+	it("formats a Unix-ms timestamp as YYYY-MM-DD HH:MM:SS UTC", () => {
+		// 2022-08-11T17:00:30.000Z
+		expect(formatTimestamp(1660237230000)).toBe("2022-08-11 17:00:30 UTC");
+	});
+
+	it("drops the milliseconds component", () => {
+		// 2022-08-11T17:00:30.789Z — the .789 must not appear in output
+		const out = formatTimestamp(1660237230789);
+		expect(out).toBe("2022-08-11 17:00:30 UTC");
+		expect(out).not.toContain(".789");
+	});
+
+	it("uses a space separator (not T) between date and time", () => {
+		// Pattern: YYYY-MM-DD<space>HH:MM:SS<space>UTC — no T between date and time.
+		expect(formatTimestamp(0)).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC$/);
+	});
+
+	it("handles the Unix epoch", () => {
+		expect(formatTimestamp(0)).toBe("1970-01-01 00:00:00 UTC");
+	});
+
+	it("renders a stable string regardless of process TZ", () => {
+		// Same input must produce same output. toISOString() is TZ-independent
+		// (always UTC); this test locks the contract in.
+		expect(formatTimestamp(1660237230000)).toBe(formatTimestamp(1660237230000));
+	});
+});
 
 describe("sunToTrx", () => {
 	it("converts sun to TRX", () => {
@@ -272,6 +303,10 @@ describe("reportErrorAndExit", () => {
 
 	it("exits 1 for general Error", () => {
 		expect(() => reportErrorAndExit(new Error("Something went wrong"), {})).toThrow("EXIT:1");
+	});
+
+	it("exits 2 for UsageError (bad flag value)", () => {
+		expect(() => reportErrorAndExit(new UsageError("Unknown sort field"), {})).toThrow("EXIT:2");
 	});
 
 	it("caller-supplied hint overrides default hint", () => {

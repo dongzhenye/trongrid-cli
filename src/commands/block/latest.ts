@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printResult, reportErrorAndExit } from "../../output/format.js";
+import { formatTimestamp, printResult, reportErrorAndExit } from "../../output/format.js";
 
 interface BlockData {
 	block_id: string;
@@ -33,7 +33,7 @@ export async function fetchLatestBlock(client: ApiClient): Promise<BlockData> {
 	};
 }
 
-export function registerBlockCommands(parent: Command): void {
+export function registerBlockCommands(parent: Command): Command {
 	const block = parent.command("block").description("Block queries").helpGroup("Read commands:");
 
 	block
@@ -62,7 +62,7 @@ Examples:
 					[
 						["Block", String(data.number)],
 						["Block ID", data.block_id],
-						["Time", new Date(data.timestamp).toISOString()],
+						["Time", formatTimestamp(data.timestamp)],
 						["Producer", data.witness_address],
 						["Transactions", String(data.tx_count)],
 					],
@@ -75,4 +75,6 @@ Examples:
 				});
 			}
 		});
+
+	return block;
 }
