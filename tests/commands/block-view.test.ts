@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 import { createClient } from "../../src/api/client.js";
-import { fetchBlockView } from "../../src/commands/block/view.js";
+import { fetchBlockView, hintForBlockView } from "../../src/commands/block/view.js";
+import { UsageError } from "../../src/output/format.js";
+import { detectBlockIdentifier } from "../../src/utils/block-identifier.js";
 
 const blockFixture = {
 	blockID: "000000000427d540abc123",
@@ -114,5 +116,24 @@ describe("block view", () => {
 			{ confirmed: false },
 		);
 		expect(result.tx_count).toBe(0);
+	});
+});
+
+describe("hintForBlockView (Phase D P5: distinct from error)", () => {
+	it("invalid-identifier hint is distinct from the error message", () => {
+		let caught: unknown;
+		try {
+			detectBlockIdentifier("not-a-block");
+		} catch (e) {
+			caught = e;
+		}
+		expect(caught).toBeInstanceOf(UsageError);
+		const errMsg = (caught as Error).message;
+		const hint = hintForBlockView(caught);
+		expect(hint).toBeDefined();
+		expect(hint).not.toBe(errMsg);
+		// The error spells out "a block number (digits) or block hash (64 hex chars...)";
+		// the hint must not just echo that format spec back.
+		expect(hint?.toLowerCase()).not.toContain("64 hex chars");
 	});
 });

@@ -53,14 +53,23 @@ export async function fetchBlockView(
 	};
 }
 
-function hintForBlockView(err: unknown): string | undefined {
+/**
+ * Contextual hint for `block view` errors. Recognized patterns:
+ *   - "block not found"           → suggests testnet --network switch
+ *   - "invalid block identifier"  → points at where to find a valid one
+ * Returns undefined for any other error so `reportErrorAndExit` can
+ * fall through to its own defaults.
+ */
+export function hintForBlockView(err: unknown): string | undefined {
 	if (!(err instanceof Error)) return undefined;
 	const msg = err.message.toLowerCase();
 	if (msg.includes("block not found")) {
 		return "Check the block number or hash. If this is on a testnet, pass --network shasta or --network nile.";
 	}
 	if (msg.includes("invalid block identifier")) {
-		return "Pass a block number (digits) or block hash (64 hex chars, optional 0x prefix).";
+		// Distinct from the error's format spec: tell the user *where* to find
+		// a good identifier, rather than restating what the format looks like.
+		return 'Run "trongrid block latest" to see the current block number, or copy a block hash from tronscan.org.';
 	}
 	return undefined;
 }

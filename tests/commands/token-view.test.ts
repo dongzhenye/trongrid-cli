@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 import { createClient } from "../../src/api/client.js";
-import { fetchTokenView } from "../../src/commands/token/view.js";
+import { fetchTokenView, hintForTokenView } from "../../src/commands/token/view.js";
+import { UsageError } from "../../src/output/format.js";
+import { detectTokenIdentifier } from "../../src/utils/token-identifier.js";
 
 const USDT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
 
@@ -136,3 +138,40 @@ function encodeString(s: string): string {
 function toHex256(n: bigint): string {
 	return n.toString(16).padStart(64, "0");
 }
+
+describe("hintForTokenView (Phase D P5: distinct from error)", () => {
+	it("0x-hex hint points at a conversion path, not a restatement", () => {
+		let caught: unknown;
+		try {
+			detectTokenIdentifier("0x1234567890abcdef1234567890abcdef12345678");
+		} catch (e) {
+			caught = e;
+		}
+		expect(caught).toBeInstanceOf(UsageError);
+		const errMsg = (caught as Error).message;
+		const hint = hintForTokenView(caught);
+		expect(hint).toBeDefined();
+		expect(hint).not.toBe(errMsg);
+		// The error already says "pass the Base58 address (T...) instead";
+		// the hint must add an actionable conversion path, not echo that phrase.
+		expect(hint?.toLowerCase()).not.toContain("pass the base58");
+		expect(hint?.toLowerCase()).toContain("tronscan");
+	});
+
+	it("unsupported-standard hint points at a tracking channel, not a restatement", () => {
+		let caught: unknown;
+		try {
+			detectTokenIdentifier("foo", "trc721");
+		} catch (e) {
+			caught = e;
+		}
+		expect(caught).toBeInstanceOf(UsageError);
+		const errMsg = (caught as Error).message;
+		const hint = hintForTokenView(caught);
+		expect(hint).toBeDefined();
+		expect(hint).not.toBe(errMsg);
+		// The error already says "Wave 1 supports TRC-10 and TRC-20 only";
+		// the hint must not restate that same scope statement.
+		expect(hint?.toLowerCase()).not.toContain("wave 1 supports");
+	});
+});
