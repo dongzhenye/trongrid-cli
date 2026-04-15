@@ -25,8 +25,8 @@
 ## Overview
 
 ```
-Phase A–C  (pre-publish, merged)       Architecture validation
-Phase D–H  (pre-publish, in flight)    Command surface fill-out
+Phase A–D  (pre-publish, merged)       Architecture + early command surface
+Phase E–H  (pre-publish, in flight)    Command surface fill-out
 Phase I    (FIRST npm publish, v0.1.0) Distribution begins
 Phase J–O  (expand)                    Auth UX, distribution, gaps, advanced
 ```
@@ -91,28 +91,29 @@ Plan details: [`plans/phase-b.md`](./plans/phase-b.md).
 
 Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 
-## Phase D — Account list family + Phase-C trial plumbing (in flight)
+## Phase D — Account list family + Phase-C trial plumbing ✅ (pre-publish, untagged)
 
-**Goal**: Land the cross-cutting plumbing fixes from Phase C trial walkthrough, then ship three new account list commands on top of the cleaned foundation. `account approvals` deferred pending TRON-eco-vs-TronGrid-only positioning decision.
+**Goal**: Landed the cross-cutting plumbing fixes from Phase C trial walkthrough, then shipped three new account list commands on top of the cleaned foundation. `account approvals` deferred pending TRON-eco-vs-TronGrid-only positioning decision.
 
-**Shape**: two logical PRs — Phase D-prep (plumbing only, touches existing files) then Phase D-main (three new commands + `account resources` consistency pass).
+**Shape**: two logical PRs — Phase D-prep (plumbing only, touches existing files) then Phase D-main (three new commands). The `account resources` consistency pass originally planned was found already shipped in Phase B and closed without code change.
 
-**Plumbing pre-pass** (from Phase C trial items #3–#11, Wave-2-tagged):
+**Plumbing pre-pass** (from Phase C trial items #3–#11):
 
-- [ ] `--fields` thread `key` through `humanPairs` so it applies symmetrically to `--json` and human output (was silent no-op in human mode) — must land first before more commands bake the 2-tuple shape
-- [ ] Error / Hint redundancy audit: `hintForX` helpers + `addressErrorHint` rebalanced so `Error:` and `Hint:` lines carry distinct information
-- [ ] List headers: fix `Found 1 tokens` / `Found 1 transactions` plural hardcoding; shared helper if a third caller lands
-- [ ] `applySort` stable tie-breaker: `tieBreakField` per `SortConfig`
-- [ ] `UsageError` sweep: `validateAddress`, `detectBlockIdentifier`, `detectTokenIdentifier`, and any other bad-user-input validator throws `UsageError` (exit code 2, not 1)
-- [ ] Sub-command help retains `helpGroup` categories (investigation: check if commander.js supports it on sub-command containers)
-- [ ] Bare `trongrid` (no command) renders full help instead of truncated options-only
-- [ ] `renderTxs` export + test coverage parity with `renderTokenList`
+- [x] `--fields` thread `key` through `humanPairs` so it applies symmetrically to `--json` and human output (P1 + P2). **Follow-up:** list-mode `--fields` in human branch still a no-op — tracked below under "Deferred".
+- [x] Error / Hint redundancy audit: `hintForX` helpers + `addressErrorHint` rebalanced so `Error:` and `Hint:` lines carry distinct information (P5)
+- [x] List headers: fixed `Found 1 tokens` / `Found 1 transactions` plural hardcoding; both `renderTxs` and `renderTokenList` now emit singular/plural correctly (P6b)
+- [x] `applySort` stable tie-breaker: `tieBreakField` per `SortConfig` (P3). **Follow-up:** string-compare hazard on numeric-string fields tracked below.
+- [x] `UsageError` sweep: `validateAddress`, `detectBlockIdentifier`, `detectTokenIdentifier`, `resolveAddress` all throw `UsageError` → exit code 2 (P4)
+- [x] Sub-command help retains `helpGroup` categories — supported as of commander v14.0.3, applied to all leaves (P9; investigation in `docs/design/notes/commander-helpgroup-investigation.md`)
+- [x] Bare `trongrid` (no command) renders full help via registered root action (P8)
+- [x] `renderTxs` exported + direct-invocation test coverage parity with `renderTokenList` (P6b + P7 subsumed)
+- [x] **Bonus (not originally planned):** three-layer output architecture extracted — `src/output/columns.ts` (Layer-1 primitives) + `src/output/transfers.ts` (Layer-2 `renderCenteredTransferList`) — used by `account transfers` and available for Phase E's uncentered transfer list variant (P6a / P6b)
 
 **Commands**:
 
-- [ ] `account transfers <address>` — TRC-10/20 token transfer history via `/v1/accounts/:address/transferrecords`; timestamp range flags (`--before` / `--after`) as new pagination convention
-- [ ] `account delegations <address>` — Stake 2.0 delegations in + out via `/wallet/getdelegatedresourcev2` family
-- [ ] `account permissions <address>` — multi-sig owner / active / witness keys via `/wallet/getaccount` (structured render, not `applySort` — permissions are grouped by role, not a flat list)
+- [x] `account transfers <address>` — TRC-10/20 token transfer history via `/v1/accounts/:address/transactions/trc20`; `--before <ts|date>` / `--after <ts|date>` shipped as new global pagination convention (M1.1–M1.3)
+- [x] `account delegations <address>` — Stake 2.0 delegations in + out via `/wallet/getdelegatedresourceaccountindexv2` + `/wallet/getdelegatedresourcev2` with parallel per-counterparty resolution; two-section human render with empty-side suppression; flat-array `--json` with `direction` discriminator (M2.1–M2.3)
+- [x] `account permissions <address>` — multi-sig owner / active / witness keys via `/wallet/getaccount`; structured JSON shape `{owner, active[], witness?}` not a list; `--sort-by` / `--reverse` rejected with `UsageError`; keys sorted by weight desc in the fetch layer so multi-sig audits read top-weighted first (M3.1–M3.3)
 - [x] ~~`account resources` optional-address consistency pass~~ — already shipped in Phase B; source review during Phase D plan writing confirmed both code (`src/commands/account/resources.ts:41`) and test coverage (`tests/commands/account-resources.test.ts:78`) are already in place. Item closed without code change.
 
 **Deferred**:
@@ -122,9 +123,9 @@ Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 - [ ] `printListResult` does not apply `--fields` in human mode — only the JSON branch filters. List commands (`account transfers`, `account tokens`, `account txs`, and future list commands) silently ignore `--fields` when rendering human output. Surfaced during Phase D M1.3. Fix requires either a per-row field-projection hook on the renderer callback, or a parallel `HumanPair`-style mechanism for list-item display pairs.
 - [ ] `applySort` string-compares primitive values — numeric fields stored as decimal strings (e.g. `amount` in `CenteredTransferRow`) will sort lexicographically and give wrong results for mixed-width values ("100" < "99"). Current consumers get away with it because fixtures use equal-width strings; real TRC-20 transfer amounts will not. Fix: declare field types in `SortConfig` (`"number" | "string" | "bigint"`) and cast per-field inside the comparator. Surfaced during Phase D M1.3.
 
-**Exit criteria**: all plumbing items ✅, three new commands functional on mainnet + shasta, `account resources` accepts optional address, `tsc` build + lint clean, all tests passing.
+**Exit criteria met**: all plumbing items ✅, three new commands functional, `tsc` build + lint clean, 280 tests passing (+111 over the 169 baseline). 21 atomic commits on `feat/phase-d-account-list` (10 D-prep + 9 D-main code + 2 docs close + 3 follow-up docs).
 
-Spec: [`specs/phase-d.md`](./specs/phase-d.md) (brainstorming output — goal, architecture, file map, exit criteria). Plan: [`plans/phase-d.md`](./plans/phase-d.md) (step-level implementation detail — produced from the spec by `superpowers:writing-plans`; pending at time of Phase D open).
+Spec: [`specs/phase-d.md`](./specs/phase-d.md). Plan: [`plans/phase-d.md`](./plans/phase-d.md).
 
 ## Phase E — Token family polish
 
