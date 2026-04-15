@@ -1,6 +1,27 @@
 import { TrongridError } from "../api/client.js";
 import { fail, muted } from "./colors.js";
 
+/**
+ * Format a Unix-millisecond timestamp for human-mode output.
+ *
+ * Returns `YYYY-MM-DD HH:MM:SS UTC` — ISO 8601 derived, but with the
+ * `T` separator replaced by a space, milliseconds dropped, and the `Z`
+ * suffix written explicitly as `UTC` so non-technical readers see the
+ * timezone without having to recognize Zulu-time notation.
+ *
+ * Always UTC: blockchain timestamps are global and consumers cross-
+ * reference TronScan / Etherscan, both of which default to UTC. Local
+ * time would produce different output across machines for the same
+ * query — bad for diff / cache / agent reproducibility.
+ *
+ * `--json` mode preserves the raw integer (the machine contract); this
+ * helper is exclusively for human rendering.
+ */
+export function formatTimestamp(ms: number): string {
+	// toISOString → "2022-08-11T17:00:30.000Z" → drop ms+Z, swap T→space, append UTC.
+	return `${new Date(ms).toISOString().slice(0, 19).replace("T", " ")} UTC`;
+}
+
 export function sunToTrx(sun: number): string {
 	const sign = sun < 0 ? "-" : "";
 	const abs = Math.abs(sun);

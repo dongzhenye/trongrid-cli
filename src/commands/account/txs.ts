@@ -2,7 +2,12 @@ import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
 import { muted } from "../../output/colors.js";
-import { printListResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
+import {
+	formatTimestamp,
+	printListResult,
+	reportErrorAndExit,
+	sunToTrx,
+} from "../../output/format.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 import { applySort, type SortConfig, type SortOptions } from "../../utils/sort.js";
 
@@ -75,7 +80,7 @@ function renderTxs(items: AccountTxRow[]): void {
 	}
 	console.log(muted(`Found ${items.length} transactions:\n`));
 	for (const t of items) {
-		const time = new Date(t.timestamp).toISOString();
+		const time = formatTimestamp(t.timestamp);
 		const fee = `${t.fee_trx} TRX`;
 		console.log(`  ${t.tx_id}  ${muted(time)}  ${t.contract_type}  ${muted(fee)}`);
 	}
