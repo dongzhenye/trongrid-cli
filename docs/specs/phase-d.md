@@ -7,7 +7,9 @@
 > - **D-prep** — cross-cutting plumbing fixes from the Phase C trial walkthrough. No new commands. Lands first, merges, then —
 > - **D-main** — three new account list commands + `account resources` consistency pass + phase-close doc updates. Builds on the cleaned foundation.
 
-**Goal.** Land the 9 plumbing items from the Phase C trial feedback walkthrough (so the `humanPairs` 3-tuple shape, `applySort` tie-breaker, `UsageError` discipline, and column-alignment helper are all in place), then ship three new account list commands (`account transfers`, `account delegations`, `account permissions`) on top of the cleaned foundation, plus the `account resources` optional-address consistency pass.
+**Goal.** Land the 9 plumbing items from the Phase C trial feedback walkthrough (so the `humanPairs` 3-tuple shape, `applySort` tie-breaker, `UsageError` discipline, and column-alignment helper are all in place), then ship three new account list commands (`account transfers`, `account delegations`, `account permissions`) on top of the cleaned foundation.
+
+> **Scope correction 2026-04-15 (post-brainstorm, pre-plan).** The original Session 3 plan listed an `account resources` optional-address consistency pass as the fourth D-main deliverable. Source review during plan writing confirmed both the code (`src/commands/account/resources.ts:41` uses `[address]` + `resolveAddress`) and the test (`tests/commands/account-resources.test.ts:78` exercises default-address fallback) already ship the intended state — it was shipped during Phase B (ex-Phase-A+) and the Session 3 note was stale. The consistency pass is dropped from Phase D scope as already-done. All downstream references in this spec were removed in the same commit that surfaced the finding.
 
 **Architecture.** Two PRs on the same branch, sequenced so D-prep lands first (because item P1 widens `humanPairs` from 2-tuple to 3-tuple, and baking the 2-tuple into three new commands would be a waste). Each command in D-main follows the same pattern: one new file under `src/commands/account/`, one endpoint per command (or parallel fan-out for delegations), client-side sort via the existing `applySort` utility (except `permissions` which uses a structured renderer), and a custom human-mode renderer that composes the new `src/output/columns.ts` atomic primitives.
 
@@ -161,7 +163,7 @@ Phase C trial items addressed: #3, #4, #5, #8, #9, #10, #11 (7 of 8 Wave-2-tagge
 
 ## D-main PR — Three new list commands + consistency pass
 
-Three new commands + the `account resources` optional-address consistency pass + phase-close doc updates. Each command follows the Phase C 3-commit rhythm: **scaffold** (types + failing test + file layout) → **endpoint** (real fetch logic + fetch tests) → **register** (action wiring + renderer + integration tests).
+Three new commands + phase-close doc updates. Each command follows the Phase C 3-commit rhythm: **scaffold** (types + failing test + file layout) → **endpoint** (real fetch logic + fetch tests) → **register** (action wiring + renderer + integration tests).
 
 ### File map (D-main)
 
@@ -179,12 +181,10 @@ Three new commands + the `account resources` optional-address consistency pass +
 | **`src/commands/account/permissions.ts`** | **new** — `PermissionBlock` type, `AccountPermissions` structured type `{ address, owner, active, witness? }`, `fetchAccountPermissions(client, address)` reuses `/wallet/getaccount` (same endpoint as `account view`), extracts owner/active/witness fields. Custom section renderer — **no `applySort`**, rejects `--sort-by` / `--reverse` with `UsageError`. `registerAccountPermissionsCommand`. Each permission block's keys are internally sorted by `weight desc` inside the renderer (not via `applySort`, not user-controllable). | M3.1, M3.2, M3.3 |
 | `src/index.ts` | Wire `registerAccountPermissionsCommand` | M3.3 |
 | `tests/commands/account-permissions.test.ts` | **new** — ~10 cases: single-key owner, multi-key owner (2-of-3), multi-active-permission, witness present (SR), witness absent, JSON shape is `{ owner, active, witness? }` (not `Row[]`), human section rendering snapshot (3 forms), `--sort-by weight` → `UsageError` exit 2, `--reverse` → same, `default_address` fallback | M3.1 + M3.3 |
-| `src/commands/account/resources.ts` | `.argument("<address>", ...)` → `.argument("[address]", ...)`; replace direct address use with `resolveAddress(address)`; update help text | M4 |
-| `tests/commands/account-resources.test.ts` | **new case** — default-address fallback regression | M4 |
 | `docs/plans/status.md` | Phase D close update: active phase → Phase E, Phase D marked ✅ in current-phase table, test count updated | M5 |
 | `docs/roadmap.md` | Phase D checklist all `- [x]`; Phase D marked ✅ in the phase heading | M5 |
 
-### Task outline (D-main, 12 commits)
+### Task outline (D-main, 11 commits)
 
 **Command 1 — `account transfers [address]`** (3 commits, Phase C rhythm)
 
@@ -219,11 +219,6 @@ Three new commands + the `account resources` optional-address consistency pass +
 - **M3.3** — `feat: register account permissions with structured section render`
   Registration, custom section renderer, `--sort-by` / `--reverse` UsageError rejection, integration tests.
 
-**Consistency pass — `account resources [address]`** (1 commit)
-
-- **M4** — `refactor: account resources accepts optional [address]`
-  One-line arg change + `resolveAddress` swap + regression test. Closes the last account command still requiring a positional address.
-
 **Phase D close** (2 commits)
 
 - **M5a** — `docs: update status.md with Phase D close state`
@@ -234,15 +229,14 @@ Three new commands + the `account resources` optional-address consistency pass +
 
 ### D-main exit criteria
 
-- [ ] All 12 commits landed on `feat/phase-d-account-list` (on top of D-prep's 10)
-- [ ] `bun test` green (expected ~227 passing; +33 over D-prep's ~194)
+- [ ] All 11 commits landed on `feat/phase-d-account-list` (on top of D-prep's 10)
+- [ ] `bun test` green (expected ~226 passing; +32 over D-prep's ~194)
 - [ ] `bun run lint` + `bun run build` clean
 - [ ] `trongrid account transfers` (no address) uses default_address and prints sorted list
 - [ ] `trongrid account transfers TR... --before 2026-04-01 --after 2026-03-01` filters by date range
 - [ ] `trongrid account delegations TR...` prints "Delegated out" / "Delegated in" sections with empty suppression
 - [ ] `trongrid account permissions TR... --json` returns `{ owner, active, witness? }` shape (not an array)
 - [ ] `trongrid account permissions TR... --sort-by weight; echo $?` exits with code 2
-- [ ] `trongrid account resources` (no address) uses default_address
 - [ ] Human-mode output on all three new commands vertically aligns per `feedback_human_render_alignment` rules (manual spot-check)
 - [ ] PR opened: "Phase D-main: account transfers / delegations / permissions + resources consistency"
 - [ ] PR review completed, merged to `main`
@@ -253,8 +247,8 @@ Three new commands + the `account resources` optional-address consistency pass +
 ## Summary
 
 Phase D-main: three new account list commands built on the Phase D-prep
-plumbing, plus the last account command (`resources`) moved to optional
-[address].
+plumbing. (The originally planned `account resources` consistency pass
+was dropped post-source-review — already shipped during Phase B.)
 
 - `account transfers [address]` — centered transfer list with --before/--after
   timestamp range, S2 unit shape, direction field, renderCenteredTransferList
@@ -262,20 +256,23 @@ plumbing, plus the last account command (`resources`) moved to optional
   flattened rows with direction discriminator, two-section human render
 - `account permissions [address]` — structured multi-sig view (owner/active/
   witness), S-class deviation, --sort-by rejected with UsageError
-- `account resources [address]` — consistency pass, default-address fallback
 
 Deferred: `account approvals <owner>` pending TRON-eco-vs-TronGrid-only
 positioning (tracked in status.md decision ledger).
 
 ## Test plan
 
-- [x] bun test (~227 passing, +33 over D-prep baseline ~194)
+- [x] bun test (~226 passing, +32 over D-prep baseline ~194)
 - [x] bun run lint + build
 - [x] manual: each new command with a default_address set, with explicit address,
   with --reverse, with --sort-by, with --json, with --fields subset
 - [x] manual: `account transfers --before 2026-04-01 --after 2026-03-01` range
 - [x] manual: `account permissions --sort-by weight` exits 2
 - [x] manual: column alignment spot-check per feedback_human_render_alignment
+
+Dropped: `account resources` consistency pass — verified already shipped
+during Phase B (ex-A+); see the scope-correction note near the top of
+docs/specs/phase-d.md for the audit trail.
 ```
 
 ---
@@ -283,11 +280,11 @@ positioning (tracked in status.md decision ledger).
 ## Phase D overall exit criteria
 
 - [ ] Both D-prep and D-main PRs merged to `main`
-- [ ] Cumulative test count ~227+ passing
+- [ ] Cumulative test count ~226+ passing
 - [ ] `docs/plans/status.md` reflects Phase D as ✅; active phase = Phase E
 - [ ] `docs/roadmap.md` Phase D section all `- [x]` + heading marked ✅
 - [ ] No new production dependencies (still 1 — `commander`)
-- [ ] `git log --oneline main..HEAD` (pre-merge) shows ~22 atomic commits with distinct subjects, no `wip:` / `fixup!`
+- [ ] `git log --oneline main..HEAD` (pre-merge) shows ~21 atomic commits with distinct subjects, no `wip:` / `fixup!`
 - [ ] All deferred items from Phase D (just `account approvals`) have an explicit roadmap entry pointing to the positioning-decision blocker
 
 ---
