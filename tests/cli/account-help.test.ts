@@ -8,10 +8,18 @@ describe("trongrid account --help", () => {
 		expect(out).toContain("Read commands:");
 	});
 
-	it("lists all four read leaves under Read commands:", () => {
+	it("lists all seven read leaves under Read commands:", () => {
 		const readIdx = out.indexOf("Read commands:");
 		expect(readIdx).toBeGreaterThanOrEqual(0);
-		for (const name of ["view", "resources", "tokens", "txs"]) {
+		for (const name of [
+			"view",
+			"resources",
+			"tokens",
+			"txs",
+			"transfers",
+			"delegations",
+			"permissions",
+		]) {
 			const leafIdx = out.indexOf(`\n  ${name}`);
 			expect(leafIdx).toBeGreaterThan(readIdx);
 		}
