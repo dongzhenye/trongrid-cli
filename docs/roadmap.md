@@ -118,6 +118,7 @@ Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 **Deferred**:
 
 - [ ] `account approvals <owner>` — pending TRON-eco-vs-TronGrid-only positioning decision; event-log scan approach documented but not executed
+- [ ] composite filter keys (e.g. `energy` / `bandwidth` on `account resources`) work in human mode but silently return `{}` in `--json` mode because the JSON object has no such top-level field. Either (a) split display rows to match JSON fields, (b) document the human-only key surface, or (c) expose derived nested objects on the response shape. Surfaced during Phase D P2 code review.
 
 **Exit criteria**: all plumbing items ✅, three new commands functional on mainnet + shasta, `account resources` accepts optional address, `tsc` build + lint clean, all tests passing.
 
