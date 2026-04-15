@@ -14,6 +14,7 @@ export interface AccountTxRow {
 	status: string;
 	fee: number;
 	fee_unit: "sun";
+	decimals: 6;
 	fee_trx: string;
 }
 
@@ -48,6 +49,7 @@ export async function fetchAccountTxs(
 			status: tx.ret?.[0]?.contractRet ?? "UNKNOWN",
 			fee,
 			fee_unit: "sun" as const,
+			decimals: 6 as const,
 			fee_trx: sunToTrx(fee),
 		};
 	});
