@@ -22,6 +22,8 @@ program
 	.option("-f, --fields <fields>", "select output fields (JSON mode)")
 	.option("-r, --reverse", "reverse the command's default sort direction", false)
 	.option("--sort-by <field>", "override the command's default sort field")
+	.option("--before <ts|date>", "only include items before this unix-seconds or ISO-8601 timestamp")
+	.option("--after <ts|date>", "only include items after this unix-seconds or ISO-8601 timestamp")
 	.option("--confirmed", "read confirmed (irreversible, ~60s lag) state instead of latest", false)
 	// Deterministic exit code scheme (see docs/design/cli-best-practices.md §4):
 	//   0 — success (help / version display included)
@@ -48,6 +50,8 @@ export interface GlobalOptions {
 	confirmed: boolean;
 	reverse: boolean;
 	sortBy?: string;
+	before?: string;
+	after?: string;
 }
 
 export function getClient(opts: GlobalOptions): ApiClient {

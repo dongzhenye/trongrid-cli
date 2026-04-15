@@ -5,6 +5,8 @@ import { printListResult, reportErrorAndExit } from "../../output/format.js";
 import { type CenteredTransferRow, renderCenteredTransferList } from "../../output/transfers.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 import { applySort, type SortConfig } from "../../utils/sort.js";
+import { parseTimeRange } from "../../utils/time-range.js";
+import { formatMajor } from "../../utils/tokens.js";
 
 /**
  * Unit shape per docs/design/units.md S2 (TRC-10/20 scalable quantity).
@@ -15,19 +17,54 @@ import { applySort, type SortConfig } from "../../utils/sort.js";
  */
 export interface AccountTransferRow extends CenteredTransferRow {}
 
-// Raw response shapes (RawTransfer, AccountTransfersResponse) land in M1.2
-// alongside the real parse implementation.
+interface RawTransfer {
+	transaction_id?: string;
+	block_timestamp?: number;
+	block_number?: number;
+	from?: string;
+	to?: string;
+	type?: string;
+	value?: string;
+	token_info?: { symbol?: string; address?: string; decimals?: number };
+}
+
+interface AccountTransfersResponse {
+	data?: RawTransfer[];
+}
 
 export async function fetchAccountTransfers(
 	client: ApiClient,
 	address: string,
 	opts: { limit: number; minTimestamp?: number; maxTimestamp?: number },
 ): Promise<AccountTransferRow[]> {
-	// Stub for M1.1; real implementation in M1.2.
-	void client;
-	void address;
-	void opts;
-	throw new Error("fetchAccountTransfers: not implemented (M1.1 scaffold)");
+	const params = new URLSearchParams();
+	params.set("limit", String(opts.limit));
+	if (opts.minTimestamp !== undefined) params.set("min_timestamp", String(opts.minTimestamp));
+	if (opts.maxTimestamp !== undefined) params.set("max_timestamp", String(opts.maxTimestamp));
+
+	const path = `/v1/accounts/${address}/transactions/trc20?${params.toString()}`;
+	const raw = await client.get<AccountTransfersResponse>(path);
+
+	const rows: AccountTransferRow[] = [];
+	for (const r of raw.data ?? []) {
+		const isOut = r.from === address;
+		const decimals = r.token_info?.decimals ?? 0;
+		const amount = r.value ?? "0";
+		rows.push({
+			tx_id: r.transaction_id ?? "",
+			block_number: r.block_number ?? 0,
+			timestamp: r.block_timestamp ?? 0,
+			direction: isOut ? "out" : "in",
+			counterparty: isOut ? (r.to ?? "") : (r.from ?? ""),
+			token_address: r.token_info?.address ?? "",
+			token_symbol: r.token_info?.symbol,
+			amount,
+			amount_unit: "raw",
+			decimals,
+			amount_major: formatMajor(amount, decimals),
+		});
+	}
+	return rows;
 }
 
 const TRANSFERS_SORT_CONFIG: SortConfig<AccountTransferRow> = {
@@ -73,9 +110,11 @@ Sort:
 				// /v1/accounts/:address/transactions/trc20 has no /walletsolidity
 				// mirror. Accepted silently for flag uniformity; tracked as a
 				// Phase D follow-up.
+				const range = parseTimeRange(opts.before, opts.after);
 				const rows = await fetchAccountTransfers(client, resolved, {
 					limit: Number.parseInt(opts.limit, 10),
-					// minTimestamp / maxTimestamp come from M1.2's parseTimeRange.
+					minTimestamp: range.minTimestamp,
+					maxTimestamp: range.maxTimestamp,
 				});
 				const sorted = applySort(rows, TRANSFERS_SORT_CONFIG, {
 					sortBy: opts.sortBy,
