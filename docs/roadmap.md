@@ -121,7 +121,7 @@ Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 
 **Exit criteria**: all plumbing items ✅, three new commands functional on mainnet + shasta, `account resources` accepts optional address, `tsc` build + lint clean, all tests passing.
 
-Plan details: [`plans/phase-d.md`](./plans/phase-d.md) (to be written post-brainstorm).
+Spec: [`specs/phase-d.md`](./specs/phase-d.md) (brainstorming output — goal, architecture, file map, exit criteria). Plan: [`plans/phase-d.md`](./plans/phase-d.md) (step-level implementation detail — produced from the spec by `superpowers:writing-plans`; pending at time of Phase D open).
 
 ## Phase E — Token family polish
 

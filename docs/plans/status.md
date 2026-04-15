@@ -38,7 +38,9 @@ That line is self-contained — this doc briefs a cold agent on state, locked-in
 - **Pagination convention**: `--before <ts|date>` / `--after <ts|date>` (timestamp range only). `fingerprint` cursor deliberately not exposed — 95% of users ask time-range questions, cursor is implementation detail. Re-evaluate if a later phase needs true cursor paging.
 - **`account resources` optional address**: folded into Phase D-prep (one-line `resolveAddress` swap + regression test). Closes the last account command still requiring a positional address.
 
-**Pending design questions**: [to be written into `docs/plans/phase-d.md` at brainstorm close].
+**Spec landed**: [`docs/specs/phase-d.md`](../specs/phase-d.md) (brainstorming output — architecture, file map, task outline, exit criteria). **Plan pending**: `docs/plans/phase-d.md` (step-level implementation detail, to be produced from the spec by `superpowers:writing-plans`).
+
+Phase D introduces a spec-vs-plan split in project convention: spec is the stable "what and why" (human-facing, brainstorming output), plan is the iterating "how" (agent-facing, writing-plans output). Phases A–C predate this split and live as plan-level only files under `docs/plans/`.
 
 ### Phase C — Block view + Account txs + Token view ✅ merged (PR #5, 2026-04-15)
 
@@ -106,8 +108,9 @@ Open items (not decisions, tracked in `docs/roadmap.md`):
 6. `AGENTS.md` (repo root) — contribution constraints (all commits must follow).
 7. `docs/architecture.md` — tech decisions and the "Defaults & conventions" table.
 8. `docs/design/cli-best-practices.md` — scorecard for "what's done vs pending".
-9. `docs/plans/phase-d.md` — active-phase implementation plan (post-brainstorm).
-10. `docs/plans/phase-c.md` — reference for command-level task structure and TDD pattern.
+9. `docs/specs/phase-d.md` — active-phase spec (brainstorming output: goal, architecture, file map, exit criteria).
+10. `docs/plans/phase-d.md` — active-phase implementation plan (step-level detail expanded from the spec; pending until `superpowers:writing-plans` runs).
+11. `docs/plans/phase-c.md` — reference for command-level task structure and TDD pattern.
 
 ## Continuity note
 
