@@ -15,7 +15,7 @@ That line is self-contained — this doc briefs a cold agent on state, locked-in
 | | |
 |---|---|
 | `main` tip | `6a5aaf9` — merge Phase C (ex-Wave-1) |
-| Latest tagged release | none — first tag is Phase I (v0.2.0) |
+| Latest tagged release | none — first tag is Phase I (v0.1.0) |
 | Active phase | **Phase D** — Account list family + Phase-C trial plumbing (brainstorm → spec → plan → implement) |
 | Tests | 169/169 passing (102 baseline + 67 new from Phase C) |
 | Working tree | clean |
@@ -85,7 +85,7 @@ Phase-C prerequisite decisions (from MCP/Skills review):
 Phase-D regularization decisions (2026-04-15):
 
 - **Flat phase letters** per `meta/WORKFLOW.md §2`. Wave / sub-phase hierarchy retired. Historical plan files renamed (`phase-a-plus.md` → `phase-b.md`, `phase-b-wave-1.md` → `phase-c.md`, session-handoff doc → `status.md`).
-- **No retro git tags for pre-publish phases.** First tag cut at Phase I (first npm publish) as `v0.2.0`. Phases A–H track by letter only.
+- **No retro git tags for pre-publish phases.** First tag cut at Phase I (first npm publish) as `v0.1.0` — SemVer-conventional "first release of a new package". Phases A–H track by letter only; Phase J onward cuts sequential `v0.2.0`, `v0.3.0`, … minor bumps.
 - **Phase I stays as one combined phase** — parity matrix + README + publish are the heterogeneous but tightly-coupled "ship the release" bundle. No further splitting.
 
 Open items (not decisions, tracked in `docs/roadmap.md`):
