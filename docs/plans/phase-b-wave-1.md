@@ -1619,7 +1619,7 @@ describe("fetchTokenView — TRC-20", () => {
       symbol: "USDT",
       decimals: 6,
       total_supply: "82123456789000",
-      total_supply_major: "82123456789.0",
+      total_supply_major: "82123456.789",
     });
   });
 });
