@@ -113,7 +113,7 @@ Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 - [ ] `account transfers <address>` — TRC-10/20 token transfer history via `/v1/accounts/:address/transferrecords`; timestamp range flags (`--before` / `--after`) as new pagination convention
 - [ ] `account delegations <address>` — Stake 2.0 delegations in + out via `/wallet/getdelegatedresourcev2` family
 - [ ] `account permissions <address>` — multi-sig owner / active / witness keys via `/wallet/getaccount` (structured render, not `applySort` — permissions are grouped by role, not a flat list)
-- [ ] `account resources` optional-address consistency pass (last account command still requiring `<address>`)
+- [x] ~~`account resources` optional-address consistency pass~~ — already shipped in Phase B; source review during Phase D plan writing confirmed both code (`src/commands/account/resources.ts:41`) and test coverage (`tests/commands/account-resources.test.ts:78`) are already in place. Item closed without code change.
 
 **Deferred**:
 
