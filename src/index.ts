@@ -66,6 +66,7 @@ export { program };
 
 import { registerAccountResourcesCommand } from "./commands/account/resources.js";
 import { registerAccountTokensCommand } from "./commands/account/tokens.js";
+import { registerAccountTransfersCommand } from "./commands/account/transfers.js";
 import { registerAccountTxsCommand } from "./commands/account/txs.js";
 import { registerAccountCommands } from "./commands/account/view.js";
 import { registerAuthCommands } from "./commands/auth/login.js";
@@ -82,6 +83,7 @@ const account = registerAccountCommands(program);
 registerAccountTokensCommand(account, program);
 registerAccountResourcesCommand(account, program);
 registerAccountTxsCommand(account, program);
+registerAccountTransfersCommand(account, program);
 registerTokenCommands(program);
 registerTxCommands(program);
 registerAuthCommands(program);
