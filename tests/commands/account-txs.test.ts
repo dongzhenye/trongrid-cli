@@ -138,6 +138,20 @@ describe("sortTxs (default: timestamp desc)", () => {
 	it("rejects --sort-by on an unknown field with a hint", () => {
 		expect(() => sortTxs(items, { sortBy: "bogus" })).toThrow(/unknown sort field/i);
 	});
+
+	it("--sort-by fee breaks ties by timestamp desc (newest first)", () => {
+		// Three zero-fee txs with distinct timestamps + one non-zero fee tx.
+		// Under --sort-by fee, the zero-fee block must be deterministically
+		// ordered by timestamp desc rather than falling back to input order.
+		const tiedItems: AccountTxRow[] = [
+			{ tx_id: "tx_zero_old", timestamp: 10, block_number: 10, fee: 0, contract_type: "T", status: "S", fee_unit: "sun", decimals: 6, fee_trx: "0" },
+			{ tx_id: "tx_zero_new", timestamp: 30, block_number: 30, fee: 0, contract_type: "T", status: "S", fee_unit: "sun", decimals: 6, fee_trx: "0" },
+			{ tx_id: "tx_paid",     timestamp: 20, block_number: 20, fee: 500, contract_type: "T", status: "S", fee_unit: "sun", decimals: 6, fee_trx: "0" },
+			{ tx_id: "tx_zero_mid", timestamp: 20, block_number: 20, fee: 0, contract_type: "T", status: "S", fee_unit: "sun", decimals: 6, fee_trx: "0" },
+		];
+		const out = sortTxs(tiedItems, { sortBy: "fee" });
+		expect(out.map((x) => x.tx_id)).toEqual(["tx_paid", "tx_zero_new", "tx_zero_mid", "tx_zero_old"]);
+	});
 });
 
 describe("account txs default_address resolution", () => {
