@@ -53,7 +53,6 @@ interface RawPermission {
 	operations?: string;
 	keys?: RawKey[];
 }
-// biome-ignore lint/correctness/noUnusedVariables: real impl lands in M3.2
 interface RawAccount {
 	address?: string;
 	owner_permission?: RawPermission;
@@ -65,10 +64,39 @@ export async function fetchAccountPermissions(
 	client: ApiClient,
 	address: string,
 ): Promise<AccountPermissions> {
-	// Stub for M3.1; real impl in M3.2.
-	void client;
-	void address;
-	throw new Error("fetchAccountPermissions: not implemented (M3.1 scaffold)");
+	const raw = await client.post<RawAccount>("/wallet/getaccount", { address, visible: true });
+
+	const ownerRaw = raw.owner_permission;
+	if (!ownerRaw) {
+		throw new Error(
+			`Account not activated or not found: ${address}. Permissions are only defined on activated accounts.`,
+		);
+	}
+
+	return {
+		address: raw.address ?? address,
+		owner: parseBlock(ownerRaw, "Owner"),
+		active: (raw.active_permission ?? []).map((p, i) => ({ ...parseBlock(p, "Active"), id: i })),
+		witness: raw.witness_permission ? parseBlock(raw.witness_permission, "Witness") : null,
+	};
+}
+
+function parseBlock(raw: RawPermission, type: string): PermissionBlock {
+	const keys: PermissionKey[] = (raw.keys ?? []).map((k) => ({
+		address: k.address ?? "",
+		weight: k.weight ?? 0,
+	}));
+	// Sort by weight desc inside the block so multi-sig audits read
+	// top-weighted keys first. Not user-controllable (--sort-by is
+	// already rejected for this command).
+	keys.sort((a, b) => b.weight - a.weight);
+	return {
+		type,
+		permission_name: raw.permission_name ?? type.toLowerCase(),
+		threshold: raw.threshold ?? 1,
+		operations: raw.operations,
+		keys,
+	};
 }
 
 export function renderPermissions(data: AccountPermissions): void {
