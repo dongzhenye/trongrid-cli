@@ -12,6 +12,7 @@ export function registerAuthCommands(parent: Command): void {
 	auth
 		.command("login")
 		.description("Authenticate with TronGrid API key (interactive)")
+		.helpGroup("Credentials:")
 		.addHelpText(
 			"after",
 			`
@@ -45,6 +46,7 @@ Examples:
 	auth
 		.command("logout")
 		.description("Remove stored credentials")
+		.helpGroup("Credentials:")
 		.action(() => {
 			removeApiKey();
 			console.log("Credentials removed.");
@@ -53,6 +55,7 @@ Examples:
 	auth
 		.command("status")
 		.description("Show current authentication state")
+		.helpGroup("Read commands:")
 		.action(() => {
 			const key = resolveApiKey();
 			if (key) {

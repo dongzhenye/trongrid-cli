@@ -121,6 +121,7 @@ export function registerAccountTokensCommand(account: Command, parent: Command):
 	account
 		.command("tokens")
 		.description("List TRC20 and TRC10 token balances")
+		.helpGroup("Read commands:")
 		.argument("[address]", "TRON address (defaults to config default_address)")
 		.addHelpText(
 			"after",

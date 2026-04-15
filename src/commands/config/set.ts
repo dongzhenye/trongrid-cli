@@ -31,6 +31,7 @@ export function registerConfigCommands(parent: Command): void {
 	config
 		.command("set")
 		.description("Set a config value")
+		.helpGroup("Write commands:")
 		.argument("<key>", "Config key (e.g., network, default_address)")
 		.argument("<value>", "Config value")
 		.addHelpText(
@@ -58,6 +59,7 @@ Examples:
 	config
 		.command("get")
 		.description("Get a config value")
+		.helpGroup("Read commands:")
 		.argument("<key>", "Config key")
 		.action((key: string) => {
 			const value = getConfigValue(undefined, key);
@@ -71,6 +73,7 @@ Examples:
 	config
 		.command("list")
 		.description("Show all config values")
+		.helpGroup("Read commands:")
 		.action(() => {
 			const all = readConfig();
 			for (const [key, value] of Object.entries(all)) {

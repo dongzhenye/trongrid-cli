@@ -56,6 +56,7 @@ export function registerTxCommands(parent: Command): void {
 
 	tx.command("view")
 		.description("View transaction details by hash (typical first step)")
+		.helpGroup("Read commands:")
 		.argument("<hash>", "Transaction hash")
 		.addHelpText(
 			"after",

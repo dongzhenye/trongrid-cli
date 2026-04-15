@@ -78,6 +78,7 @@ export function registerBlockViewCommand(block: Command, parent: Command): void 
 	block
 		.command("view")
 		.description("View a block by number or hash")
+		.helpGroup("Read commands:")
 		.argument("<number|hash>", "Block number (digits) or block hash (64 hex chars)")
 		.addHelpText(
 			"after",

@@ -165,6 +165,7 @@ export function registerTokenCommands(parent: Command): void {
 	token
 		.command("view")
 		.description("View token metadata by asset ID, contract address, or known symbol")
+		.helpGroup("Read commands:")
 		.argument("<id|address|symbol>", "TRC-10 asset ID, TRC-20 Base58 address, or verified symbol")
 		.option("--type <type>", "force token standard (trc10|trc20|trc721|trc1155)")
 		.addHelpText(
