@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { createClient } from "../../src/api/client.js";
 import {
+	STATIC_SYMBOL_TO_ADDRESS,
 	_resetTrc10DecimalsCacheForTests,
 	_resetTrc20DecimalsCacheForTests,
 	fetchOnChainDecimals,
@@ -8,6 +9,7 @@ import {
 	getStaticDecimals,
 	resolveTrc10Decimals,
 	resolveTrc20Decimals,
+	resolveSymbolToAddress,
 } from "../../src/utils/tokens.js";
 
 describe("getStaticDecimals", () => {
@@ -229,5 +231,22 @@ describe("resolveTrc10Decimals", () => {
 		expect(calls).toBe(1);
 		expect(result1).toBe(6);
 		expect(result2).toBe(6);
+	});
+});
+
+describe("resolveSymbolToAddress", () => {
+	it("returns the canonical address for known symbols (case-insensitive)", () => {
+		expect(resolveSymbolToAddress("USDT")).toBe("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t");
+		expect(resolveSymbolToAddress("usdt")).toBe("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t");
+		expect(resolveSymbolToAddress("USDC")).toBe("TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8");
+		expect(resolveSymbolToAddress("JST")).toBe("TCFLL5dx5ZJdKnWuesXxi1VPwjLVmWZZy9");
+	});
+
+	it("returns undefined for unknown symbols", () => {
+		expect(resolveSymbolToAddress("SCAMCOIN")).toBeUndefined();
+	});
+
+	it("exposes STATIC_SYMBOL_TO_ADDRESS for listing / debugging", () => {
+		expect(STATIC_SYMBOL_TO_ADDRESS.USDT).toBe("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t");
 	});
 });

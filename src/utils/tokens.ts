@@ -1,6 +1,29 @@
 import type { ApiClient } from "../api/client.js";
 
 /**
+ * Symbol → TRC-20 contract address map. Derived from the TronScan verified-token
+ * (加V) list (see memory project_token_symbol_source). Kept in lockstep with
+ * STATIC_TRC20_DECIMALS below — add/remove in both or neither, verify address on
+ * tronscan before adding.
+ *
+ * Unknown symbols MUST be rejected by callers (not fall back to user-supplied
+ * input) to prevent phishing/scam token resolution.
+ */
+export const STATIC_SYMBOL_TO_ADDRESS: Readonly<Record<string, string>> = Object.freeze({
+	USDT: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+	USDC: "TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8",
+	WTRX: "TNUC9Qb1rRpS5CbWLmNMxXBjyFoydXjWFR",
+	JST: "TCFLL5dx5ZJdKnWuesXxi1VPwjLVmWZZy9",
+	SUN: "TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S",
+	WIN: "TLa2f6VPqDgRE67v1736s7bJ8Ray5wYjU7",
+	BTT: "TAFjULxiVgT4qWk6UZwjqwZXTSaGaqnVp4",
+});
+
+export function resolveSymbolToAddress(symbol: string): string | undefined {
+	return STATIC_SYMBOL_TO_ADDRESS[symbol.toUpperCase()];
+}
+
+/**
  * Static decimals map for the most common TRC20 tokens on TRON mainnet.
  *
  * Source: TronScan verified token list (https://tronscan.org/#/tokens/list).
