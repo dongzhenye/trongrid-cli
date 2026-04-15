@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printResult, reportErrorAndExit } from "../../output/format.js";
+import { formatTimestamp, printResult, reportErrorAndExit } from "../../output/format.js";
 import { type BlockIdentifier, detectBlockIdentifier } from "../../utils/block-identifier.js";
 
 export interface BlockViewData {
@@ -94,7 +94,7 @@ Examples:
 						["Block", String(data.number)],
 						["Block ID", data.block_id],
 						["Parent Hash", data.parent_hash],
-						["Time", new Date(data.timestamp).toISOString()],
+						["Time", formatTimestamp(data.timestamp)],
 						["Producer", data.witness_address],
 						["Transactions", String(data.tx_count)],
 					],

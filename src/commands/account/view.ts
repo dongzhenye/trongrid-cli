@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
+import { formatTimestamp, printResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 
 interface AccountViewData {
@@ -73,7 +73,7 @@ Examples:
 						["Address", data.address],
 						["Balance", `${data.balance_trx} TRX`],
 						["Type", data.is_contract ? "Contract" : "EOA"],
-						["Created", data.create_time ? new Date(data.create_time).toISOString() : "Unknown"],
+						["Created", data.create_time ? formatTimestamp(data.create_time) : "Unknown"],
 					],
 					{ json: opts.json, fields: parseFields(opts) },
 				);
