@@ -3,6 +3,12 @@ import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
 import { muted } from "../../output/colors.js";
 import {
+	alignNumber,
+	computeColumnWidths,
+	renderColumns,
+	truncateAddress,
+} from "../../output/columns.js";
+import {
 	formatTimestamp,
 	printListResult,
 	reportErrorAndExit,
@@ -74,16 +80,34 @@ export function sortTxs(items: AccountTxRow[], opts: SortOptions): AccountTxRow[
 	return applySort(items, TXS_SORT_CONFIG, opts);
 }
 
-function renderTxs(items: AccountTxRow[]): void {
+export function renderTxs(items: AccountTxRow[]): void {
 	if (items.length === 0) {
 		console.log(muted("No transactions found."));
 		return;
 	}
-	console.log(muted(`Found ${items.length} transactions:\n`));
-	for (const t of items) {
-		const time = formatTimestamp(t.timestamp);
-		const fee = `${t.fee_trx} TRX`;
-		console.log(`  ${t.tx_id}  ${muted(time)}  ${t.contract_type}  ${muted(fee)}`);
+	const noun = items.length === 1 ? "transaction" : "transactions";
+	console.log(muted(`Found ${items.length} ${noun}:\n`));
+
+	// Column order: time | tx_id (truncated) | contract_type | fee | unit
+	const cells: string[][] = items.map((t) => [
+		formatTimestamp(t.timestamp),
+		truncateAddress(t.tx_id, 4, 4),
+		t.contract_type,
+		t.fee_trx, // right-aligned below
+		"TRX",
+	]);
+
+	const feeCol = 3;
+	const feeWidth = Math.max(...cells.map((c) => (c[feeCol] ?? "").length));
+	for (const row of cells) {
+		const cur = row[feeCol] ?? "";
+		row[feeCol] = alignNumber(cur, feeWidth);
+	}
+
+	const widths = computeColumnWidths(cells);
+	const lines = renderColumns(cells, widths);
+	for (const line of lines) {
+		console.log(`  ${line}`);
 	}
 }
 
