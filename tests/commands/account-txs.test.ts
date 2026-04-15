@@ -67,6 +67,7 @@ describe("fetchAccountTxs", () => {
 			status: "SUCCESS",
 			fee: 100,
 			fee_unit: "sun",
+			decimals: 6,
 			fee_trx: "0.0001",
 		});
 	});
@@ -109,9 +110,9 @@ describe("fetchAccountTxs", () => {
 
 describe("sortTxs (default: timestamp desc)", () => {
 	const items: AccountTxRow[] = [
-		{ tx_id: "tx_b", timestamp: 2, block_number: 2, fee: 100, contract_type: "T", status: "S", fee_unit: "sun", fee_trx: "0" },
-		{ tx_id: "tx_c", timestamp: 3, block_number: 3, fee: 50, contract_type: "T", status: "S", fee_unit: "sun", fee_trx: "0" },
-		{ tx_id: "tx_a", timestamp: 1, block_number: 1, fee: 300, contract_type: "T", status: "S", fee_unit: "sun", fee_trx: "0" },
+		{ tx_id: "tx_b", timestamp: 2, block_number: 2, fee: 100, contract_type: "T", status: "S", fee_unit: "sun", decimals: 6, fee_trx: "0" },
+		{ tx_id: "tx_c", timestamp: 3, block_number: 3, fee: 50, contract_type: "T", status: "S", fee_unit: "sun", decimals: 6, fee_trx: "0" },
+		{ tx_id: "tx_a", timestamp: 1, block_number: 1, fee: 300, contract_type: "T", status: "S", fee_unit: "sun", decimals: 6, fee_trx: "0" },
 	];
 
 	it("defaults to timestamp desc (newest first)", () => {
