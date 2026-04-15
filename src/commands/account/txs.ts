@@ -115,6 +115,7 @@ export function registerAccountTxsCommand(account: Command, parent: Command): vo
 	account
 		.command("txs")
 		.description("List transaction history for an address")
+		.helpGroup("Read commands:")
 		.argument("[address]", "TRON address (defaults to config default_address)")
 		.addHelpText(
 			"after",

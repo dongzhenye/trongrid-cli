@@ -38,6 +38,7 @@ export function registerAccountResourcesCommand(account: Command, parent: Comman
 	account
 		.command("resources")
 		.description("View energy, bandwidth, and staking state")
+		.helpGroup("Read commands:")
 		.argument("[address]", "TRON address (defaults to config default_address)")
 		.addHelpText(
 			"after",

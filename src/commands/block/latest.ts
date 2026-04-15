@@ -39,6 +39,7 @@ export function registerBlockCommands(parent: Command): Command {
 	block
 		.command("latest")
 		.description("Get the latest block (chain head) (typical first step)")
+		.helpGroup("Read commands:")
 		.addHelpText(
 			"after",
 			`

@@ -68,6 +68,7 @@ export function registerAccountCommands(parent: Command): Command {
 	account
 		.command("view")
 		.description("View account balance, type, and activation status (typical first step)")
+		.helpGroup("Read commands:")
 		.argument("[address]", "TRON address (defaults to config default_address)")
 		.addHelpText(
 			"after",
