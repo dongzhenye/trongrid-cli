@@ -1,7 +1,7 @@
 # Phase D — Account list family + Phase-C trial plumbing
 
-> **For agentic workers:** this document is the Phase D spec produced during brainstorming. It defines goal, architecture, file map, task outline, and exit criteria. Step-level implementation detail (test code, commit HEREDOCs, bash blocks) is expanded from this spec by the `superpowers:writing-plans` skill in a follow-up session; once expanded, this file becomes the executable plan and the `superpowers:subagent-driven-development` skill runs it one task at a time — the same rhythm used for Phase C (see [`phase-c.md`](./phase-c.md)).
-
+> **For agentic workers:** this document is the Phase D **spec** (brainstorming output, human-facing) — it defines goal, architecture, file map, task outline, and exit criteria, and it stays stable as the "what and why". Its sibling **plan** (step-level implementation detail, agent-facing) lives at [`../plans/phase-d.md`](../plans/phase-d.md) and is produced from this spec by the `superpowers:writing-plans` skill; the plan iterates as the "how". Execution runs on the plan via `superpowers:subagent-driven-development` one task at a time — same rhythm as the historical [`../plans/phase-c.md`](../plans/phase-c.md) (which predates the spec/plan split and is plan-level only).
+>
 > **Phase D is split across two PRs** on branch `feat/phase-d-account-list`:
 >
 > - **D-prep** — cross-cutting plumbing fixes from the Phase C trial walkthrough. No new commands. Lands first, merges, then —
@@ -18,11 +18,11 @@
 - [`docs/design/commands.md`](../design/commands.md) Part II — `account` section; `--before` / `--after` global flags (new in this plan)
 - [`docs/design/units.md`](../design/units.md) — S1 (TRX) + S2 (TRC-10/20) + the "intentional deviation" note for `account permissions`
 - [`docs/design/mcp-skills-review.md`](../design/mcp-skills-review.md) §4 — Q2 (approvals as a command, deferred), Q5 (Stake 2.0 default) resolutions
-- [`docs/plans/phase-c.md`](./phase-c.md) — task-level structure and commit rhythm template; read this to understand the "scaffold → endpoint → register" 3-commit-per-command pattern and the `superpowers:subagent-driven-development` triad
+- [`docs/plans/phase-c.md`](../plans/phase-c.md) — task-level structure and commit rhythm template; read this to understand the "scaffold → endpoint → register" 3-commit-per-command pattern and the `superpowers:subagent-driven-development` triad
 - [`docs/architecture.md`](../architecture.md) — "Defaults & conventions" decision table
 - [`docs/roadmap.md`](../roadmap.md) — Phase D checklist + cross-walk from old labels
 - [`AGENTS.md`](../../AGENTS.md) — contribution rules (one prod dep, semantic colors, `reportErrorAndExit`, `--json` on every data command)
-- [`docs/plans/status.md`](./status.md) — rolling session state; update at each PR close
+- [`docs/plans/status.md`](../plans/status.md) — rolling session state; update at each PR close
 - Memory `feedback_human_render_alignment` — column alignment rules (number right-align, unit left-align adjacent, 2-space inter-column gap, both-ends truncated address)
 - Memory `feedback_transfer_list_two_styles` — centered vs uncentered transfer lists; why `account transfers` has `direction` and future `token transfers` won't
 - Memory `feedback_commit_rhythm` — atomic 3-commits-per-command rhythm + docs-only commits for investigations
