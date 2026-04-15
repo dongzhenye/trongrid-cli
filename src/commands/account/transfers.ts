@@ -4,7 +4,7 @@ import type { GlobalOptions } from "../../index.js";
 import { printListResult, reportErrorAndExit } from "../../output/format.js";
 import { type CenteredTransferRow, renderCenteredTransferList } from "../../output/transfers.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
-import { applySort, type SortConfig } from "../../utils/sort.js";
+import { applySort, type SortConfig, type SortOptions } from "../../utils/sort.js";
 import { parseTimeRange } from "../../utils/time-range.js";
 import { formatMajor } from "../../utils/tokens.js";
 
@@ -77,6 +77,18 @@ const TRANSFERS_SORT_CONFIG: SortConfig<AccountTransferRow> = {
 	tieBreakField: "timestamp",
 };
 
+/**
+ * Thin wrapper over {@link applySort} + {@link TRANSFERS_SORT_CONFIG}.
+ * Exported so tests can exercise the sort config (default field, tie-break,
+ * unknown-field UsageError) without going through commander.
+ */
+export function sortTransfers(
+	items: AccountTransferRow[],
+	opts: SortOptions,
+): AccountTransferRow[] {
+	return applySort(items, TRANSFERS_SORT_CONFIG, opts);
+}
+
 export function registerAccountTransfersCommand(account: Command, parent: Command): void {
 	account
 		.command("transfers")
@@ -116,7 +128,7 @@ Sort:
 					minTimestamp: range.minTimestamp,
 					maxTimestamp: range.maxTimestamp,
 				});
-				const sorted = applySort(rows, TRANSFERS_SORT_CONFIG, {
+				const sorted = sortTransfers(rows, {
 					sortBy: opts.sortBy,
 					reverse: opts.reverse,
 				});
