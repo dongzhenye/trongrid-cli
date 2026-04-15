@@ -66,6 +66,7 @@ Shipped in PR #3:
 - Decide whether `account resources` moves to `[address]` optional form (currently required) — consistency pass now that `default_address` fallback is cheap.
 - First use of `fingerprint` / timestamp-range pagination (`account transfers` supports `min_timestamp` / `max_timestamp`) — establish the `--before` / `--after` flag convention if needed.
 - Review Wave 1 `renderTxs` — export + test coverage parity with `renderTokenList`. Code-quality reviewer flagged this as Minor; rolling into Wave 2 while adjacent files are touched.
+- **`--fields` in human mode** (Wave 1 trial feedback item #3 in `roadmap.md`): thread a `key` through `humanPairs` so `--fields` applies symmetrically to both output modes. Land before Wave 2 bakes the 2-tuple shape into more commands.
 
 **Execution model**: unchanged — `superpowers:subagent-driven-development` triad per command.
 
