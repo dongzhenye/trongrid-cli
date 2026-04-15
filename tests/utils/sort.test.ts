@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { UsageError } from "../../src/output/format.js";
 import { applySort } from "../../src/utils/sort.js";
 
 const items = [
@@ -42,6 +43,18 @@ describe("applySort", () => {
 		expect(() => applySort(items, config, { sortBy: "unknown" })).toThrow(
 			/unknown sort field.*ts.*fee.*id/i,
 		);
+	});
+
+	it("throws UsageError (not generic Error) on unknown field", () => {
+		// Marker class drives reportErrorAndExit to map to exit 2 (usage
+		// error) instead of 1 (general). Agents read the exit code to
+		// decide whether to retry — exit 2 means "do not retry".
+		try {
+			applySort(items, config, { sortBy: "bogus" });
+			throw new Error("expected applySort to throw");
+		} catch (e) {
+			expect(e).toBeInstanceOf(UsageError);
+		}
 	});
 
 	it("returns empty array unchanged", () => {

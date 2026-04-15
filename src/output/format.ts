@@ -2,6 +2,22 @@ import { TrongridError } from "../api/client.js";
 import { fail, muted } from "./colors.js";
 
 /**
+ * Marker error for malformed user input — bad flag value, unknown
+ * sort field, etc. Mapped to exit code 2 by `reportErrorAndExit` per
+ * the deterministic exit code scheme in cli-best-practices.md §4.
+ *
+ * Distinct from a runtime error (exit 1) so agent callers can decide
+ * not to retry: usage errors will never succeed on retry without a
+ * change to the invocation itself. See AGENTS.md §2 for the contract.
+ */
+export class UsageError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "UsageError";
+	}
+}
+
+/**
  * Format a Unix-millisecond timestamp for human-mode output.
  *
  * Returns `YYYY-MM-DD HH:MM:SS UTC` — ISO 8601 derived, but with the
@@ -147,6 +163,7 @@ function defaultHintFor(err: unknown): string | undefined {
  * Print an error and exit with a deterministic code, per scheme in
  * `docs/design/cli-best-practices.md` §4.
  *
+ *   - {@link UsageError} → 2 (usage error — bad flag value, unknown field)
  *   - {@link TrongridError} → `err.exitCode` (3 for network / auth, 1 otherwise)
  *   - Any other error → 1 (general)
  *
@@ -171,6 +188,12 @@ export function reportErrorAndExit(
 		upstream,
 		hint,
 	});
-	const exitCode = err instanceof TrongridError ? err.exitCode : 1;
+	const exitCode = resolveExitCode(err);
 	process.exit(exitCode);
+}
+
+function resolveExitCode(err: unknown): number {
+	if (err instanceof UsageError) return 2;
+	if (err instanceof TrongridError) return err.exitCode;
+	return 1;
 }

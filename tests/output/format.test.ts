@@ -9,6 +9,7 @@ import {
 	printListResult,
 	reportErrorAndExit,
 	sunToTrx,
+	UsageError,
 } from "../../src/output/format.js";
 
 describe("formatTimestamp", () => {
@@ -302,6 +303,10 @@ describe("reportErrorAndExit", () => {
 
 	it("exits 1 for general Error", () => {
 		expect(() => reportErrorAndExit(new Error("Something went wrong"), {})).toThrow("EXIT:1");
+	});
+
+	it("exits 2 for UsageError (bad flag value)", () => {
+		expect(() => reportErrorAndExit(new UsageError("Unknown sort field"), {})).toThrow("EXIT:2");
 	});
 
 	it("caller-supplied hint overrides default hint", () => {
