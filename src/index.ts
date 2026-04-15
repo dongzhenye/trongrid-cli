@@ -68,6 +68,7 @@ export function parseFields(opts: GlobalOptions): string[] | undefined {
 
 export { program };
 
+import { registerAccountDelegationsCommand } from "./commands/account/delegations.js";
 import { registerAccountResourcesCommand } from "./commands/account/resources.js";
 import { registerAccountTokensCommand } from "./commands/account/tokens.js";
 import { registerAccountTransfersCommand } from "./commands/account/transfers.js";
@@ -88,6 +89,7 @@ registerAccountTokensCommand(account, program);
 registerAccountResourcesCommand(account, program);
 registerAccountTxsCommand(account, program);
 registerAccountTransfersCommand(account, program);
+registerAccountDelegationsCommand(account, program);
 registerTokenCommands(program);
 registerTxCommands(program);
 registerAuthCommands(program);
