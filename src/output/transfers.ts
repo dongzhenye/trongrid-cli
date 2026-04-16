@@ -67,3 +67,56 @@ export function renderCenteredTransferList(rows: CenteredTransferRow[]): void {
 		console.log(`  ${line}`);
 	}
 }
+
+/**
+ * Row type for an **uncentered** transfer list — from and to are peers,
+ * no direction column. Used by `token transfers`, future `tx transfers`.
+ * See memory feedback_transfer_list_two_styles.
+ */
+export interface UncenteredTransferRow {
+	tx_id: string;
+	block_timestamp: number; // unix ms
+	from: string;
+	to: string;
+	value: string; // raw
+	decimals: number;
+	value_major: string;
+}
+
+/**
+ * Human-mode renderer for uncentered transfer lists. `from` and `to`
+ * shown as peers with a → separator. No direction column.
+ *
+ * Column order: time | from | → | to | value_major | tx_id
+ */
+export function renderUncenteredTransferList(rows: UncenteredTransferRow[]): void {
+	if (rows.length === 0) {
+		console.log(muted("No transfers found."));
+		return;
+	}
+	const headerNoun = rows.length === 1 ? "transfer" : "transfers";
+	console.log(muted(`Found ${rows.length} ${headerNoun}:\n`));
+
+	const cells: string[][] = rows.map((r) => [
+		formatTimestamp(r.block_timestamp),
+		truncateAddress(r.from, 4, 4),
+		"→",
+		truncateAddress(r.to, 4, 4),
+		r.value_major,
+		truncateAddress(r.tx_id, 4, 4),
+	]);
+
+	// Right-align value column
+	const valueCol = 4;
+	const valueWidth = Math.max(...cells.map((c) => (c[valueCol] ?? "").length));
+	for (const row of cells) {
+		const cur = row[valueCol] ?? "";
+		row[valueCol] = alignNumber(cur, valueWidth);
+	}
+
+	const widths = computeColumnWidths(cells);
+	const lines = renderColumns(cells, widths);
+	for (const line of lines) {
+		console.log(`  ${line}`);
+	}
+}
