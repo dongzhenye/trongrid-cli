@@ -1,7 +1,7 @@
 <!-- lifecycle: frozen -->
 # Phase F — Contract family
 
-> **For agentic workers:** this document is the Phase F **spec** (brainstorming output, human-facing) — it defines goal, architecture, file map, task outline, and exit criteria. Its sibling **plan** (step-level implementation detail, agent-facing) lives at [`../plans/phase-f.md`](../plans/phase-f.md) and is produced from this spec by the `superpowers:writing-plans` skill.
+> **For agentic workers:** this document is the Phase F **spec** (brainstorming output, human-facing) — it defines goal, architecture, file map, task outline, and exit criteria. Its sibling **plan** (step-level implementation detail, agent-facing) lives at [`../plans/phase-f-contract-family.md`](../plans/phase-f-contract-family.md) and is produced from this spec by the `superpowers:writing-plans` skill.
 >
 > **Phase F ships as a single PR** on branch `feat/phase-f-contract-family`, structured in three logical sections: F-prep (shared plumbing), F-main (contract-specific commands), F-mirror (contract-namespace mirrors of account commands).
 

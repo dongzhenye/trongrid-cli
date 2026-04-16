@@ -40,19 +40,19 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - Stake default V2 → Q5
 
 **Phase D implementation:**
-- Pagination: `--before`/`--after` global flags (no cursor) → [`docs/designs/phase-d.md`](./designs/phase-d.md)
-- Three-layer output: columns.ts → transfers.ts → command → [`docs/designs/phase-d.md`](./designs/phase-d.md)
+- Pagination: `--before`/`--after` global flags (no cursor) → [`docs/designs/phase-d-account-list.md`](./designs/phase-d-account-list.md)
+- Three-layer output: columns.ts → transfers.ts → command → [`docs/designs/phase-d-account-list.md`](./designs/phase-d-account-list.md)
 - `account permissions` structured not list; rejects sort flags → `src/commands/account/permissions.ts`
 - `UsageError` on all validators → exit 2 → `src/output/format.ts`
 - `helpGroup` on sub-command leaves → `_(removed — see git history)_`
 
 **Phase E implementation:**
-- Token type support: TRX + TRC-20 per command; TRC-10/721/1155 → typed `TokenIdentifier` variant, per-command `UsageError` with forward-looking hint → [`docs/designs/phase-e.md`](./designs/phase-e.md)
+- Token type support: TRX + TRC-20 per command; TRC-10/721/1155 → typed `TokenIdentifier` variant, per-command `UsageError` with forward-looking hint → [`docs/designs/phase-e-token-family.md`](./designs/phase-e-token-family.md)
 - `TokenIdentifier` discriminator: `type` (renamed from `kind`) → `src/utils/token-identifier.ts`
 - Batch token info via `/v1/trc20/info?contract_list=` → `src/api/token-info.ts`
 - Hex-to-Base58 + Base58-to-hex conversion → `src/utils/address.ts`
 - Uncentered transfer list renderer (from/to as peers) → `src/output/transfers.ts`
-- Positioning tension documented → `docs/designs/phase-e.md` §Strategic context
+- Positioning tension documented → `docs/designs/phase-e-token-family.md` §Strategic context
 - `account tokens` display: `[TYPE] SYMBOL ID balance` — key before metric, no parentheses on ID column → `src/commands/account/tokens.ts`
 - Human display conventions (§7): thousands separators (US comma), address truncation 6+6, timestamps UTC → `docs/research/cli-best-practices.md`
 - Address truncation minimum 6+6 (anti-spoofing) → `src/output/columns.ts` default

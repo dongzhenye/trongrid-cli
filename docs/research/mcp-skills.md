@@ -117,6 +117,6 @@ Each item below is a separate atomic commit, landed in the order listed.
 3. **`units.md` §3 footnote** — cite TronGrid MCP's convergent `_major` / `_trx` / `balance_unit` direction (A1) and TronScan's deliberate raw-integer choice as the contrast we reject (X2).
 4. **`architecture.md`** — record the five resolved decisions as entries (each one-liner with link back to this doc's §4).
 5. **`roadmap.md` Phase B** — note any new scope items uncovered (e.g., `account approvals` shifts the ~38-command Phase B target by +1).
-6. **Phase C plan** (`docs/plans/phase-c.md`, originally titled "Phase B Wave 1" pre-2026-04-15 regularization) — select 3–5 commands to ship together, applying the conventions confirmed here.
+6. **Phase C plan** (`docs/plans/phase-c-block-account-token.md`, originally titled "Phase B Wave 1" pre-2026-04-15 regularization) — select 3–5 commands to ship together, applying the conventions confirmed here.
 
 No code changes from this review.
