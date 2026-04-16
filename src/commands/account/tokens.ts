@@ -59,7 +59,7 @@ export function renderTokenList(tokens: TokenBalance[]): void {
 	console.log(muted(`Found ${tokens.length} ${noun}:\n`));
 
 	// Column order: type tag | symbol | contract (muted) | balance
-	const header = ["Type", "Symbol", "Contract", "Balance"];
+	const header = ["Type", "Symbol", "ID", "Balance"];
 	const cells: string[][] = tokens.map((t) => {
 		const symbolCol = t.symbol ?? (t.decimals === undefined ? "[?]" : "");
 		const contractCol = muted(truncateAddress(t.contract_address));
