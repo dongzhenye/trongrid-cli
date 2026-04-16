@@ -2,7 +2,7 @@
 
 > **Convention update 2026-04-15.** This plan was originally titled "Phase B Wave 1". It has been regularized to **Phase C** per [`meta/WORKFLOW.md §2`](https://github.com/dongzhenye/meta) (one-level phase letters, no waves inside a phase). Body text and historical task logs still contain "Wave 1" and "Phase B Wave 1" language — those references describe what was shipped at the time and are left in place per the mid-stream-convention-change rule ("don't rewrite shipped history, doc-layer regularization + a note at the top is sufficient"). For the full cross-walk see the top of [`../roadmap.md`](../roadmap.md).
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` to implement this plan one command at a time (implementer → spec review → code review triad per command per [`status.md`](./status.md)). Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` to implement this plan one command at a time (implementer → spec review → code review triad per command per [`handoff.md`](./handoff.md)). Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship the three user-confirmed Wave 1 commands — `block view`, `account txs`, `token view` — together with the minimum global-flag scaffolding each requires (`--confirmed`, `--reverse` / `--sort-by`, `--type`), and extract one new utility module (`token-identifier`). No write-side.
 

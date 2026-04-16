@@ -225,7 +225,7 @@ src/
 | [`docs/design/cli-best-practices.md`](./docs/design/cli-best-practices.md) | CLI best-practices checklist for humans + agents |
 | [`docs/architecture.md`](./docs/architecture.md) | Project-wide tech decisions summary |
 | [`docs/roadmap.md`](./docs/roadmap.md) | Flat phase list (A–O) + cross-walk from old labels |
-| [`docs/plans/status.md`](./docs/plans/status.md) | Rolling session handoff — points at current active phase plan |
+| [`docs/plans/handoff.md`](./docs/plans/handoff.md) | Cold-start agent briefing — state, decisions, reading order |
 
 ---
 
