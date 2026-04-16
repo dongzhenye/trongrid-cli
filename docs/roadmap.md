@@ -127,17 +127,23 @@ Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 
 Spec: [`specs/phase-d.md`](./specs/phase-d.md). Plan: [`plans/phase-d.md`](./plans/phase-d.md).
 
-## Phase E — Token family polish
+## Phase E — Token family polish ✅ (pre-publish, untagged)
 
-**Goal**: Ship the remaining `token` subcommands and close the token-display trial items from Phase C.
+**Goal**: Ship the remaining `token` subcommands and close the token-display trial items from Phase C. Token type support: TRX + TRC-20; TRC-10/721/1155 deferred with forward-looking hints.
 
-- [ ] `token holders <id|address|symbol>` — top holders + distribution
-- [ ] `token transfers <id|address|symbol>` — transfer history of a single token
-- [ ] `token balance <token> <address>` — specific-token balance check
-- [ ] `token allowance <token> <owner> <spender>` — one-pair approval lookup
-- [ ] `account tokens` default display shows resolved symbol as primary identifier (Phase C trial #1); address moves to secondary; on-chain `symbol()` fallback batched with existing `decimals()` call
-- [ ] `account tokens` lookup-failure entries keep unit context with a `[?]` / `(decimals unresolved)` marker (trial #6)
-- [ ] `account tokens` suppress redundant `(raw N)` when major equals raw (trial #7)
+- [x] `token holders <id|address|symbol>` — top TRC-20 holders with share % via `/v1/contracts/{addr}/tokens`
+- [x] `token transfers <id|address|symbol>` — TRC-20 transfer history via `/v1/contracts/{addr}/events?event_name=Transfer`; hex→Base58 conversion; uncentered renderer
+- [x] `token balance <token> [address]` — TRX (S1) + TRC-20 (S2) balance; address optional with default_address
+- [x] `token allowance <token> <owner> <spender>` — TRC-20 allowance via `triggerConstantContract`; ABI-encoded address params
+- [x] `account tokens` default display shows resolved symbol as primary identifier (Phase C trial #1); batch `/v1/trc20/info` replaces per-token RPC
+- [x] `account tokens` lookup-failure entries keep unit context with a `[?]` / `(decimals unresolved)` marker (trial #6)
+- [x] `account tokens` suppress redundant `(raw N)` when major equals raw (trial #7)
+
+**Plumbing shipped**: batch TRC-20 token info client (`src/api/token-info.ts`), hex-to-Base58 + Base58-to-hex conversion (`src/utils/address.ts`), `TokenIdentifier.kind` → `type` rename with TRX/TRC-721/TRC-1155 union variants, uncentered transfer list renderer (`src/output/transfers.ts`).
+
+**Deferred to positioning decision**: TRX holders, TRX network-wide transfers — requires indexed data not available on TronGrid. See `docs/specs/phase-e.md` §Strategic context.
+
+Spec: [`specs/phase-e.md`](./specs/phase-e.md). Plan: [`plans/phase-e.md`](./plans/phase-e.md).
 
 ## Phase F — Contract family
 
