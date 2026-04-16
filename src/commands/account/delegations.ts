@@ -191,6 +191,33 @@ function renderSection(label: string, rows: DelegationRow[]): void {
 	}
 }
 
+export async function accountDelegationsAction(
+	address: string | undefined,
+	parent: Command,
+): Promise<void> {
+	const { getClient, parseFields } = await import("../../index.js");
+	const opts = parent.opts<GlobalOptions>();
+	try {
+		const resolved = resolveAddress(address);
+		const client = getClient(opts);
+		const rows = await fetchAccountDelegations(client, resolved);
+		const sorted = sortDelegations(rows, {
+			sortBy: opts.sortBy,
+			reverse: opts.reverse,
+		});
+		printListResult(sorted, renderDelegations, {
+			json: opts.json,
+			fields: parseFields(opts),
+		});
+	} catch (err) {
+		reportErrorAndExit(err, {
+			json: opts.json,
+			verbose: opts.verbose,
+			hint: addressErrorHint(err),
+		});
+	}
+}
+
 export function registerAccountDelegationsCommand(account: Command, parent: Command): void {
 	account
 		.command("delegations")
@@ -212,26 +239,6 @@ Sort:
 `,
 		)
 		.action(async (address: string | undefined) => {
-			const { getClient, parseFields } = await import("../../index.js");
-			const opts = parent.opts<GlobalOptions>();
-			try {
-				const resolved = resolveAddress(address);
-				const client = getClient(opts);
-				const rows = await fetchAccountDelegations(client, resolved);
-				const sorted = sortDelegations(rows, {
-					sortBy: opts.sortBy,
-					reverse: opts.reverse,
-				});
-				printListResult(sorted, renderDelegations, {
-					json: opts.json,
-					fields: parseFields(opts),
-				});
-			} catch (err) {
-				reportErrorAndExit(err, {
-					json: opts.json,
-					verbose: opts.verbose,
-					hint: addressErrorHint(err),
-				});
-			}
+			await accountDelegationsAction(address, parent);
 		});
 }
