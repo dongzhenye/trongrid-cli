@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript strict, commander.js, Bun test. Native `fetch` via `src/api/client.ts`. `node:crypto` for SHA256 (hex-to-Base58). Zero new production dependencies.
 
-**Spec:** [`docs/specs/phase-e.md`](../specs/phase-e.md)
+**Spec:** [`docs/designs/phase-e.md`](../designs/phase-e.md)
 
 **Branch:** `feat/phase-e-token-family` (create from `main` at start)
 
@@ -2060,11 +2060,11 @@ Update the state table:
 Add to decision ledger:
 
 ```markdown
-- Token type support per command: TRX + TRC-20 required; TRC-10/721/1155 → typed result, per-command rejection → spec `docs/specs/phase-e.md`
+- Token type support per command: TRX + TRC-20 required; TRC-10/721/1155 → typed result, per-command rejection → spec `docs/designs/phase-e.md`
 - TokenIdentifier discriminator: `type` (renamed from `kind`) → `src/utils/token-identifier.ts`
 - Batch token info via /v1/trc20/info → `src/api/token-info.ts`
 - Uncentered transfer list renderer → `src/output/transfers.ts`
-- Positioning tension documented → `docs/specs/phase-e.md` §Strategic context
+- Positioning tension documented → `docs/designs/phase-e.md` §Strategic context
 ```
 
 - [ ] **Step 3: Commit**

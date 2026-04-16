@@ -17,9 +17,9 @@
 
 **Spec references (authoritative):**
 
-- [`docs/designs/commands.md`](../design/commands.md) Part II — `account` section; `--before` / `--after` global flags (new in this plan)
-- [`docs/designs/units.md`](../design/units.md) — S1 (TRX) + S2 (TRC-10/20) + the "intentional deviation" note for `account permissions`
-- [`docs/designs/mcp-skills-review.md`](../design/mcp-skills-review.md) §4 — Q2 (approvals as a command, deferred), Q5 (Stake 2.0 default) resolutions
+- [`docs/designs/commands.md`](./commands.md) Part II — `account` section; `--before` / `--after` global flags (new in this plan)
+- [`docs/designs/units.md`](./units.md) — S1 (TRX) + S2 (TRC-10/20) + the "intentional deviation" note for `account permissions`
+- [`docs/research/mcp-skills.md`](../research/mcp-skills.md) §4 — Q2 (approvals as a command, deferred), Q5 (Stake 2.0 default) resolutions
 - [`docs/plans/phase-c.md`](../plans/phase-c.md) — task-level structure and commit rhythm template; read this to understand the "scaffold → endpoint → register" 3-commit-per-command pattern and the `superpowers:subagent-driven-development` triad
 - [`docs/architecture.md`](../architecture.md) — "Defaults & conventions" decision table
 - [`docs/roadmap.md`](../roadmap.md) — Phase D checklist + cross-walk from old labels
@@ -272,7 +272,7 @@ positioning (tracked in status.md decision ledger).
 
 Dropped: `account resources` consistency pass — verified already shipped
 during Phase B (ex-A+); see the scope-correction note near the top of
-docs/specs/phase-d.md for the audit trail.
+docs/designs/phase-d.md for the audit trail.
 ```
 
 ---

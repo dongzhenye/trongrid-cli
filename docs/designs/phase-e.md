@@ -224,10 +224,10 @@ Allowance  1,000,000.0 USDT
 
 ## Spec references (authoritative)
 
-- [`docs/design/commands.md`](../design/commands.md) Part II — `token` section; token identifier auto-detection; global flags
-- [`docs/design/units.md`](../design/units.md) — S1 (TRX) + S2 (TRC-20) unit shapes
-- [`docs/design/mcp-skills-review.md`](../design/mcp-skills-review.md) §4 — Q2 (approvals), Q4 (token identifier)
-- [`docs/specs/phase-d.md`](./phase-d.md) — three-layer output architecture, column primitives, centered transfer list
+- [`docs/design/commands.md`](./commands.md) Part II — `token` section; token identifier auto-detection; global flags
+- [`docs/design/units.md`](./units.md) — S1 (TRX) + S2 (TRC-20) unit shapes
+- [`docs/design/mcp-skills-review.md`](../research/mcp-skills.md) §4 — Q2 (approvals), Q4 (token identifier)
+- [`docs/designs/phase-d.md`](./phase-d.md) — three-layer output architecture, column primitives, centered transfer list
 - [`docs/architecture.md`](../architecture.md) — one-prod-dep constraint, defaults & conventions
 - [`AGENTS.md`](../../AGENTS.md) — contribution rules, JSON unit-shape contract
 - Memory `feedback_human_render_alignment` — column alignment rules
