@@ -178,7 +178,9 @@ Examples:
 			try {
 				const resolved = resolveAddress(address);
 				const client = getClient(opts);
-				const tokens = await fetchAccountTokens(client, resolved);
+				const allTokens = await fetchAccountTokens(client, resolved);
+				const limit = Number.parseInt(opts.limit, 10);
+				const tokens = allTokens.slice(0, limit);
 
 				printListResult(tokens, renderTokenList, {
 					json: opts.json,
