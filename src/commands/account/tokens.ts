@@ -1,5 +1,6 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
+import { fetchBatchTrc20Info, type Trc20Info } from "../../api/token-info.js";
 import type { GlobalOptions } from "../../index.js";
 import { muted } from "../../output/colors.js";
 import {
@@ -23,6 +24,8 @@ export interface TokenBalance {
 	balance: string;
 	decimals?: number; // Undefined only on lookup failure.
 	balance_major?: string; // Undefined only on lookup failure.
+	symbol?: string;
+	name?: string;
 }
 
 // /v1/accounts/:address returns the account object directly in data[0]
@@ -36,8 +39,12 @@ interface AccountV1Response {
 /**
  * Human-mode renderer for a list of token balances. Emits an empty-state
  * message when the list is empty, a "Found N tokens" header otherwise,
- * and one `[TYPE] contract_address  <major> (raw <raw>)` line per token.
- * Tokens with unresolved decimals fall back to raw-only display.
+ * and one `[TYPE] SYMBOL (contract) balance (raw N)` line per token.
+ *
+ * Column layout (Trial #6/#7):
+ * - Symbol shown when available; [?] when decimals unresolved; empty otherwise.
+ * - Contract address in parentheses, both-ends truncated (4+4).
+ * - Raw annotation suppressed when balance_major === balance (decimals=0 case).
  *
  * Exported for testing — the command action passes this as the human
  * callback to `printListResult`.
@@ -50,19 +57,29 @@ export function renderTokenList(tokens: TokenBalance[]): void {
 	const noun = tokens.length === 1 ? "token" : "tokens";
 	console.log(muted(`Found ${tokens.length} ${noun}:\n`));
 
-	// Column order: type tag | contract (truncated) | balance_major | raw annotation
-	const cells: string[][] = tokens.map((t) => [
-		`[${t.type}]`,
-		truncateAddress(t.contract_address, 4, 4),
-		t.balance_major ?? t.balance,
-		t.balance_major !== undefined ? muted(`(raw ${t.balance})`) : "",
-	]);
+	// Column order: type tag | symbol | contract (truncated) | balance | raw annotation
+	const cells: string[][] = tokens.map((t) => {
+		const symbolCol = t.symbol ?? (t.decimals === undefined ? "[?]" : "");
+		const contractCol = `(${truncateAddress(t.contract_address, 4, 4)})`;
+		const balanceCol = t.balance_major ?? t.balance;
 
-	const balanceCol = 2;
-	const balanceWidth = Math.max(...cells.map((c) => (c[balanceCol] ?? "").length));
+		// Trial #7: suppress redundant raw when major equals raw (e.g. decimals=0)
+		// Trial #6: show "(decimals unresolved)" instead of raw annotation on failure
+		let rawAnnotation = "";
+		if (t.decimals === undefined) {
+			rawAnnotation = muted("(decimals unresolved)");
+		} else if (t.balance_major !== undefined && t.balance_major !== t.balance) {
+			rawAnnotation = muted(`(raw ${t.balance})`);
+		}
+
+		return [`[${t.type}]`, symbolCol, contractCol, balanceCol, rawAnnotation];
+	});
+
+	const balanceColIdx = 3;
+	const balanceWidth = Math.max(...cells.map((c) => (c[balanceColIdx] ?? "").length));
 	for (const row of cells) {
-		const cur = row[balanceCol] ?? "";
-		row[balanceCol] = alignNumber(cur, balanceWidth);
+		const cur = row[balanceColIdx] ?? "";
+		row[balanceColIdx] = alignNumber(cur, balanceWidth);
 	}
 
 	const widths = computeColumnWidths(cells);
@@ -95,18 +112,42 @@ export async function fetchAccountTokens(
 		results.push({ type: "TRC10", contract_address: asset.key, balance: String(asset.value) });
 	}
 
-	// Resolve decimals for BOTH TRC-20 and TRC-10 in parallel. Each type uses
-	// its own resolver (different on-chain fetch path) but the in-loop logic
-	// is uniform because both produce an integer `decimals` value.
+	// Batch-fetch TRC-20 metadata (symbol, name, decimals) in one request
+	// to avoid N individual on-chain calls. Gracefully degrade to individual
+	// resolver on failure so a single endpoint outage doesn't block the command.
+	const trc20Addresses = results.filter((t) => t.type === "TRC20").map((t) => t.contract_address);
+
+	let batchInfo: Map<string, Trc20Info> = new Map();
+	try {
+		batchInfo = await fetchBatchTrc20Info(client, trc20Addresses);
+	} catch {
+		// Silently fall through — all TRC-20 entries will use the individual resolver.
+	}
+
+	// Resolve decimals for BOTH TRC-20 and TRC-10 in parallel. TRC-20 prefers
+	// batch metadata; falls back to individual on-chain call on batch miss.
 	await Promise.all(
 		results.map(async (t) => {
 			try {
-				const decimals =
-					t.type === "TRC20"
-						? await resolveTrc20Decimals(client, t.contract_address)
-						: await resolveTrc10Decimals(client, t.contract_address);
-				t.decimals = decimals;
-				t.balance_major = formatMajor(t.balance, decimals);
+				if (t.type === "TRC20") {
+					const info = batchInfo.get(t.contract_address);
+					if (info) {
+						// Batch hit: populate all metadata fields at once.
+						t.decimals = info.decimals;
+						t.symbol = info.symbol || undefined;
+						t.name = info.name || undefined;
+						t.balance_major = formatMajor(t.balance, info.decimals);
+						return;
+					}
+					// Batch miss: fall back to individual on-chain call.
+					const decimals = await resolveTrc20Decimals(client, t.contract_address);
+					t.decimals = decimals;
+					t.balance_major = formatMajor(t.balance, decimals);
+				} else {
+					const decimals = await resolveTrc10Decimals(client, t.contract_address);
+					t.decimals = decimals;
+					t.balance_major = formatMajor(t.balance, decimals);
+				}
 			} catch {
 				// On lookup failure, leave the fields unset. The raw balance is
 				// still present. Don't fail the whole command for one token.
