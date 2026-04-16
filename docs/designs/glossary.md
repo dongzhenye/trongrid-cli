@@ -1,3 +1,4 @@
+<!-- lifecycle: living -->
 # Terminology Glossary
 
 API-to-CLI field name mapping. All commands reference this doc for consistent user-facing terminology. Entries are grouped by domain.
