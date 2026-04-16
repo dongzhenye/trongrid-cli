@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printResult, reportErrorAndExit } from "../../output/format.js";
+import { printResult, reportErrorAndExit, UsageError } from "../../output/format.js";
 import {
 	detectTokenIdentifier,
 	type TokenIdentifier,
@@ -122,7 +122,15 @@ export async function fetchTokenView(
 	client: ApiClient,
 	id: TokenIdentifier,
 ): Promise<TokenViewData> {
-	return id.kind === "trc10" ? fetchTrc10(client, id.assetId) : fetchTrc20(client, id.address);
+	if (id.type === "trx") {
+		throw new UsageError("Use `trongrid account view <address>` to see TRX balance.");
+	}
+	if (id.type === "trc721" || id.type === "trc1155") {
+		throw new UsageError(
+			`${id.type.toUpperCase()} is not yet supported for this command. Support is planned for a future release.`,
+		);
+	}
+	return id.type === "trc10" ? fetchTrc10(client, id.assetId) : fetchTrc20(client, id.address);
 }
 
 /**
@@ -145,10 +153,10 @@ export function hintForTokenView(err: unknown): string | undefined {
 		// convert a 0x hex address to Base58 so the user isn't stuck guessing.
 		return "Convert 0x hex to Base58 on tronscan.org (paste into the search bar — it auto-resolves to T...).";
 	}
-	if (msg.includes("not yet implemented")) {
+	if (msg.includes("not yet supported for this command")) {
 		// Distinct from the error's scope statement: point at the tracking
 		// channel so users who need the missing standard can watch for it.
-		return "TRC-721 / TRC-1155 are not yet implemented. Open a GitHub issue with your use case so support can be prioritized.";
+		return "TRC-721 / TRC-1155 are not yet supported for this command. Open a GitHub issue with your use case so support can be prioritized.";
 	}
 	if (msg.includes("token not found")) {
 		return "Check the asset ID or address. Cross-check on tronscan.org.";
