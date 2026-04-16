@@ -9,6 +9,22 @@ export class TrongridError extends Error {
 		super(message);
 		this.name = "TrongridError";
 	}
+
+	/**
+	 * Deterministic process exit code, per the four-level scheme documented in
+	 * `docs/design/cli-best-practices.md` §4:
+	 *   0 — success
+	 *   1 — general / unexpected error
+	 *   2 — usage error (bad flag / missing argument) — set by commander's exitOverride
+	 *   3 — network or auth failure — this getter
+	 */
+	get exitCode(): number {
+		// Network-level failure: fetch itself threw (offline, DNS, refused, timeout).
+		if (this.status === 0) return 3;
+		// Auth failure from upstream.
+		if (this.status === 401 || this.status === 403) return 3;
+		return 1;
+	}
 }
 
 export interface ApiClient {
@@ -29,7 +45,21 @@ export function createClient(options: ClientOptions): ApiClient {
 
 	async function request<T>(path: string, init: RequestInit): Promise<T> {
 		const url = `${baseUrl}${path}`;
-		const response = await fetch(url, { ...init, headers });
+		let response: Response;
+		try {
+			response = await fetch(url, { ...init, headers });
+		} catch (err) {
+			// Network-level failure (offline, DNS resolution, refused connection,
+			// TLS handshake, timeout). fetch throws TypeError with cause; we wrap
+			// it in TrongridError with status 0 (no response received) and a
+			// friendly message that names the fix. Original error preserved in
+			// upstream for --verbose.
+			throw new TrongridError(
+				`Cannot reach TronGrid API at ${baseUrl}. Check your internet connection or try a different --network. Run with --verbose for details.`,
+				0,
+				err,
+			);
+		}
 
 		if (!response.ok) {
 			let upstream: unknown;

@@ -134,41 +134,34 @@ Total production deps: **1** (commander). No HTTP library (native fetch), no col
 
 ## Command Structure
 
-### Pattern: resource → action (gh style)
+Two-level noun-verb grammar, `gh`-style:
 
 ```bash
 trongrid <resource> <action> [target] [flags]
 ```
 
-**Evidence** — industry patterns:
+Key design commitments:
 
-| Tool | Pattern | Our match |
-|------|---------|-----------|
-| gh | `gh repo view`, `gh pr list` | resource → action |
-| gcloud | `gcloud compute instances list` | service → resource → action |
-| aws | `aws s3 ls`, `aws ec2 describe-instances` | service → action |
-| kubectl | `kubectl get pods` | action → resource |
+- **Action-first positional ordering** — identifier (address / hash / id) is the trailing positional (`account tokens <address>`, not `account <address> tokens`). Matches the ecosystem convention used by gh / kubectl / aws / solana / aptos, supports optional default-address fallback, and scales uniformly to address-less commands.
+- **Coupled compensating mechanisms** — linguistic naturalness that a target-first grammar would have provided is recovered through (1) default address in config, (2) smart identifier routing for bare addresses, and (3) possessive prose in help text, rather than through syntax.
+- **`view` for single-item lookup** — matches `gh`'s verb choice; `list` for many-item, domain verbs for specialized actions.
+- **Entity hierarchy** — top-level resources are blockchain entities with independent attributes; account-scoped views of the same concept live under `account`.
 
-API service CLIs (gh, gcloud, aws) use resource-first. We follow gh's 2-level pattern.
+The full design discussion (alternatives considered, six-point rationale for action-first, the three coupling mechanisms, naming and hierarchy tables) and the complete command reference both live in [`design/commands.md`](./design/commands.md). Four-tool competitive evidence base and quantitative scoring backing these decisions lives in [`design/competitors.md` §Decision 1](./design/competitors.md#decision-1-command-argument-ordering).
 
-### Naming convention: `view` for single-item lookup
+### Defaults & conventions (Phase B baseline)
 
-| Action | Verb | Evidence |
-|--------|------|---------|
-| Single item | `view` | gh uses `view` (not `get` or `info`) |
-| List items | `list` | Universal across all CLIs |
-| Specific data | Domain verb | `decode`, `estimate`, `calc`, etc. |
+Five operational decisions resolved 2026-04-14 from the [MCP/Skills competitor review](./design/mcp-skills-review.md). Each is a load-bearing default applied uniformly across the Phase B command surface; flags exist as escape hatches.
 
-### Entity hierarchy
+| # | Decision | Default | Escape | Why |
+|---|---|---|---|---|
+| 1 | **Confirmed-state reads** | Latest (~3s, may reorg ≤0.01%) | `--confirmed` (~60s, irreversible) | Freshness wins for 99.99% of read use cases; opt-in for high-stakes (exchange deposits, settlement, bridges). |
+| 2 | **`account approvals` as new command** | n/a (additive) | n/a | Audit workflow starts from owner, not from token; complements existing `token allowance`. |
+| 3 | **Sort customization shape** | Per-command default field + direction | `--reverse`/`-r` (flip) + `--sort-by <field>` | Unix-conformant (`ls -r`, `sort -r`); `--order asc\|desc` dropped as redundant. |
+| 4 | **Token identifier dispatch** | Auto-detect TRC-10 / TRC-20+ from input shape | `--type trc10\|trc20\|trc721\|trc1155` | Token standard is implementation; users care which coin. |
+| 5 | **Stake version** | Stake 2.0 (current) | `--stake-v1` (legacy escape) | 1.0 in active sunset upstream; mirroring legacy as default propagates deprecated behavior for years. |
 
-Top-level resources are **blockchain entities with independent attributes**. Account-level views of the same concept go under `account`.
-
-| Resource | Global commands | Also under account? |
-|----------|----------------|-------------------|
-| energy | price, calc | account resources |
-| bandwidth | price | account resources |
-| token | view, holders, transfers | account tokens |
-| tx | view, broadcast, pending | account txs |
+Detailed rationale for each (alternatives considered, competitor cross-reference, recommendation evolution) lives in [`design/mcp-skills-review.md`](./design/mcp-skills-review.md) §4. Concrete flag specs and per-command application live in [`design/commands.md`](./design/commands.md) Part II.
 
 ## Auth & Config
 
@@ -212,52 +205,28 @@ Networks: mainnet (default), shasta, nile. Override per-command with `--network`
 | Aspect | Human Mode (default) | JSON Mode (`--json`) |
 |--------|---------------------|---------------------|
 | Format | Aligned key-value, tables, colors | Raw JSON object |
-| Units | TRX (human-readable) | Both sun + TRX (see below) |
+| Units | Major unit (TRX, token) | Raw + major + metadata per unit shape contract |
 | Colors | `styleText` (respects `NO_COLOR`) | None |
 | Errors | Friendly message + hint + upstream detail | `{"error": "...", "code": "...", "detail": "...", "upstream": {...}}` |
 | Pagination | `--limit` + summary | Full page + `next_cursor` |
 
-**Unit handling**: This is more nuanced than "human gets TRX, machine gets sun." The core problem: raw sun values without metadata cause AI agents to misinterpret amounts by 6 orders of magnitude (e.g., 35.2 TRX reported as 35.2 million TRX). This affects 20+ read tools and 6+ write tools with resource safety risk.
+**Unit handling** — the core problem: raw integer values without metadata cause agents to misread on-chain amounts by 6 orders of magnitude (e.g., 35.2 TRX reported as 35.2 million TRX). This affects 20+ read tools and 6+ write tools with resource-safety risk.
 
-CLI follows the same unit convention used in the TronGrid MCP server. The naming principle: **use the explicit unit name when possible; fall back to `_major` only when the unit is variable.**
+The full contract lives in [`design/units.md`](./design/units.md): seven orthogonal principles (P1–P7) with five named scenarios (S1–S5) as reference shortcuts. Core commitments:
 
-"Major" comes from monetary terminology — major unit (TRX, USD) vs minor unit (sun, cent). The suffix was chosen over alternatives like `_formatted` (implies string beautification, not unit conversion), `_normalized` (statistics ambiguity), and `_standard` (overloaded in tech contexts).
+- **Always provide the major-unit value** (P1) alongside raw, so human/agent communication stays grounded in natural units regardless of storage.
+- **Always provide conversion metadata when possible** (P2) — `{head}_unit` when the minor unit has an ecosystem-recognized name (`sun`), `decimals` when it does not, both when both are available.
+- **Scalable tokens (TRC-20/TRC-10)** follow S2: `{head}` + `decimals` + `{head}_major`. Head word is scenario-specific (`balance` for read-side account balances per TIP-20 `balanceOf`).
+- **Industry metrics** (prices, market caps) carry explicit unit suffixes (`marketcap_usd`, `price_usd` + `price_trx`) per P5.
+- **Upstream-locked fields** (FullNode read-through and write-side wire contracts) are preserved verbatim per P7 — correctness constraint.
 
-**A. TRX amounts** — raw sun preserved, `_trx` appended:
-
-```json
-{
-  "balance": 35216519,
-  "balance_unit": "sun",
-  "balance_trx": "35.216519"
-}
-```
-
-The major unit is always TRX, so the suffix is explicit: `_trx`. No ambiguity — the reader knows the unit from the field name alone.
-
-**B. TRC-20 token amounts** — raw integer preserved, decimals + `_major` appended:
-
-```json
-{
-  "balance": "38927318000000000",
-  "token_decimals": 6,
-  "balance_major": "38927318000.0"
-}
-```
-
-Here `_major` is a pragmatic fallback, not a preference. The ideal would be `_usdt` or `_usdc`, but token symbols are unreliable as field name suffixes — they can contain Unicode characters (Chinese token names), special characters, or even collide with existing field names. `_major` is the stable, universal suffix that works for any token.
-
-**C. Other units** — explicit unit annotation in field names to prevent ambiguity:
-- Single-unit fields: `marketcap_usd` (not `marketcap`)
-- Multi-unit fields: `price_usd`, `price_trx` side by side
-
-**D. Write operations** (transaction construction): raw sun/integer values are the required input format. Field names stay unchanged for FullNode compatibility. Unit guidance provided in help text and command descriptions only.
+See `design/units.md` §2 for the principles, §4 for scenarios, and §5 for a worked example.
 
 | Scenario | Human mode | JSON mode |
 |----------|-----------|-----------|
-| TRX amounts | `35.22 TRX` | `balance` (sun) + `balance_trx` + `balance_unit` |
-| TRC-20 tokens | `38,927.318 USDT` | `balance` (raw) + `balance_major` + `token_decimals` |
-| Prices | `$0.067` | `price_usd` + `price_trx` |
+| TRX amounts | `35.22 TRX` | `balance` (sun) + `balance_unit` + `decimals` + `balance_trx` (S1) |
+| TRC-20/TRC-10 tokens | `38,927.318 USDT` | `balance` (raw) + `balance_major` + `decimals` |
+| Prices | `$0.067` | `price_usd` + `price_trx` (optional) |
 | Transaction input | N/A | `amount` in sun (raw, FullNode-compatible) |
 
 Human mode shows only the major-unit value. JSON mode always includes both raw and major values with explicit unit metadata — agents never need to guess or convert.

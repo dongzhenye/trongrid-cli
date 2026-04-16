@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { printError, printResult } from "../../output/format.js";
+import { formatTimestamp, printResult, reportErrorAndExit } from "../../output/format.js";
 
 interface BlockData {
 	block_id: string;
@@ -33,12 +33,22 @@ export async function fetchLatestBlock(client: ApiClient): Promise<BlockData> {
 	};
 }
 
-export function registerBlockCommands(parent: Command): void {
-	const block = parent.command("block").description("Block queries");
+export function registerBlockCommands(parent: Command): Command {
+	const block = parent.command("block").description("Block queries").helpGroup("Read commands:");
 
 	block
 		.command("latest")
-		.description("Get the latest block (chain head)")
+		.description("Get the latest block (chain head) (typical first step)")
+		.helpGroup("Read commands:")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid block latest
+  $ trongrid block latest --json
+  $ trongrid block latest --fields number,block_id
+`,
+		)
 		.action(async () => {
 			// Lazy import to avoid triggering program.parse() during tests
 			const { getClient, parseFields } = await import("../../index.js");
@@ -49,23 +59,23 @@ export function registerBlockCommands(parent: Command): void {
 				const data = await fetchLatestBlock(client);
 
 				printResult(
-					data as unknown as Record<string, unknown>,
+					data,
 					[
-						["Block", String(data.number)],
-						["Block ID", data.block_id],
-						["Time", new Date(data.timestamp).toISOString()],
-						["Producer", data.witness_address],
-						["Transactions", String(data.tx_count)],
+						["number", "Block", String(data.number)],
+						["block_id", "Block ID", data.block_id],
+						["timestamp", "Time", formatTimestamp(data.timestamp)],
+						["witness_address", "Producer", data.witness_address],
+						["tx_count", "Transactions", String(data.tx_count)],
 					],
 					{ json: opts.json, fields: parseFields(opts) },
 				);
 			} catch (err) {
-				printError(err instanceof Error ? err.message : String(err), {
+				reportErrorAndExit(err, {
 					json: opts.json,
 					verbose: opts.verbose,
-					upstream: (err as { upstream?: unknown }).upstream,
 				});
-				process.exit(1);
 			}
 		});
+
+	return block;
 }
