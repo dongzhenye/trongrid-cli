@@ -467,7 +467,7 @@ describe("renderTokenList (human output)", () => {
 		expect(row).toContain("[TRC20]");
 		expect(row).toContain("USDT");
 		// Contract address rendered in parentheses with both-ends truncation (4+4).
-		expect(row).toContain("(TR7N...Lj6t)");
+		expect(row).toContain("(TR7NHq...gjLj6t)");
 		expect(row).toContain("1.234");
 		expect(row).toContain("(raw 1234000)");
 	});
@@ -485,7 +485,7 @@ describe("renderTokenList (human output)", () => {
 		const row = captured[2]; // skip header
 		expect(row).toContain("[TRC20]");
 		expect(row).toContain("[?]");
-		expect(row).toContain("(TXYZ...xxxx)");
+		expect(row).toContain("(TXYZun...owxxxx)");
 		expect(row).toContain("500000");
 		expect(row).toContain("(decimals unresolved)");
 		expect(row).not.toContain("(raw");
@@ -532,7 +532,7 @@ describe("renderTokenList (human output)", () => {
 		renderTokenList(tokens);
 		const row = captured[2]; // skip header
 		expect(row).toContain("USDT");
-		expect(row).toContain("(TR7N...Lj6t)");
+		expect(row).toContain("(TR7NHq...gjLj6t)");
 	});
 
 	it("suppresses (raw N) when balance_major equals balance (decimals=0)", () => {

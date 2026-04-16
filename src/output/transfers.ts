@@ -47,10 +47,10 @@ export function renderCenteredTransferList(rows: CenteredTransferRow[]): void {
 		formatTimestamp(r.timestamp),
 		r.direction,
 		r.amount_major,
-		r.token_symbol ?? truncateAddress(r.token_address, 4, 4),
+		r.token_symbol ?? truncateAddress(r.token_address),
 		r.direction === "out" ? "→" : "←",
-		truncateAddress(r.counterparty, 4, 4),
-		truncateAddress(r.tx_id, 4, 4),
+		truncateAddress(r.counterparty),
+		truncateAddress(r.tx_id, 4, 4), // tx hashes aren't spoofable — keep short
 	]);
 
 	// Right-align amount column to max width in the batch.
@@ -100,11 +100,11 @@ export function renderUncenteredTransferList(rows: UncenteredTransferRow[]): voi
 	const header = ["Time", "From", "", "To", "Amount", "TX"];
 	const cells: string[][] = rows.map((r) => [
 		formatTimestamp(r.block_timestamp),
-		truncateAddress(r.from, 4, 4),
+		truncateAddress(r.from),
 		"→",
-		truncateAddress(r.to, 4, 4),
+		truncateAddress(r.to),
 		r.value_major,
-		truncateAddress(r.tx_id, 4, 4),
+		truncateAddress(r.tx_id, 4, 4), // tx hashes aren't spoofable — keep short
 	]);
 
 	const allRows = [header, ...cells];

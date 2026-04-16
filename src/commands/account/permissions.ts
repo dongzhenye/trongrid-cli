@@ -136,7 +136,7 @@ function renderBlock(label: string, block: PermissionBlock): void {
 	console.log(`  keys:`);
 	const cells: string[][] = block.keys.map((k) => [
 		`weight ${k.weight}`,
-		truncateAddress(k.address, 4, 4),
+		truncateAddress(k.address),
 	]);
 	const widths = computeColumnWidths(cells);
 	const lines = renderColumns(cells, widths);
