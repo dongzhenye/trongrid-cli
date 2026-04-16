@@ -1,6 +1,6 @@
 # Status — rolling session handoff
 
-**Living doc.** Last updated: 2026-04-16 (Phase D complete on `feat/phase-d-account-list`, PR pending).
+**Living doc.** Last updated: 2026-04-16 (Phase D merged via PR #6, Phase E next).
 
 **Next-session one-liner**: `读 docs/plans/status.md 继续当前 phase`
 
@@ -14,10 +14,9 @@ That line is self-contained — this doc briefs a cold agent on state, locked-in
 
 | | |
 |---|---|
-| `main` tip | `6a5aaf9` — merge Phase C (ex-Wave-1) |
-| Active branch tip | `708b012` on `feat/phase-d-account-list` — M3.3 (last D-main code commit) |
+| `feat/phase-a` tip | `0d53f14` — merge Phase D (#6) |
 | Latest tagged release | none — first tag is Phase I (v0.1.0) |
-| Active phase | **Phase E** — starts after Phase D merges |
+| Active phase | **Phase E** — Token family polish |
 | Tests | 280/280 passing (169 baseline + 111 new from Phase D) |
 | Working tree | clean |
 | Prod deps | 1 — `commander` |
