@@ -234,12 +234,22 @@ trongrid account transfers TR... --json --fields from,to,amount_major
 
 ### 8.3 Hidden fields
 
-Some fields exist in JSON but are not in the human-mode default columns (e.g., `block_number`, `token_address`, `direction`). These fields are available via `--fields` in JSON mode. Making them accessible in human mode via `--fields` is deferred (requires renderer changes across all list commands).
+Some fields exist in JSON but are not in the human-mode default columns (e.g., `block_number`, `token_address`, `direction`). "Hidden" means **not in the default human column set** — nothing else is restricted:
+
+| Capability | Hidden fields | Default fields |
+|------------|--------------|----------------|
+| JSON output | Always included | Always included |
+| `--fields` projection | Selectable | Selectable |
+| `--sort-by` | Sortable | Sortable |
+| Filters (`--direction`, etc.) | Filterable | Filterable |
+| Human default display | **Not shown** | Shown |
+
+In other words, hidden fields participate fully in sorting, filtering, and field projection — they are only absent from the default human column layout. Making them displayable in human mode via `--fields` is deferred (requires renderer changes across all list commands).
 
 ### 8.4 Design decisions
 
 - **No `--hide`/`--exclude` flag.** Exclusive selection (`--hide field1`) is rare enough that `--json | jq 'del(.field)'` covers it. Two flags create ambiguity.
-- **Direction as a virtual field.** `direction` (`in`/`out`) is computable from subject address + from/to. Available as a JSON field and a filter (`--direction in|out`), but not a default human column (from/to + muting conveys direction visually).
+- **Direction as a virtual field.** `direction` (`in`/`out`) is computable from subject address + from/to. Not a default human column (from/to + muting conveys direction visually), but fully participates in sorting (`--sort-by direction`), filtering (`--direction in|out`), and field projection (`--fields direction`).
 
 ---
 
