@@ -6,6 +6,15 @@ const HEX_REGEX = /^41[0-9a-fA-F]{40}$/;
 
 const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
+/** Lookup table: Base58 char → value (0–57). Invalid chars map to -1. */
+const BASE58_DECODE: Int8Array = (() => {
+	const table = new Int8Array(256).fill(-1);
+	for (let i = 0; i < BASE58_ALPHABET.length; i++) {
+		table[BASE58_ALPHABET.charCodeAt(i)] = i;
+	}
+	return table;
+})();
+
 function base58Encode(bytes: Uint8Array): string {
 	// Count leading zero bytes → leading '1's in Base58
 	let leadingZeros = 0;
@@ -79,6 +88,74 @@ export function hexToBase58(hex: string): string {
 	payload.set(checksum, 21);
 
 	return base58Encode(payload);
+}
+
+/**
+ * Convert a TRON Base58Check address to the 20-byte address hex string
+ * (without any prefix — suitable for ABI parameter encoding).
+ *
+ * Algorithm:
+ *   1. Base58 decode the 25-byte payload (21-byte address + 4-byte checksum).
+ *   2. Verify the checksum (double SHA256 of prefix+address, first 4 bytes).
+ *   3. Return bytes [1..20] as a lowercase 40-char hex string (no "41" prefix).
+ *
+ * Throws a plain Error on malformed input (not UsageError) — callers that
+ * need a UsageError should wrap this in validateAddress first.
+ */
+export function base58ToHex(address: string): string {
+	// Base58 decode: variable-length big-integer conversion
+	const bytes = [0];
+	for (const char of address) {
+		const digit = BASE58_DECODE[char.charCodeAt(0)];
+		if (digit < 0) {
+			throw new Error(`Invalid Base58 character in address: "${char}"`);
+		}
+		let carry = digit;
+		for (let i = 0; i < bytes.length; i++) {
+			carry += bytes[i] * 58;
+			bytes[i] = carry & 0xff;
+			carry >>= 8;
+		}
+		while (carry > 0) {
+			bytes.push(carry & 0xff);
+			carry >>= 8;
+		}
+	}
+
+	// Reverse (big-endian), then prepend leading zeros for leading '1' chars
+	// findIndex returns -1 if all chars are '1' (edge case: all-1 address → leadingOnes = address.length)
+	const firstNonOne = [...address].findIndex((c) => c !== "1");
+	const leadingOnes = firstNonOne === -1 ? address.length : firstNonOne;
+	const reversed = bytes.reverse();
+	const result = new Uint8Array(leadingOnes + reversed.length);
+	for (let i = 0; i < reversed.length; i++) {
+		result[leadingOnes + i] = reversed[i];
+	}
+
+	// TRON Base58Check payload is always 25 bytes:
+	//   byte 0:    0x41 (TRON network prefix)
+	//   bytes 1–20: 20-byte address
+	//   bytes 21–24: checksum (first 4 bytes of SHA256(SHA256(bytes 0–20)))
+	if (result.length !== 25) {
+		throw new Error(
+			`Invalid TRON address length after decode: got ${result.length} bytes, expected 25`,
+		);
+	}
+
+	const addrBytes = result.slice(0, 21);
+	const checksum = result.slice(21, 25);
+	const hash1 = createHash("sha256").update(addrBytes).digest();
+	const hash2 = createHash("sha256").update(hash1).digest();
+	for (let i = 0; i < 4; i++) {
+		if (checksum[i] !== hash2[i]) {
+			throw new Error(`Invalid Base58Check checksum for address "${address}"`);
+		}
+	}
+
+	// Return the 20 address bytes (skip the 0x41 prefix byte) as hex
+	return Array.from(result.slice(1, 21))
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("");
 }
 
 export function isValidAddress(address: string): boolean {
