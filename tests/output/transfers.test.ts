@@ -296,4 +296,26 @@ describe("renderTransferList", () => {
 		// Should NOT contain seconds (the detail format has HH:MM:SS)
 		expect(joined).not.toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
 	});
+
+	it("right-aligns Amount header to match data cell width (number + unit)", () => {
+		// Two rows with different unit lengths to verify max-unit-width logic.
+		const rows = [
+			mkTransferRow({ value_major: "1000.53", token_symbol: "USDT" }),
+			mkTransferRow({
+				tx_id: "bdf8d93b0000000000000000000000000000000000000000000000000000dcba",
+				value_major: "500.00",
+				token_symbol: "WTRX",
+			}),
+		];
+		renderTransferList(rows);
+		const headerLine = captured[1]!;
+		const dataLine1 = captured.find((l) => l.includes("1,000.53 USDT"))!;
+		expect(headerLine).toBeDefined();
+		expect(dataLine1).toBeDefined();
+		// "Amount" header should end at the same column position as "USDT"/"WTRX"
+		// (the right edge of the data cell).
+		const headerAmountEnd = headerLine.indexOf("Amount") + "Amount".length;
+		const dataUsdtEnd = dataLine1.indexOf("USDT") + "USDT".length;
+		expect(headerAmountEnd).toBe(dataUsdtEnd);
+	});
 });
