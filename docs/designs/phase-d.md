@@ -1,3 +1,4 @@
+<!-- lifecycle: frozen -->
 # Phase D — Account list family + Phase-C trial plumbing
 
 > **For agentic workers:** this document is the Phase D **spec** (brainstorming output, human-facing) — it defines goal, architecture, file map, task outline, and exit criteria, and it stays stable as the "what and why". Its sibling **plan** (step-level implementation detail, agent-facing) lives at [`../plans/phase-d.md`](../plans/phase-d.md) and is produced from this spec by the `superpowers:writing-plans` skill; the plan iterates as the "how". Execution runs on the plan via `superpowers:subagent-driven-development` one task at a time — same rhythm as the historical [`../plans/phase-c.md`](../plans/phase-c.md) (which predates the spec/plan split and is plan-level only).

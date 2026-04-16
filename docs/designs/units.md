@@ -1,3 +1,4 @@
+<!-- lifecycle: living -->
 # Unit Shape: JSON Output Contract for Quantities
 
 > **TL;DR** — Every quantity field in `trongrid-cli --json` output follows a small set of orthogonal principles (P1–P7). Recurring combinations are captured as named scenarios (S1–S5) for quick reference. A new situation derives its shape by applying the principles; scenario labels are shortcuts, not a classification.
