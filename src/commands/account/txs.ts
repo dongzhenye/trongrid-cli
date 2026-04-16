@@ -185,7 +185,7 @@ export function renderTxs(items: AccountTxRow[], subjectAddress?: string): void 
 	// Build header
 	const header: string[] = ["TX", "Time (UTC)"];
 	if (showConfirmed) header.push("Confirmed");
-	header.push("Type / Method", "From", "", "To", "Amount", "Fee");
+	header.push("Type/Method", "From", "", "To", "Amount", "Fee");
 	if (showResult) header.push("Result");
 
 	// Build data rows — collect amount/fee numbers separately for alignment

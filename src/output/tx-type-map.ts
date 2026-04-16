@@ -1,6 +1,6 @@
 /**
  * Static mapping from chain transaction types (contract_type) to
- * human-readable display names for the "Type / Method" column.
+ * human-readable display names for the "Type/Method" column.
  *
  * JSON output keeps the raw contract_type unchanged — this mapping
  * is exclusively for human-mode rendering.

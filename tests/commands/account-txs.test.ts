@@ -343,10 +343,10 @@ describe("renderTxs (human output)", () => {
 		expect(captured[0]).toContain("Found 2 transactions");
 	});
 
-	it("header includes Type / Method, From, To, Amount columns", () => {
+	it("header includes Type/Method, From, To, Amount columns", () => {
 		renderTxs([sampleItem]);
 		const headerRow = captured[1] ?? "";
-		expect(headerRow).toContain("Type / Method");
+		expect(headerRow).toContain("Type/Method");
 		expect(headerRow).toContain("From");
 		expect(headerRow).toContain("To");
 		expect(headerRow).toContain("Amount");
