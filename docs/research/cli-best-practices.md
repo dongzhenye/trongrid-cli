@@ -339,7 +339,19 @@ Utility: `truncateAddress()` in `src/output/columns.ts`, default (6, 6).
 
 ### Timestamps
 
-UTC always. Format: `YYYY-MM-DD HH:MM:SS UTC`. No local time (cross-machine reproducibility). Utility: `formatTimestamp()` in `src/output/format.ts`.
+UTC always. Format: `YYYY-MM-DD HH:MM:SS UTC` (detail views) or `YYYY-MM-DD HH:MM` (list columns, when UTC is in the column header). No local time (cross-machine reproducibility). Utility: `formatTimestamp()` in `src/output/format.ts`.
+
+### Empty / missing values
+
+Human mode: display `–` (en-dash, U+2013) or `-` (hyphen) for absent values. Never leave a column cell visually empty — it breaks alignment scanning and is ambiguous (empty string vs missing data). Render the placeholder with `muted()` color.
+
+JSON mode: use `null` or omit the field per the unit shape contract. Never use `"-"` strings in JSON.
+
+### Column headers for list commands
+
+All list commands must have a header row by default. The header is rendered with `muted()` color, data rows are plain. Omit headers only when the layout is self-evident (e.g., single-column output).
+
+See also: [`tx-list-display.md`](./tx-list-display.md) for the transaction list column design (conditional columns, subject-address muting, Type/Method mapping).
 
 ---
 
