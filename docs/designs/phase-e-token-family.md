@@ -1,7 +1,7 @@
 <!-- lifecycle: frozen -->
 # Phase E — Token family polish
 
-> **For agentic workers:** this document is the Phase E **spec** (brainstorming output, human-facing) — it defines goal, architecture, file map, task outline, and exit criteria, and it stays stable as the "what and why". Its sibling **plan** (step-level implementation detail, agent-facing) lives at [`../plans/phase-e.md`](../plans/phase-e.md) and is produced from this spec by the `superpowers:writing-plans` skill; the plan iterates as the "how".
+> **For agentic workers:** this document is the Phase E **spec** (brainstorming output, human-facing) — it defines goal, architecture, file map, task outline, and exit criteria, and it stays stable as the "what and why". Its sibling **plan** (step-level implementation detail, agent-facing) lives at [`../plans/phase-e-token-family.md`](../plans/phase-e-token-family.md) and is produced from this spec by the `superpowers:writing-plans` skill; the plan iterates as the "how".
 >
 > **Phase E ships as a single PR** on branch `feat/phase-e-token-family`, structured in two logical sections: E-prep (plumbing, no new commands) then E-main (four new commands). Unlike Phase D's two-PR split, the plumbing surface is smaller here and the dependency is tighter — batch token info utility is consumed immediately by both the `account tokens` fixes and the new commands.
 
@@ -228,7 +228,7 @@ Allowance  1,000,000.0 USDT
 - [`docs/design/commands.md`](./commands.md) Part II — `token` section; token identifier auto-detection; global flags
 - [`docs/design/units.md`](./units.md) — S1 (TRX) + S2 (TRC-20) unit shapes
 - [`docs/design/mcp-skills-review.md`](../research/mcp-skills.md) §4 — Q2 (approvals), Q4 (token identifier)
-- [`docs/designs/phase-d.md`](./phase-d.md) — three-layer output architecture, column primitives, centered transfer list
+- [`docs/designs/phase-d-account-list.md`](./phase-d-account-list.md) — three-layer output architecture, column primitives, centered transfer list
 - [`docs/architecture.md`](../architecture.md) — one-prod-dep constraint, defaults & conventions
 - [`AGENTS.md`](../../AGENTS.md) — contribution rules, JSON unit-shape contract
 - Memory `feedback_human_render_alignment` — column alignment rules

@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript strict, bun test, commander, zero new dependencies. Keccak-256 self-implemented (~100 lines).
 
-**Spec:** [`docs/designs/phase-f.md`](../designs/phase-f.md)
+**Spec:** [`docs/designs/phase-f-contract-family.md`](../designs/phase-f-contract-family.md)
 
 **Branch:** `feat/phase-f-contract-family`
 
@@ -2538,7 +2538,7 @@ In `docs/roadmap.md`, update Phase F section:
 In `docs/plans/handoff.md`:
 - Update state table: `Active phase` → Phase G, test count → ~420, commands → 27 across 7 resources
 - Add Phase F entries to decision ledger:
-  - Multi-entry principle → `docs/designs/phase-f.md`
+  - Multi-entry principle → `docs/designs/phase-f-contract-family.md`
   - `deployer` naming (not `origin` or `creator`) → glossary
   - `contract call`/`estimate` deferred → spec Q1
   - `contract permissions` not applicable for CA → spec
