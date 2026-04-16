@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import {
 	type CenteredTransferRow,
 	renderCenteredTransferList,
+	renderUncenteredTransferList,
+	type UncenteredTransferRow,
 } from "../../src/output/transfers.js";
 
 describe("renderCenteredTransferList", () => {
@@ -85,5 +87,71 @@ describe("renderCenteredTransferList", () => {
 		const dot1 = row1.indexOf("1.000000") + 1; // position of "."
 		const dot2 = row2.indexOf("500.000000") + 3;
 		expect(dot1).toBe(dot2);
+	});
+});
+
+describe("renderUncenteredTransferList", () => {
+	const originalNoColor = process.env.NO_COLOR;
+	const originalLog = console.log;
+	let captured: string[];
+
+	beforeEach(() => {
+		process.env.NO_COLOR = "1";
+		captured = [];
+		console.log = (msg?: unknown) => {
+			captured.push(typeof msg === "string" ? msg : String(msg));
+		};
+	});
+
+	afterEach(() => {
+		console.log = originalLog;
+		if (originalNoColor !== undefined) {
+			process.env.NO_COLOR = originalNoColor;
+		} else {
+			delete process.env.NO_COLOR;
+		}
+	});
+
+	const sampleRows: UncenteredTransferRow[] = [
+		{
+			tx_id: "a1b2c3d4e5f6000000000000000000000000000000000000000000000000abcd",
+			block_timestamp: 1744694400000,
+			from: "TQsampleFromAddress000000000000000A",
+			to: "TQsampleToAddress0000000000000000BB",
+			value: "5000000",
+			decimals: 6,
+			value_major: "5.000000",
+		},
+		{
+			tx_id: "f1e2d3c4b5a6000000000000000000000000000000000000000000000000dcba",
+			block_timestamp: 1744694100000,
+			from: "TQsampleFromAddress000000000000000C",
+			to: "TQsampleToAddress0000000000000000DD",
+			value: "250000000",
+			decimals: 6,
+			value_major: "250.000000",
+		},
+	];
+
+	it("renders empty state for 0 rows", () => {
+		renderUncenteredTransferList([]);
+		expect(captured[0]).toContain("No transfers found.");
+	});
+
+	it("singularizes header and shows → for 1 row", () => {
+		const first = sampleRows[0];
+		if (!first) throw new Error("sampleRows[0] missing");
+		renderUncenteredTransferList([first]);
+		expect(captured[0]).toContain("Found 1 transfer");
+		expect(captured[0]).not.toContain("transfers");
+		const lines = captured.join("\n");
+		expect(lines).toContain("→");
+		expect(lines).toContain("5.000000");
+	});
+
+	it("pluralizes header for multiple rows", () => {
+		renderUncenteredTransferList(sampleRows);
+		expect(captured[0]).toContain("Found 2 transfers");
+		expect(captured.length).toBeGreaterThanOrEqual(3); // header + 2 rows
 	});
 });
