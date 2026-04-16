@@ -206,16 +206,20 @@ export function renderTransferList(rows: TransferRow[], subjectAddress?: string)
 	const allRows = [header, ...cells];
 
 	// Right-align Amount numbers, then append " UNIT" (data rows only).
-	const amountIdx = 5;
+	// Unit width varies per row (token_symbol or truncated token_address);
+	// track max so the header can right-align to the full data cell width.
+	const amountIdx = header.indexOf("Amount");
 	const numWidth = Math.max(...amountNums.map((s) => s.length));
+	let maxUnitWidth = 0;
 	for (let i = 1; i < allRows.length; i++) {
 		const row = allRows[i]!;
 		const r = rows[i - 1]!;
 		const unit = r.token_symbol ?? truncateAddress(r.token_address);
+		if (unit.length > maxUnitWidth) maxUnitWidth = unit.length;
 		row[amountIdx] = `${alignNumber(row[amountIdx] ?? "", numWidth)} ${unit}`;
 	}
-	// Right-align header to numeric width so it aligns with the number column.
-	allRows[0]![amountIdx] = alignNumber(allRows[0]![amountIdx] ?? "", numWidth);
+	// Right-align header to full data cell width (number + space + widest unit).
+	allRows[0]![amountIdx] = alignNumber(allRows[0]![amountIdx] ?? "", numWidth + 1 + maxUnitWidth);
 
 	const widths = computeColumnWidths(allRows);
 	const lines = renderColumns(allRows, widths);
