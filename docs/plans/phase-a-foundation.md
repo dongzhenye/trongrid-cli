@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript 5.x, commander.js, Biome, Bun (dev runtime + test runner), Node.js 22+ (user runtime)
 
-**Spec:** [architecture.md](../architecture.md), [commands.md](../design/commands.md), [roadmap.md](../roadmap.md)
+**Spec:** [architecture.md](../architecture.md), [commands.md](../designs/commands.md), [roadmap.md](../roadmap.md)
 
 ---
 

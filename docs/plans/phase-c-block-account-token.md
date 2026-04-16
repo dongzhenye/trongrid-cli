@@ -14,7 +14,7 @@
 
 - `docs/designs/commands.md` Part II — `account`, `block`, `token` sections + §Global flags (`--confirmed`, `--reverse`, `--sort-by`)
 - `docs/designs/units.md` — S1 (TRX fields inside block/tx metadata), S2 (token `total_supply` + `_major`)
-- `docs/designs/mcp-skills-review.md` §4 — Q1 (confirmed), Q3 (sort), Q4 (token dispatch) resolutions
+- `docs/research/mcp-skills.md` §4 — Q1 (confirmed), Q3 (sort), Q4 (token dispatch) resolutions
 - `docs/architecture.md` §Defaults & conventions — the 5-row decision table
 - `AGENTS.md` — contribution rules (one prod dep, semantic colors, `reportErrorAndExit`, `--json` on every data command)
 - `docs/plans/phase-a-plus.md` — reference for task/commit rhythm
@@ -686,7 +686,7 @@ git add src/index.ts tests/commands/global-flags.test.ts
 git commit -m "$(cat <<'EOF'
 feat: add --reverse / --sort-by global flags
 
-Per the Q3 resolution in docs/designs/mcp-skills-review.md §4:
+Per the Q3 resolution in docs/research/mcp-skills.md §4:
 each list command picks a default sort field + direction; --reverse
 flips direction (Unix muscle memory: ls -r, sort -r, du -r);
 --sort-by switches field with the new field's inherent direction.
@@ -803,7 +803,7 @@ export interface SortOptions {
 /**
  * Client-side sort for fetched list results.
  *
- * Per Q3 resolution in docs/designs/mcp-skills-review.md: each list command
+ * Per Q3 resolution in docs/research/mcp-skills.md: each list command
  * declares its default field + per-field inherent directions. --sort-by
  * switches field (using the new field's inherent direction). --reverse
  * flips whatever direction would otherwise apply.
@@ -1172,7 +1172,7 @@ Sort:
         const client = getClient(opts);
         // NOTE: --confirmed has no effect here — /v1/accounts/:address/transactions has
         // no /walletsolidity mirror. Accepted silently for flag uniformity; tracked in
-        // docs/plans/phase-b.md as a follow-up.
+        // docs/plans/phase-b-post-foundation.md as a follow-up.
         const rows = await fetchAccountTxs(client, resolved, {
           limit: Number.parseInt(opts.limit, 10),
         });
@@ -1546,7 +1546,7 @@ feat: add detectTokenIdentifier helper
 
 Dispatches CLI token input (1-7 digit numeric → TRC-10, 34-char Base58
 T... → TRC-20, symbol → verified-map → TRC-20) per the Q4 resolution
-in docs/designs/mcp-skills-review.md §4. --type flag overrides dispatch
+in docs/research/mcp-skills.md §4. --type flag overrides dispatch
 for ambiguous inputs.
 
 Guardrails:
@@ -1995,8 +1995,8 @@ Run after all three commands are merged:
 - [ ] `bun run lint` — clean.
 - [ ] `bun run build` — clean tsc emit to `dist/`.
 - [ ] `bun run src/index.ts --help` — new commands appear under the right `helpGroup`; `--confirmed` / `--reverse` / `--sort-by` listed as global options.
-- [ ] Update `docs/plans/phase-b.md` "State at last update" row: shipped commands 7 → 10; resources 5 → 6 (+`token`).
-- [ ] Update `docs/plans/phase-b.md` Session 2 section to ✅ merged, add a brief "what landed" recap.
+- [ ] Update `docs/plans/phase-b-post-foundation.md` "State at last update" row: shipped commands 7 → 10; resources 5 → 6 (+`token`).
+- [ ] Update `docs/plans/phase-b-post-foundation.md` Session 2 section to ✅ merged, add a brief "what landed" recap.
 - [ ] Write Session 3 plan: Wave 2 scope selection (account list family: `transfers`, `delegations`, `permissions`, `approvals`), applying the same patterns (`resolveAddress`, `applySort`, `reportErrorAndExit`).
 
 ---
@@ -2032,11 +2032,11 @@ Run after all three commands are merged:
 
 Plan complete and saved to `docs/plans/phase-b-wave-1.md`.
 
-Per `docs/plans/phase-b.md`, the agreed execution model is the `superpowers:subagent-driven-development` triad, one command at a time:
+Per `docs/plans/phase-b-post-foundation.md`, the agreed execution model is the `superpowers:subagent-driven-development` triad, one command at a time:
 
 1. **Command 1 (block view)** — dispatch implementer subagent for Tasks 1.1–1.3, then spec-review subagent, then code-quality-review subagent. Merge feedback inline. Commit atomically per sub-task.
 2. **Command 2 (account txs)** — same triad for Tasks 2.1–2.3.
 3. **Command 3 (token view)** — same triad for Tasks 3.1–3.3.
-4. **Wave close** — run the checklist above, update `phase-b.md` progress, open Session 3.
+4. **Wave close** — run the checklist above, update `phase-b-post-foundation.md` progress, open Session 3.
 
 Begin with Command 1 on confirmation.

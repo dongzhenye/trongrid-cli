@@ -44,7 +44,7 @@ Phases are one-level; tasks inside each phase are a single-level flat checklist.
 - [x] Auth flow via manual key entry
 - [x] CI green (lint + test + build)
 
-Not included: no npm publish. Architecture validation only. Plan details: [`plans/phase-a.md`](./plans/phase-a.md).
+Not included: no npm publish. Architecture validation only. Plan details: [`plans/phase-a-foundation.md`](./plans/phase-a-foundation.md).
 
 ## Phase B — Post-Foundation Improvements ✅ (pre-publish, untagged)
 
@@ -71,7 +71,7 @@ Not included: no npm publish. Architecture validation only. Plan details: [`plan
 - [x] Google CLI design best-practices article review
 - [x] Extract commands design into Part I (Design) + Part II (Reference)
 
-Plan details: [`plans/phase-b.md`](./plans/phase-b.md).
+Plan details: [`plans/phase-b-post-foundation.md`](./plans/phase-b-post-foundation.md).
 
 ## Phase C — Block view + Account txs + Token view ✅ (pre-publish, untagged)
 
@@ -89,7 +89,7 @@ Plan details: [`plans/phase-b.md`](./plans/phase-b.md).
 
 **Trial feedback** (uncovered 2026-04-15 during Phase C walkthrough) is distributed across Phases D/E/L below rather than accumulating as a sediment bucket here.
 
-Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
+Plan details: [`plans/phase-c-block-account-token.md`](./plans/phase-c-block-account-token.md).
 
 ## Phase D — Account list family + Phase-C trial plumbing ✅ (pre-publish, untagged)
 
@@ -128,7 +128,7 @@ Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 
 **Exit criteria met**: all plumbing items ✅, three new commands functional, `tsc` build + lint clean, 280 tests passing (+111 over the 169 baseline). 21 atomic commits on `feat/phase-d-account-list` (10 D-prep + 9 D-main code + 2 docs close + 3 follow-up docs).
 
-Spec: [`specs/phase-d.md`](./specs/phase-d.md). Plan: [`plans/phase-d.md`](./plans/phase-d.md).
+Spec: [`designs/phase-d-account-list.md`](./designs/phase-d-account-list.md). Plan: [`plans/phase-d-account-list.md`](./plans/phase-d-account-list.md).
 
 ## Phase E — Token family polish ✅ (pre-publish, untagged)
 
@@ -144,9 +144,9 @@ Spec: [`specs/phase-d.md`](./specs/phase-d.md). Plan: [`plans/phase-d.md`](./pla
 
 **Plumbing shipped**: batch TRC-20 token info client (`src/api/token-info.ts`), hex-to-Base58 + Base58-to-hex conversion (`src/utils/address.ts`), `TokenIdentifier.kind` → `type` rename with TRX/TRC-721/TRC-1155 union variants, uncentered transfer list renderer (`src/output/transfers.ts`).
 
-**Deferred to positioning decision**: TRX holders, TRX network-wide transfers — requires indexed data not available on TronGrid. See `docs/specs/phase-e.md` §Strategic context.
+**Deferred to positioning decision**: TRX holders, TRX network-wide transfers — requires indexed data not available on TronGrid. See `docs/designs/phase-e-token-family.md` §Strategic context.
 
-Spec: [`specs/phase-e.md`](./specs/phase-e.md). Plan: [`plans/phase-e.md`](./plans/phase-e.md).
+Spec: [`designs/phase-e-token-family.md`](./designs/phase-e-token-family.md). Plan: [`plans/phase-e-token-family.md`](./plans/phase-e-token-family.md).
 
 ## Phase F — Contract family
 
