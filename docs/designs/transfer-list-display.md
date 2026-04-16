@@ -136,12 +136,12 @@ Filter interaction with `--limit` per [`human-display.md` §7.4](./human-display
 ```
 Found 5 transfers:
 
-  TX           Time (UTC) ↓      From                To                      Amount
-  4070...5f82  2026-04-16 08:45  TKHuVq...QgFs    →  TWd4WN...5jwb      1,000.0 USDT
-  bdf8...d93b  2026-04-16 08:44  TPnbhM...x9zC4   →  TKHuVq...QgFs        500.0 USDT
-  7f3e...1f07  2026-04-16 08:30  TKHuVq...QgFs    →  TDqSmK...d197     10,000.0 WTRX
-  31c7...8463  2026-04-16 08:15  TEmvon...uFZV1A   →  TKHuVq...QgFs    250,000.0 JST
-  e8fe...cd77  2026-04-16 07:45  TKHuVq...QgFs    →  TKzxdS...Mg2Ax        50.0 USDT
+  TX           Time (UTC) ↓      From                To                        Amount
+  4070...5f82  2026-04-16 08:45  TKHuVq...QgFs    →  TWd4WN...5jwb      1,000.53 USDT
+  bdf8...d93b  2026-04-16 08:44  TPnbhM...x9zC4   →  TKHuVq...QgFs          500 USDT
+  7f3e...1f07  2026-04-16 08:30  TKHuVq...QgFs    →  TDqSmK...d197       10,000 WTRX
+  31c7...8463  2026-04-16 08:15  TEmvon...uFZV1A   →  TKHuVq...QgFs    250,000.1 JST
+  e8fe...cd77  2026-04-16 07:45  TKHuVq...QgFs    →  TKzxdS...Mg2Ax     50.0025 USDT
 ```
 
 **`token transfers USDT`:**
@@ -149,10 +149,10 @@ Found 5 transfers:
 ```
 Found 3 transfers:
 
-  TX           Time (UTC) ↓      From                To                      Amount
-  a0bf...5298  2026-04-16 08:44  TEG23N...ABqCp6  →  TMSUPh...GmhXkd   50,000.0 USDT
-  db60...ca96  2026-04-16 08:44  TEmvon...uFZV1A  →  TRNwAg...mtMGqq    3,100.0 USDT
-  d4bd...ee68  2026-04-16 08:44  TJjnhd...p1zPt9  →  TDtu6j...Hphc11    1,117.0 USDT
+  TX           Time (UTC) ↓      From                To                        Amount
+  a0bf...5298  2026-04-16 08:44  TEG23N...ABqCp6  →  TMSUPh...GmhXkd    50,000.25 USDT
+  db60...ca96  2026-04-16 08:44  TEmvon...uFZV1A  →  TRNwAg...mtMGqq        3,100 USDT
+  d4bd...ee68  2026-04-16 08:44  TJjnhd...p1zPt9  →  TDtu6j...Hphc11    1,117.003 USDT
 ```
 
 **`account transfers TKHuVq...QgFs --direction out`:**
@@ -160,10 +160,10 @@ Found 3 transfers:
 ```
 Found 3 transfers:
 
-  TX           Time (UTC) ↓      From                To                      Amount
-  4070...5f82  2026-04-16 08:45  TKHuVq...QgFs    →  TWd4WN...5jwb      1,000.0 USDT
-  7f3e...1f07  2026-04-16 08:30  TKHuVq...QgFs    →  TDqSmK...d197     10,000.0 WTRX
-  e8fe...cd77  2026-04-16 07:45  TKHuVq...QgFs    →  TKzxdS...Mg2Ax        50.0 USDT
+  TX           Time (UTC) ↓      From                To                        Amount
+  4070...5f82  2026-04-16 08:45  TKHuVq...QgFs    →  TWd4WN...5jwb      1,000.53 USDT
+  7f3e...1f07  2026-04-16 08:30  TKHuVq...QgFs    →  TDqSmK...d197        10,000 WTRX
+  e8fe...cd77  2026-04-16 07:45  TKHuVq...QgFs    →  TKzxdS...Mg2Ax      50.0025 USDT
 ```
 
 ---
