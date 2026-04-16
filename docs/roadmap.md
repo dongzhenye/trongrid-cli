@@ -25,8 +25,8 @@
 ## Overview
 
 ```
-Phase A–D  (pre-publish, merged)       Architecture + early command surface
-Phase E–H  (pre-publish, in flight)    Command surface fill-out
+Phase A–F  (pre-publish, merged)       Architecture + early command surface
+Phase G–H  (pre-publish, in flight)    Command surface fill-out
 Phase I    (FIRST npm publish, v0.1.0) Distribution begins
 Phase J–O  (expand)                    Auth UX, distribution, gaps, advanced
 ```
@@ -148,13 +148,30 @@ Spec: [`designs/phase-d-account-list.md`](./designs/phase-d-account-list.md). Pl
 
 Spec: [`designs/phase-e-token-family.md`](./designs/phase-e-token-family.md). Plan: [`plans/phase-e-token-family.md`](./plans/phase-e-token-family.md).
 
-## Phase F — Contract family
+## Phase F — Contract family ✅ (pre-publish, untagged)
 
-- [ ] `contract view <address>` — ABI, bytecode, runtime info
-- [ ] `contract call <address> <method> [args]` — read-only call
-- [ ] `contract estimate <address> <method> [args]` — energy estimation
-- [ ] `contract events <address>` — recent event logs
-- [ ] `contract history <address>` — transaction history
+**Goal**: Introduce the `contract` resource namespace with contract-specific commands + mirrors of account commands. Establish multi-entry principle and terminology glossary.
+
+**Shipped**: `contract view`, `contract methods`, `contract events`, `contract txs` (with `--method` filter), `contract internals`, `contract transfers` (mirror), `contract tokens` (mirror), `contract resources` (mirror), `contract delegations` (mirror), `account internals`.
+
+- [x] `contract view <address>` — ABI summary, deployer, status, energy model, bytecode length
+- [x] `contract methods <address>` — ABI method listing with selectors, `--type read|write` filter
+- [x] `contract events <address>` — event logs with `--event` filter (case-insensitive)
+- [x] `contract txs <address>` — transaction history with `--method <name|selector>` filter
+- [x] `contract internals <address>` — internal transactions (shared impl with account)
+- [x] Mirror commands: `contract transfers`, `tokens`, `resources`, `delegations`
+- [x] `account internals <address>` — new account-side command
+- [x] Keccak-256 utility for function selector computation (zero dependencies)
+- [x] Terminology glossary (`docs/designs/glossary.md`)
+- [x] Multi-entry principle documented
+
+**Deferred**:
+
+- [ ] `contract call <address> <method> [args]` — requires general-purpose ABI encoder, deferred to post-positioning-decision phase
+- [ ] `contract estimate <address> <method> [args]` — same as call
+- [ ] `contract permissions <address>` — CA has no practical multi-sig management scenario
+
+Spec: [`specs/phase-f.md`](./specs/phase-f.md). Plan: [`plans/phase-f.md`](./plans/phase-f.md).
 
 ## Phase G — Governance + stats
 
