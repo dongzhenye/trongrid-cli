@@ -34,6 +34,48 @@ export async function fetchAccountResources(
 	};
 }
 
+export async function accountResourcesAction(
+	address: string | undefined,
+	parent: Command,
+): Promise<void> {
+	const { getClient, parseFields } = await import("../../index.js");
+	const opts = parent.opts<GlobalOptions>();
+	try {
+		const resolved = resolveAddress(address);
+		const client = getClient(opts);
+		const data = await fetchAccountResources(client, resolved);
+
+		// Composite keys "energy" / "bandwidth" aggregate two JSON fields
+		// each (used + limit). They filter human mode cleanly, but
+		// `--fields energy --json` returns {} because the JSON object
+		// has no "energy" key — it has energy_used / energy_limit.
+		// Tracked in roadmap under "composite filter keys" follow-up.
+		printResult(
+			data,
+			[
+				["address", "Address", data.address],
+				[
+					"energy",
+					"Energy",
+					`${data.energy_used.toLocaleString()} / ${data.energy_limit.toLocaleString()}`,
+				],
+				[
+					"bandwidth",
+					"Bandwidth",
+					`${data.bandwidth_used.toLocaleString()} / ${data.bandwidth_limit.toLocaleString()}`,
+				],
+			],
+			{ json: opts.json, fields: parseFields(opts) },
+		);
+	} catch (err) {
+		reportErrorAndExit(err, {
+			json: opts.json,
+			verbose: opts.verbose,
+			hint: addressErrorHint(err),
+		});
+	}
+}
+
 export function registerAccountResourcesCommand(account: Command, parent: Command): void {
 	account
 		.command("resources")
@@ -50,41 +92,6 @@ Examples:
 `,
 		)
 		.action(async (address: string | undefined) => {
-			const { getClient, parseFields } = await import("../../index.js");
-			const opts = parent.opts<GlobalOptions>();
-			try {
-				const resolved = resolveAddress(address);
-				const client = getClient(opts);
-				const data = await fetchAccountResources(client, resolved);
-
-				// Composite keys "energy" / "bandwidth" aggregate two JSON fields
-				// each (used + limit). They filter human mode cleanly, but
-				// `--fields energy --json` returns {} because the JSON object
-				// has no "energy" key — it has energy_used / energy_limit.
-				// Tracked in roadmap under "composite filter keys" follow-up.
-				printResult(
-					data,
-					[
-						["address", "Address", data.address],
-						[
-							"energy",
-							"Energy",
-							`${data.energy_used.toLocaleString()} / ${data.energy_limit.toLocaleString()}`,
-						],
-						[
-							"bandwidth",
-							"Bandwidth",
-							`${data.bandwidth_used.toLocaleString()} / ${data.bandwidth_limit.toLocaleString()}`,
-						],
-					],
-					{ json: opts.json, fields: parseFields(opts) },
-				);
-			} catch (err) {
-				reportErrorAndExit(err, {
-					json: opts.json,
-					verbose: opts.verbose,
-					hint: addressErrorHint(err),
-				});
-			}
+			await accountResourcesAction(address, parent);
 		});
 }

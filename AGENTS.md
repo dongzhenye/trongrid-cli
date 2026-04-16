@@ -199,6 +199,7 @@ src/
 │   ├── account/                # account view/tokens/resources/txs/transfers/delegations/permissions
 │   ├── auth/                   # auth login/logout/status
 │   ├── block/                  # block latest + view (Phase B: stats/range/events)
+│   ├── contract/               # contract view/methods/events/txs/internals + mirrors
 │   ├── config/                 # config set/get/list
 │   ├── token/                  # token view (Phase B: holders/transfers/balance/allowance)
 │   └── tx/                     # tx view (Phase B: decode/internals/transfers/broadcast/pending)

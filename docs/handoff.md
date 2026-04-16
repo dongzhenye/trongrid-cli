@@ -8,11 +8,11 @@
 
 | | |
 |---|---|
-| `main` tip | Phase E merged, 2026-04-16 |
-| Active phase | **Phase F** — Contract family |
-| Tests | 340 passing |
+| `main` tip | Phase F merged, 2026-04-16 |
+| Active phase | **Phase G** — Governance + stats |
+| Tests | 435 passing |
 | Prod deps | 1 (`commander`) |
-| Commands | 17 across 6 resources |
+| Commands | 31 across 7 resources |
 
 ---
 
@@ -54,12 +54,22 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - Uncentered transfer list renderer (from/to as peers) → `src/output/transfers.ts`
 - Positioning tension documented → `docs/designs/phase-e-token-family.md` §Strategic context
 - `account tokens` display: `[TYPE] SYMBOL ID balance` — key before metric, no parentheses on ID column → `src/commands/account/tokens.ts`
-- Human display conventions (§7): thousands separators (US comma), address truncation 6+6, timestamps UTC → `docs/research/cli-best-practices.md`
+- Human display conventions: thousands separators (US comma), address truncation 6+6, timestamps UTC → [`docs/designs/human-display.md`](./designs/human-display.md)
 - Address truncation minimum 6+6 (anti-spoofing) → `src/output/columns.ts` default
 - `addThousandsSep` at renderer layer, not in `formatMajor` (JSON unaffected) → `src/output/columns.ts`
 - `uint256.max` allowance → "Unlimited" in human mode, `unlimited: true` in JSON → `src/commands/token/allowance.ts`
 - Type check before address validation in command actions (better error priority) → allowance.ts, balance.ts
 - E2E acceptance mandatory at phase close → `AGENTS.md` contribution rules
+
+**Phase F implementation:**
+- Multi-entry principle: contract commands mirror account commands where intuition demands it; help text notes equivalence → [`docs/designs/phase-f-contract-family.md`](./designs/phase-f-contract-family.md)
+- `deployer` naming (not `origin` or `creator`) → `docs/designs/glossary.md`
+- `contract call`/`estimate` deferred: requires general ABI encoder, complexity disproportionate to Phase F scope → spec Q1
+- `contract permissions` not applicable: CA has no practical multi-sig management → spec
+- Keccak-256 self-implemented (80 lines): Node.js `sha3-256` is NIST SHA-3, not keccak → `src/utils/keccak.ts`
+- Terminology glossary: API-to-CLI field mapping for cross-command consistency → `docs/designs/glossary.md`
+- Internal txs embedded in regular tx response, not separate endpoint → `src/api/internal-txs.ts`
+- Transaction list display redesign: from/to columns, subject muting, type/method mapping, conditional status columns → [`docs/designs/tx-list-display.md`](./designs/tx-list-display.md)
 
 **Open items** (not decisions — tracked in [`docs/roadmap.md`](./roadmap.md)):
 - npm package name choice

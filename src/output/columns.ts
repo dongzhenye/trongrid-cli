@@ -11,7 +11,21 @@
  *   - Unit: left-aligned, 1-space gap from number (adjacent)
  *   - Address: both-ends truncated form (4+4 default)
  *   - Inter-column separator: 2 spaces (distinguishes from in-column 1-space)
+ *
+ * ANSI awareness: all width computation uses {@link visibleLength} so
+ * that color codes (e.g. from `muted()`) don't inflate column widths.
  */
+
+// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape detection requires control chars
+const ANSI_RE = /\x1b\[[0-9;]*m/g;
+
+/**
+ * Visible (printed) length of a string, stripping ANSI escape sequences.
+ * Use this instead of `str.length` when computing column alignment.
+ */
+export function visibleLength(str: string): number {
+	return str.replace(ANSI_RE, "").length;
+}
 
 /**
  * Insert US-convention thousands separators into a decimal string.
@@ -40,8 +54,9 @@ export function addThousandsSep(numStr: string): string {
  * computeColumnWidths).
  */
 export function alignNumber(value: string, width: number): string {
-	if (value.length >= width) return value;
-	return " ".repeat(width - value.length) + value;
+	const vLen = visibleLength(value);
+	if (vLen >= width) return value;
+	return " ".repeat(width - vLen) + value;
 }
 
 /**
@@ -50,8 +65,9 @@ export function alignNumber(value: string, width: number): string {
  * numeric context that is not a magnitude (counts, indices).
  */
 export function alignText(value: string, width: number, side: "left" | "right" = "left"): string {
-	if (value.length >= width) return value;
-	const pad = " ".repeat(width - value.length);
+	const vLen = visibleLength(value);
+	if (vLen >= width) return value;
+	const pad = " ".repeat(width - vLen);
 	return side === "right" ? pad + value : value + pad;
 }
 
@@ -81,7 +97,8 @@ export function computeColumnWidths(rows: string[][]): number[] {
 		for (let i = 0; i < ncols; i++) {
 			const cell = row[i] ?? "";
 			const current = widths[i] ?? 0;
-			if (cell.length > current) widths[i] = cell.length;
+			const vLen = visibleLength(cell);
+			if (vLen > current) widths[i] = vLen;
 		}
 	}
 	return widths;

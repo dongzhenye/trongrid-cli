@@ -25,8 +25,8 @@
 ## Overview
 
 ```
-Phase A–D  (pre-publish, merged)       Architecture + early command surface
-Phase E–H  (pre-publish, in flight)    Command surface fill-out
+Phase A–F  (pre-publish, merged)       Architecture + early command surface
+Phase G–H  (pre-publish, in flight)    Command surface fill-out
 Phase I    (FIRST npm publish, v0.1.0) Distribution begins
 Phase J–O  (expand)                    Auth UX, distribution, gaps, advanced
 ```
@@ -123,8 +123,8 @@ Plan details: [`plans/phase-c-block-account-token.md`](./plans/phase-c-block-acc
 - [ ] `printListResult` does not apply `--fields` in human mode — only the JSON branch filters. List commands (`account transfers`, `account tokens`, `account txs`, and future list commands) silently ignore `--fields` when rendering human output. Surfaced during Phase D M1.3. Fix requires either a per-row field-projection hook on the renderer callback, or a parallel `HumanPair`-style mechanism for list-item display pairs.
 - [ ] `applySort` string-compares primitive values — numeric fields stored as decimal strings (e.g. `amount` in `CenteredTransferRow`) will sort lexicographically and give wrong results for mixed-width values ("100" < "99"). Current consumers get away with it because fixtures use equal-width strings; real TRC-20 transfer amounts will not. Fix: declare field types in `SortConfig` (`"number" | "string" | "bigint"`) and cast per-field inside the comparator. Surfaced during Phase D M1.3.
 - [ ] Network error auto-retry — `src/api/client.ts` currently fails immediately on network errors (status 0). Add 3 retries with exponential backoff for transient network failures (offline, DNS, refused, timeout). Only for retry-meaningful errors; not for 4xx/5xx HTTP responses. Surfaced during Phase E.
-- [ ] Column headers for non-Phase-E list commands — `account txs`, `account transfers` (centered), `account delegations` still lack header rows. Surfaced during Phase E header pass.
-- [ ] Thousands separators for non-Phase-E human output — `account view` (sunToTrx), `account txs` (fee), `account transfers` (centered, amount), `account delegations` (amount) still show raw numbers. Utility `addThousandsSep` exists in `src/output/columns.ts`. Surfaced during Phase E.
+- [ ] Column headers for remaining list commands — `account transfers` (centered), `account delegations` still lack header rows. (`account txs` fixed in Phase F tx list redesign.) Surfaced during Phase E header pass.
+- [ ] Thousands separators for remaining human output — `account view` (sunToTrx), `account transfers` (centered, amount), `account delegations` (amount) still show raw numbers. (`account txs` fixed in Phase F.) Utility `addThousandsSep` exists in `src/output/columns.ts`. Surfaced during Phase E.
 
 **Exit criteria met**: all plumbing items ✅, three new commands functional, `tsc` build + lint clean, 280 tests passing (+111 over the 169 baseline). 21 atomic commits on `feat/phase-d-account-list` (10 D-prep + 9 D-main code + 2 docs close + 3 follow-up docs).
 
@@ -148,13 +148,38 @@ Spec: [`designs/phase-d-account-list.md`](./designs/phase-d-account-list.md). Pl
 
 Spec: [`designs/phase-e-token-family.md`](./designs/phase-e-token-family.md). Plan: [`plans/phase-e-token-family.md`](./plans/phase-e-token-family.md).
 
-## Phase F — Contract family
+## Phase F — Contract family ✅ (pre-publish, untagged)
 
-- [ ] `contract view <address>` — ABI, bytecode, runtime info
-- [ ] `contract call <address> <method> [args]` — read-only call
-- [ ] `contract estimate <address> <method> [args]` — energy estimation
-- [ ] `contract events <address>` — recent event logs
-- [ ] `contract history <address>` — transaction history
+**Goal**: Introduce the `contract` resource namespace with contract-specific commands + mirrors of account commands. Establish multi-entry principle and terminology glossary.
+
+**Shipped**: `contract view`, `contract methods`, `contract events`, `contract txs` (with `--method` filter), `contract internals`, `contract transfers` (mirror), `contract tokens` (mirror), `contract resources` (mirror), `contract delegations` (mirror), `account internals`.
+
+- [x] `contract view <address>` — ABI summary, deployer, status, energy model, bytecode length
+- [x] `contract methods <address>` — ABI method listing with selectors, `--type read|write` filter
+- [x] `contract events <address>` — event logs with `--event` filter (case-insensitive)
+- [x] `contract txs <address>` — transaction history with `--method <name|selector>` filter
+- [x] `contract internals <address>` — internal transactions (shared impl with account)
+- [x] Mirror commands: `contract transfers`, `tokens`, `resources`, `delegations`
+- [x] `account internals <address>` — new account-side command
+- [x] Keccak-256 utility for function selector computation (zero dependencies)
+- [x] Terminology glossary (`docs/designs/glossary.md`)
+- [x] Multi-entry principle documented
+
+**Deferred**:
+
+- [ ] `contract call <address> <method> [args]` — requires general-purpose ABI encoder, deferred to post-positioning-decision phase
+- [ ] `contract estimate <address> <method> [args]` — same as call
+- [ ] `contract permissions <address>` — CA has no practical multi-sig management scenario
+- [ ] Extremely large numbers (uint256.max) in human mode — scam/phishing tokens send `2^256 - 1` Transfer events; `formatMajor` renders 80+ char numbers that break table layout. Options: scientific notation for > 15 digits, or `[dust]` marker for amounts ≈ uint256.max. Affects `account transfers`, `contract transfers`, `token transfers`. Surfaced during Phase F E2E.
+- [ ] List display design docs — each list type should have a dedicated design document (like [`tx-list-display.md`](./designs/tx-list-display.md)) covering column layout, conditional columns, muting, sort, and human/JSON shape. **Transfer list is highest priority** — current centered/uncentered renderers lack headers, thousands separators, and subject-address muting. Pending:
+  - [ ] Transfer list display (`account transfers` centered + `token transfers` uncentered) — **priority**: most visible UX gap; needs the from/to redesign similar to tx-list-display
+  - [ ] Token list display (`account tokens` / `contract tokens`)
+  - [ ] Delegation list display (`account delegations` — two-section layout)
+  - [ ] Event list display (`contract events`)
+  - [ ] Internal tx list display (`contract internals` / `account internals`)
+  - [ ] Holders list display (`token holders`)
+
+Spec: [`specs/phase-f.md`](./specs/phase-f.md). Plan: [`plans/phase-f.md`](./plans/phase-f.md).
 
 ## Phase G — Governance + stats
 
