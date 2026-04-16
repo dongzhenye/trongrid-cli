@@ -309,6 +309,40 @@ These gaps were cheap to fix and would have been more expensive once Phase B bak
 
 ---
 
+## §7 Human display conventions
+
+Rules for human-mode output. `--json` mode is unaffected — JSON fields keep raw values (machine contract per `AGENTS.md` §4).
+
+### Numbers — thousands separators
+
+All balance / amount / quantity values in human mode use US-convention thousands separators: comma for thousands, period for decimal.
+
+| Raw | Human |
+|-----|-------|
+| `16809182.347903` | `16,809,182.347903` |
+| `42` | `42` |
+| `-1234567.89` | `-1,234,567.89` |
+
+Utility: `addThousandsSep()` in `src/output/columns.ts`. Applied at the renderer layer, not in `formatMajor()` (which is shared with JSON).
+
+### Addresses — truncation minimums
+
+Truncated address display must show at least **first 6 + last 6** characters to prevent address spoofing attacks (attacker creates addresses matching visible prefix/suffix).
+
+| Form | Example | Use case |
+|------|---------|----------|
+| Full (34 chars) | `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t` | Single-value views, few-column tables |
+| Truncated (6+6) | `TR7NHq...gjLj6t` | List columns with space constraints |
+| TX hash (4+4 OK) | `abc1...cdef` | TX hashes are not spoofable |
+
+Utility: `truncateAddress()` in `src/output/columns.ts`, default (6, 6).
+
+### Timestamps
+
+UTC always. Format: `YYYY-MM-DD HH:MM:SS UTC`. No local time (cross-machine reproducibility). Utility: `formatTimestamp()` in `src/output/format.ts`.
+
+---
+
 ## References
 
 - **Source article**: [Google Cloud Tech — *"Build a CLI for AI agents & humans in less than 10 mins"*](https://x.com/GoogleCloudTech/article/2038778093104779537). By Hinoy Chinoy ([@ghchinoy](https://x.com/ghchinoy)), Shubham Saboo ([@Saboo_Shubham_](https://x.com/Saboo_Shubham_)), and Zack Akil. Published March 2026 as an X long-form article.

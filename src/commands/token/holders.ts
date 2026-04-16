@@ -4,6 +4,7 @@ import { fetchBatchTrc20Info } from "../../api/token-info.js";
 import type { GlobalOptions } from "../../index.js";
 import { muted } from "../../output/colors.js";
 import {
+	addThousandsSep,
 	alignNumber,
 	computeColumnWidths,
 	renderColumns,
@@ -139,7 +140,7 @@ export function renderHolderList(items: HolderRow[]): void {
 	const cells: string[][] = items.map((r) => [
 		String(r.rank),
 		truncateAddress(r.address),
-		r.balance_major,
+		addThousandsSep(r.balance_major),
 		`${r.share_pct}%`,
 	]);
 

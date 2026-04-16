@@ -14,6 +14,26 @@
  */
 
 /**
+ * Insert US-convention thousands separators into a decimal string.
+ * Only affects the integer part; fractional digits are untouched.
+ *
+ * "16809182.347903" → "16,809,182.347903"
+ * "42" → "42" (no change under 4 digits)
+ *
+ * Human-mode only — JSON fields keep raw strings (machine contract).
+ */
+export function addThousandsSep(numStr: string): string {
+	const negative = numStr.startsWith("-");
+	const abs = negative ? numStr.slice(1) : numStr;
+	const dotIdx = abs.indexOf(".");
+	const intPart = dotIdx >= 0 ? abs.slice(0, dotIdx) : abs;
+	const fracPart = dotIdx >= 0 ? abs.slice(dotIdx) : "";
+	const withCommas = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	const result = withCommas + fracPart;
+	return negative ? `-${result}` : result;
+}
+
+/**
  * Right-align a numeric string to a fixed width with space padding.
  * Overlong values are returned unchanged — caller is responsible for
  * ensuring the requested width fits the widest value (typically via

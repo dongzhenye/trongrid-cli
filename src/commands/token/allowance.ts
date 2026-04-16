@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import { fetchBatchTrc20Info } from "../../api/token-info.js";
 import type { GlobalOptions } from "../../index.js";
+import { addThousandsSep } from "../../output/columns.js";
 import { printResult, reportErrorAndExit, UsageError } from "../../output/format.js";
 import { base58ToHex, validateAddress } from "../../utils/address.js";
 import {
@@ -164,7 +165,7 @@ Examples:
 							[
 								"allowance_major",
 								"Allowance",
-								`${data.allowance_major} ${data.token_symbol ?? ""}`,
+								`${addThousandsSep(data.allowance_major)} ${data.token_symbol ?? ""}`,
 							],
 						],
 						{ json: opts.json, fields: parseFields(opts) },

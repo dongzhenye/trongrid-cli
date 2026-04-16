@@ -486,7 +486,7 @@ describe("renderTokenList (human output)", () => {
 		expect(row).toContain("[TRC20]");
 		expect(row).toContain("[?]");
 		expect(row).toContain("(TXYZun...owxxxx)");
-		expect(row).toContain("500000");
+		expect(row).toContain("500,000");
 		expect(row).toContain("(decimals unresolved)");
 		expect(row).not.toContain("(raw");
 	});
