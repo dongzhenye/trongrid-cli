@@ -448,7 +448,7 @@ describe("renderTokenList (human output)", () => {
 		expect(captured[0]).toContain("Found 2 tokens");
 	});
 
-	it("renders `SYMBOL (contract) balance (raw N)` when balance_major is set", () => {
+	it("renders SYMBOL contract(muted) balance without raw annotation", () => {
 		const tokens: TokenBalance[] = [
 			{
 				type: "TRC20",
@@ -466,10 +466,12 @@ describe("renderTokenList (human output)", () => {
 		const row = captured[2];
 		expect(row).toContain("[TRC20]");
 		expect(row).toContain("USDT");
-		// Contract address rendered in parentheses with both-ends truncation (4+4).
-		expect(row).toContain("(TR7NHq...gjLj6t)");
+		// Contract address without parentheses, muted via styleText
+		expect(row).toContain("TR7NHq...gjLj6t");
+		expect(row).not.toContain("(TR7NHq");
 		expect(row).toContain("1.234");
-		expect(row).toContain("(raw 1234000)");
+		// No raw annotation — use --json for raw values
+		expect(row).not.toContain("(raw");
 	});
 
 	it("shows [?] and (decimals unresolved) when balance_major is undefined", () => {
@@ -485,10 +487,8 @@ describe("renderTokenList (human output)", () => {
 		const row = captured[2]; // skip header
 		expect(row).toContain("[TRC20]");
 		expect(row).toContain("[?]");
-		expect(row).toContain("(TXYZun...owxxxx)");
 		expect(row).toContain("500,000");
 		expect(row).toContain("(decimals unresolved)");
-		expect(row).not.toContain("(raw");
 	});
 
 	it("renders mixed resolved and unresolved tokens in one pass", () => {
@@ -510,10 +510,8 @@ describe("renderTokenList (human output)", () => {
 		renderTokenList(tokens);
 		expect(captured[0]).toContain("Found 2 tokens");
 		// captured[1] = header, captured[2] = first data, captured[3] = second data
-		expect(captured[2]).toContain("(raw 1000000)");
+		expect(captured[2]).not.toContain("(raw");
 		expect(captured[3]).toContain("[TRC10]");
-		// TRC10 has unresolved decimals — shows (decimals unresolved), not (raw …)
-		expect(captured[3]).not.toContain("(raw");
 		expect(captured[3]).toContain("(decimals unresolved)");
 	});
 
@@ -532,7 +530,7 @@ describe("renderTokenList (human output)", () => {
 		renderTokenList(tokens);
 		const row = captured[2]; // skip header
 		expect(row).toContain("USDT");
-		expect(row).toContain("(TR7NHq...gjLj6t)");
+		expect(row).toContain("TR7NHq...gjLj6t");
 	});
 
 	it("suppresses (raw N) when balance_major equals balance (decimals=0)", () => {
@@ -542,7 +540,7 @@ describe("renderTokenList (human output)", () => {
 				contract_address: "1000001",
 				balance: "42",
 				decimals: 0,
-				balance_major: "42", // same as balance → no raw annotation
+				balance_major: "42",
 			},
 		];
 		renderTokenList(tokens);
