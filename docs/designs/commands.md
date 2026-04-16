@@ -126,6 +126,7 @@ trongrid account transfers <address>     # Token transfer history
 trongrid account resources [address]     # Energy, bandwidth, staking state
 trongrid account delegations <address>   # Resources delegated to/from
 trongrid account permissions <address>   # Multi-sig, owner/active keys
+trongrid account internals [address]    # Internal transactions
 trongrid account approvals <owner>       # Outgoing TRC-20 allowances across all tokens
 ```
 
@@ -182,12 +183,20 @@ Use `--type trc10|trc20|trc721|trc1155` to override on ambiguous inputs (e.g., a
 ### contract — Smart contract queries
 
 ```bash
-trongrid contract view <address>         # ABI, bytecode, runtime info
-trongrid contract call <address> <method> [args]  # Read-only call
-trongrid contract estimate <address> <method> [args]  # Energy estimation
-trongrid contract events <address>       # Recent event logs
-trongrid contract history <address>      # Transaction history
+trongrid contract view <address>               # ABI summary, deployer, status, energy model
+trongrid contract methods <address>            # ABI method listing with selectors
+trongrid contract events <address>             # Event logs with --event filter
+trongrid contract txs <address>                # Transaction history with --method filter
+trongrid contract internals <address>          # Internal transactions
+trongrid contract transfers <address>          # Token transfers (mirror of account transfers)
+trongrid contract tokens <address>             # Token balances (mirror of account tokens)
+trongrid contract resources <address>          # Energy/bandwidth (mirror of account resources)
+trongrid contract delegations <address>        # Delegations (mirror of account delegations)
 ```
+
+**Multi-entry principle**: `contract transfers`, `tokens`, `resources`, and `delegations` mirror their `account` counterparts — users should find data where intuition leads them. Help text notes the equivalence.
+
+**Deferred**: `contract call` and `contract estimate` require a general-purpose ABI encoder; deferred to a post-positioning-decision phase. `contract permissions` is not applicable (contract accounts have no practical multi-sig management).
 
 ### sr — Super Representatives
 
