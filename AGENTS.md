@@ -184,6 +184,7 @@ If you are an AI agent writing code for `trongrid-cli` (not just calling it), fo
 - **New commands** must follow the grammar committed in [`docs/designs/commands.md`](./docs/designs/commands.md): two-level noun-verb, action-first positional, trailing identifier, `[address]` for optional with `default_address` fallback.
 - **Error paths** must go through `reportErrorAndExit` from `src/output/format.ts` — it handles the `Hint:` line, exit codes, and `--verbose` upstream expansion automatically.
 - **Color** must go through the semantic tokens in `src/output/colors.ts` (`accent` / `command` / `pass` / `warn` / `fail` / `muted` / `id`) — not raw `styleText` calls.
+- **E2E acceptance at phase close:** Automated tests (`bun test`) verify code correctness; they do not verify feature correctness. At the end of each phase — or earlier when a meaningful slice of functionality is complete — the agent must run an end-to-end acceptance pass: invoke actual CLI commands against the real TronGrid API as a human user would. Cover golden paths, edge cases (empty results, unsupported types, missing arguments), error paths (exit codes, hint distinctness), and flag combinations (`--json`, `--fields`, `--limit`, `--reverse`, `--sort-by`, `--before`/`--after`, `--confirmed`). Issues belonging to the current phase are fixed immediately; others are deferred to the roadmap with a clear description.
 
 ## File layout
 
