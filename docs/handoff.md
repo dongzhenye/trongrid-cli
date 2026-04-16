@@ -8,9 +8,10 @@
 
 | | |
 |---|---|
-| `main` tip | Phase F merged + post-merge polish, 2026-04-16 |
+| `main` tip | Phase F merged + display design docs, 2026-04-16 |
 | Active phase | **Phase G** — Governance + stats |
-| Pending cross-cut | Transfer list display redesign (design finalized, implementation pending) |
+| Pending cross-cut | Transfer list display redesign (P0 implementation pending) |
+| Design docs | `human-display.md` (living, comprehensive) ← `tx-list-display.md` / `transfer-list-display.md` |
 | Tests | 448 passing |
 | Prod deps | 1 (`commander`) |
 | Commands | 31 across 7 resources |
@@ -72,8 +73,8 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - Internal txs embedded in regular tx response, not separate endpoint → `src/api/internal-txs.ts`
 - Transaction list display redesign: from/to columns, subject muting, type/method mapping, conditional status columns → [`docs/designs/tx-list-display.md`](./designs/tx-list-display.md)
 - ANSI-aware column alignment: `visibleLength()` strips escape codes before measuring → `src/output/columns.ts`
-- Human display conventions extracted to living design doc → [`docs/designs/human-display.md`](./designs/human-display.md)
-- Transfer list display design (draft): unify centered/uncentered to from/to + muting → [`docs/designs/transfer-list-display.md`](./designs/transfer-list-display.md)
+- Human display conventions: comprehensive living doc covering null display, number formatting by field type (token exact / USD 2dp floor), extreme values (uint256.max → scientific notation + warning), column alignment by type, sort indicators (↓/↑), client-side sort warning, filtering principles, field projection (inclusive replacement) → [`docs/designs/human-display.md`](./designs/human-display.md)
+- Transfer list display design: unify centered/uncentered to from/to + muting; fields table with sortable/filterable matrix; P0–P3 priority → [`docs/designs/transfer-list-display.md`](./designs/transfer-list-display.md)
 
 **Open items** (not decisions — tracked in [`docs/roadmap.md`](./roadmap.md)):
 - npm package name choice
