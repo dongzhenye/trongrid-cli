@@ -53,7 +53,13 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - Hex-to-Base58 + Base58-to-hex conversion → `src/utils/address.ts`
 - Uncentered transfer list renderer (from/to as peers) → `src/output/transfers.ts`
 - Positioning tension documented → `docs/specs/phase-e.md` §Strategic context
-- `account tokens` display: `[TYPE] SYMBOL (contract) balance` — key before metric → `docs/specs/phase-e.md`
+- `account tokens` display: `[TYPE] SYMBOL ID balance` — key before metric, no parentheses on ID column → `src/commands/account/tokens.ts`
+- Human display conventions (§7): thousands separators (US comma), address truncation 6+6, timestamps UTC → `docs/designs/cli-best-practices.md`
+- Address truncation minimum 6+6 (anti-spoofing) → `src/output/columns.ts` default
+- `addThousandsSep` at renderer layer, not in `formatMajor` (JSON unaffected) → `src/output/columns.ts`
+- `uint256.max` allowance → "Unlimited" in human mode, `unlimited: true` in JSON → `src/commands/token/allowance.ts`
+- Type check before address validation in command actions (better error priority) → allowance.ts, balance.ts
+- E2E acceptance mandatory at phase close → `AGENTS.md` contribution rules
 
 **Open items** (not decisions — tracked in [`docs/roadmap.md`](../roadmap.md)):
 - npm package name choice
