@@ -1,19 +1,16 @@
 import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
-import { muted } from "../../output/colors.js";
+import { fail, muted, pass } from "../../output/colors.js";
 import {
+	addThousandsSep,
 	alignNumber,
 	computeColumnWidths,
 	renderColumns,
 	truncateAddress,
 } from "../../output/columns.js";
-import {
-	formatTimestamp,
-	printListResult,
-	reportErrorAndExit,
-	sunToTrx,
-} from "../../output/format.js";
+import { printListResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
+import { humanTxType } from "../../output/tx-type-map.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 import { applySort, type SortConfig, type SortOptions } from "../../utils/sort.js";
 
@@ -21,8 +18,17 @@ export interface AccountTxRow {
 	tx_id: string;
 	block_number: number;
 	timestamp: number;
-	contract_type: string;
-	status: string;
+	contract_type: string; // raw chain type (for JSON)
+	type_display: string; // human label (from tx-type-map or method name)
+	method?: string; // ABI method name if resolved
+	method_selector?: string; // 4-byte hex if TriggerSmartContract
+	from: string; // owner_address (tx initiator)
+	to: string; // target address (contract_address or to_address)
+	amount: number; // native TRX value (call_value or amount), in sun
+	amount_unit: "sun";
+	amount_trx: string; // formatted
+	status: string; // "SUCCESS", "REVERT", etc.
+	confirmed: boolean; // true if confirmed on chain
 	fee: number;
 	fee_unit: "sun";
 	decimals: 6;
@@ -35,12 +41,52 @@ interface RawTx {
 	block_timestamp?: number;
 	net_fee?: number;
 	energy_fee?: number;
-	raw_data?: { contract?: Array<{ type?: string }> };
+	raw_data?: {
+		contract?: Array<{
+			type?: string;
+			parameter?: {
+				value?: {
+					owner_address?: string;
+					to_address?: string;
+					contract_address?: string;
+					amount?: number;
+					call_value?: number;
+					data?: string;
+				};
+			};
+		}>;
+	};
 	ret?: Array<{ contractRet?: string }>;
 }
 
 interface AccountTxsResponse {
 	data?: RawTx[];
+}
+
+/**
+ * Derive the human-readable type_display from contract_type and call data.
+ *
+ * - TriggerSmartContract with data → `0x{selector}` (4-byte hex)
+ * - TriggerSmartContract without data → "Contract Call"
+ * - Other types → humanTxType lookup
+ */
+function deriveTypeDisplay(contractType: string, data?: string): string {
+	if (contractType === "TriggerSmartContract") {
+		if (data && data.length >= 8) {
+			return `0x${data.slice(0, 8).toLowerCase()}`;
+		}
+		return "Contract Call";
+	}
+	return humanTxType(contractType);
+}
+
+/**
+ * Extract 4-byte method selector from call data hex string.
+ * Returns undefined if no data or data is too short.
+ */
+function extractMethodSelector(data?: string): string | undefined {
+	if (!data || data.length < 8) return undefined;
+	return `0x${data.slice(0, 8).toLowerCase()}`;
 }
 
 export async function fetchAccountTxs(
@@ -52,12 +98,27 @@ export async function fetchAccountTxs(
 	const raw = await client.get<AccountTxsResponse>(path);
 	return (raw.data ?? []).map((tx) => {
 		const fee = (tx.net_fee ?? 0) + (tx.energy_fee ?? 0);
+		const contractEntry = tx.raw_data?.contract?.[0];
+		const contractType = contractEntry?.type ?? "Unknown";
+		const paramValue = contractEntry?.parameter?.value;
+		const data = paramValue?.data;
+		const amount = paramValue?.call_value ?? paramValue?.amount ?? 0;
+
 		return {
 			tx_id: tx.txID ?? "",
 			block_number: tx.blockNumber ?? 0,
 			timestamp: tx.block_timestamp ?? 0,
-			contract_type: tx.raw_data?.contract?.[0]?.type ?? "Unknown",
+			contract_type: contractType,
+			type_display: deriveTypeDisplay(contractType, data),
+			method: undefined, // resolved later when ABI is available
+			method_selector: extractMethodSelector(data),
+			from: paramValue?.owner_address ?? "",
+			to: paramValue?.to_address ?? paramValue?.contract_address ?? "",
+			amount,
+			amount_unit: "sun" as const,
+			amount_trx: sunToTrx(amount),
 			status: tx.ret?.[0]?.contractRet ?? "UNKNOWN",
+			confirmed: true, // API does not provide per-tx confirmed flag; default true
 			fee,
 			fee_unit: "sun" as const,
 			decimals: 6 as const,
@@ -72,6 +133,7 @@ const TXS_SORT_CONFIG: SortConfig<AccountTxRow> = {
 		timestamp: "desc",
 		block_number: "desc",
 		fee: "desc",
+		amount: "desc",
 	},
 	tieBreakField: "timestamp",
 };
@@ -80,7 +142,21 @@ export function sortTxs(items: AccountTxRow[], opts: SortOptions): AccountTxRow[
 	return applySort(items, TXS_SORT_CONFIG, opts);
 }
 
-export function renderTxs(items: AccountTxRow[]): void {
+/**
+ * Format a unix-ms timestamp as `YYYY-MM-DD HH:MM` (UTC, no seconds).
+ * The "UTC" label lives in the column header, not repeated per row.
+ */
+function formatTxTimestamp(ms: number): string {
+	return new Date(ms).toISOString().slice(0, 16).replace("T", " ");
+}
+
+/**
+ * Human-mode renderer for transaction lists. Supports subject-address
+ * muting (From/To matching the queried address are dimmed) and
+ * conditional columns (Confirmed, Result) that only appear when the
+ * batch contains non-default-state entries.
+ */
+export function renderTxs(items: AccountTxRow[], subjectAddress?: string): void {
 	if (items.length === 0) {
 		console.log(muted("No transactions found."));
 		return;
@@ -88,26 +164,70 @@ export function renderTxs(items: AccountTxRow[]): void {
 	const noun = items.length === 1 ? "transaction" : "transactions";
 	console.log(muted(`Found ${items.length} ${noun}:\n`));
 
-	// Column order: time | tx_id (truncated) | contract_type | fee | unit
-	const cells: string[][] = items.map((t) => [
-		formatTimestamp(t.timestamp),
-		truncateAddress(t.tx_id, 4, 4),
-		t.contract_type,
-		t.fee_trx, // right-aligned below
-		"TRX",
-	]);
+	// Detect conditional columns
+	const showConfirmed = items.some((t) => !t.confirmed);
+	const showResult = items.some((t) => t.status !== "SUCCESS");
 
-	const feeCol = 3;
-	const feeWidth = Math.max(...cells.map((c) => (c[feeCol] ?? "").length));
-	for (const row of cells) {
-		const cur = row[feeCol] ?? "";
-		row[feeCol] = alignNumber(cur, feeWidth);
+	// Build header
+	const header: string[] = ["TX", "Time (UTC)"];
+	if (showConfirmed) header.push("Confirmed");
+	header.push("Type / Method", "From", "", "To", "Amount", "Unit", "Fee", "Unit");
+	if (showResult) header.push("Result");
+
+	// Build data rows
+	const cells: string[][] = items.map((t) => {
+		const fromDisplay = truncateAddress(t.from);
+		const toDisplay = truncateAddress(t.to);
+
+		const row: string[] = [truncateAddress(t.tx_id, 4, 4), formatTxTimestamp(t.timestamp)];
+
+		if (showConfirmed) {
+			row.push(t.confirmed ? pass("\u2713") : "\u231B");
+		}
+
+		row.push(
+			t.type_display,
+			subjectAddress && t.from === subjectAddress ? muted(fromDisplay) : fromDisplay,
+			"\u2192",
+			subjectAddress && t.to === subjectAddress ? muted(toDisplay) : toDisplay,
+			addThousandsSep(t.amount_trx),
+			"TRX",
+			addThousandsSep(t.fee_trx),
+			"TRX",
+		);
+
+		if (showResult) {
+			row.push(t.status === "SUCCESS" ? pass("\u2713") : fail("\u2717"));
+		}
+
+		return row;
+	});
+
+	const allRows = [header, ...cells];
+
+	// Right-align Amount column
+	const amountIdx = header.indexOf("Amount");
+	if (amountIdx >= 0) {
+		const amountWidth = Math.max(...allRows.map((r) => (r[amountIdx] ?? "").length));
+		for (const row of allRows) {
+			row[amountIdx] = alignNumber(row[amountIdx] ?? "", amountWidth);
+		}
 	}
 
-	const widths = computeColumnWidths(cells);
-	const lines = renderColumns(cells, widths);
-	for (const line of lines) {
-		console.log(`  ${line}`);
+	// Right-align Fee column
+	const feeIdx = header.indexOf("Fee");
+	if (feeIdx >= 0) {
+		const feeWidth = Math.max(...allRows.map((r) => (r[feeIdx] ?? "").length));
+		for (const row of allRows) {
+			row[feeIdx] = alignNumber(row[feeIdx] ?? "", feeWidth);
+		}
+	}
+
+	const widths = computeColumnWidths(allRows);
+	const lines = renderColumns(allRows, widths);
+	console.log(`  ${muted(lines[0] ?? "")}`);
+	for (let i = 1; i < lines.length; i++) {
+		console.log(`  ${lines[i]}`);
 	}
 }
 
@@ -129,7 +249,7 @@ Examples:
 
 Sort:
   default — timestamp desc (newest first)
-  fields  — timestamp, block_number, fee (all default desc)
+  fields  — timestamp, block_number, fee, amount (all default desc)
 `,
 		)
 		.action(async (address: string | undefined) => {
@@ -146,7 +266,10 @@ Sort:
 				});
 				const sorted = sortTxs(rows, { sortBy: opts.sortBy, reverse: opts.reverse });
 
-				printListResult(sorted, renderTxs, { json: opts.json, fields: parseFields(opts) });
+				printListResult(sorted, (items) => renderTxs(items, resolved), {
+					json: opts.json,
+					fields: parseFields(opts),
+				});
 			} catch (err) {
 				reportErrorAndExit(err, {
 					json: opts.json,

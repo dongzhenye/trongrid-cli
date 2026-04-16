@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
 import { printListResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
+import { humanTxType } from "../../output/tx-type-map.js";
 import { normalizeAbiEntries, parseAbi } from "../../utils/abi.js";
 import { validateAddress } from "../../utils/address.js";
 import { type AccountTxRow, fetchAccountTxs, renderTxs, sortTxs } from "../account/txs.js";
@@ -17,7 +18,16 @@ interface RawTxWithData {
 	raw_data?: {
 		contract?: Array<{
 			type?: string;
-			parameter?: { value?: { data?: string } };
+			parameter?: {
+				value?: {
+					owner_address?: string;
+					to_address?: string;
+					contract_address?: string;
+					amount?: number;
+					call_value?: number;
+					data?: string;
+				};
+			};
 		}>;
 	};
 	ret?: Array<{ contractRet?: string }>;
@@ -41,15 +51,43 @@ function extractSelector(data: string): string {
 	return `0x${data.slice(0, 8).toLowerCase()}`;
 }
 
+/**
+ * Derive the human-readable type_display from contract_type and call data.
+ */
+function deriveTypeDisplay(contractType: string, data?: string): string {
+	if (contractType === "TriggerSmartContract") {
+		if (data && data.length >= 8) {
+			return `0x${data.slice(0, 8).toLowerCase()}`;
+		}
+		return "Contract Call";
+	}
+	return humanTxType(contractType);
+}
+
 /** Map a raw tx to AccountTxRow. */
 function mapToRow(tx: RawTxWithData): AccountTxRow {
 	const fee = (tx.net_fee ?? 0) + (tx.energy_fee ?? 0);
+	const contractEntry = tx.raw_data?.contract?.[0];
+	const contractType = contractEntry?.type ?? "Unknown";
+	const paramValue = contractEntry?.parameter?.value;
+	const data = paramValue?.data;
+	const amount = paramValue?.call_value ?? paramValue?.amount ?? 0;
+
 	return {
 		tx_id: tx.txID ?? "",
 		block_number: tx.blockNumber ?? 0,
 		timestamp: tx.block_timestamp ?? 0,
-		contract_type: tx.raw_data?.contract?.[0]?.type ?? "Unknown",
+		contract_type: contractType,
+		type_display: deriveTypeDisplay(contractType, data),
+		method: undefined,
+		method_selector: data && data.length >= 8 ? extractSelector(data) : undefined,
+		from: paramValue?.owner_address ?? "",
+		to: paramValue?.to_address ?? paramValue?.contract_address ?? "",
+		amount,
+		amount_unit: "sun" as const,
+		amount_trx: sunToTrx(amount),
 		status: tx.ret?.[0]?.contractRet ?? "UNKNOWN",
+		confirmed: true,
 		fee,
 		fee_unit: "sun" as const,
 		decimals: 6 as const,
@@ -164,7 +202,7 @@ Examples:
 
 Sort:
   default — timestamp desc (newest first)
-  fields  — timestamp, block_number, fee (all default desc)
+  fields  — timestamp, block_number, fee, amount (all default desc)
 `,
 		)
 		.action(async (address: string, localOpts: { method?: string }) => {
@@ -179,7 +217,10 @@ Sort:
 				});
 				const sorted = sortTxs(rows, { sortBy: opts.sortBy, reverse: opts.reverse });
 
-				printListResult(sorted, renderTxs, { json: opts.json, fields: parseFields(opts) });
+				printListResult(sorted, (items) => renderTxs(items, address), {
+					json: opts.json,
+					fields: parseFields(opts),
+				});
 			} catch (err) {
 				reportErrorAndExit(err, {
 					json: opts.json,

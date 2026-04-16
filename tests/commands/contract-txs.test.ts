@@ -3,6 +3,7 @@ import { createClient } from "../../src/api/client.js";
 import { fetchContractTxs } from "../../src/commands/contract/txs.js";
 
 const CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+const SENDER = "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW";
 
 // --- Fixtures ---
 
@@ -24,6 +25,9 @@ const tx_transfer = {
 				type: "TriggerSmartContract",
 				parameter: {
 					value: {
+						owner_address: SENDER,
+						contract_address: CONTRACT,
+						call_value: 0,
 						data: "a9059cbb0000000000000000000000001234567890abcdef1234567890abcdef12345678000000000000000000000000000000000000000000000000000000003b9aca00",
 					},
 				},
@@ -45,6 +49,9 @@ const tx_approve = {
 				type: "TriggerSmartContract",
 				parameter: {
 					value: {
+						owner_address: SENDER,
+						contract_address: CONTRACT,
+						call_value: 0,
 						data: "095ea7b30000000000000000000000001234567890abcdef1234567890abcdef1234567800000000000000000000000000000000000000000000000000000000ffffffff",
 					},
 				},
@@ -61,7 +68,18 @@ const tx_trx = {
 	net_fee: 268,
 	energy_fee: 0,
 	raw_data: {
-		contract: [{ type: "TransferContract" }],
+		contract: [
+			{
+				type: "TransferContract",
+				parameter: {
+					value: {
+						owner_address: SENDER,
+						to_address: CONTRACT,
+						amount: 5000000,
+					},
+				},
+			},
+		],
 	},
 	ret: [{ contractRet: "SUCCESS" }],
 };
@@ -242,10 +260,32 @@ describe("fetchContractTxs", () => {
 			block_number: 80000001,
 			timestamp: 1710000001000,
 			contract_type: "TriggerSmartContract",
+			type_display: "0xa9059cbb",
+			method_selector: "0xa9059cbb",
+			from: SENDER,
+			to: CONTRACT,
+			amount: 0,
+			amount_trx: "0",
 			status: "SUCCESS",
+			confirmed: true,
 			fee: 500000,
 			fee_unit: "sun",
 			decimals: 6,
+		});
+	});
+
+	it("extracts from/to/amount for plain TRX transfer rows", async () => {
+		mockFetchMulti();
+		const client = createClient({ network: "mainnet" });
+		const rows = await fetchContractTxs(client, CONTRACT, { limit: 20 });
+		const trxRow = rows.find((r) => r.tx_id === "tx_trx");
+
+		expect(trxRow).toMatchObject({
+			from: SENDER,
+			to: CONTRACT,
+			amount: 5000000,
+			amount_trx: "5",
+			type_display: "Transfer",
 		});
 	});
 });
