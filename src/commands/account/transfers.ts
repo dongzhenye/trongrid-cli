@@ -89,6 +89,42 @@ export function sortTransfers(
 	return applySort(items, TRANSFERS_SORT_CONFIG, opts);
 }
 
+export async function accountTransfersAction(
+	address: string | undefined,
+	parent: Command,
+): Promise<void> {
+	const { getClient, parseFields } = await import("../../index.js");
+	const opts = parent.opts<GlobalOptions>();
+	try {
+		const resolved = resolveAddress(address);
+		const client = getClient(opts);
+		// NOTE: --confirmed has no effect here —
+		// /v1/accounts/:address/transactions/trc20 has no /walletsolidity
+		// mirror. Accepted silently for flag uniformity; tracked as a
+		// Phase D follow-up.
+		const range = parseTimeRange(opts.before, opts.after);
+		const rows = await fetchAccountTransfers(client, resolved, {
+			limit: Number.parseInt(opts.limit, 10),
+			minTimestamp: range.minTimestamp,
+			maxTimestamp: range.maxTimestamp,
+		});
+		const sorted = sortTransfers(rows, {
+			sortBy: opts.sortBy,
+			reverse: opts.reverse,
+		});
+		printListResult(sorted, renderCenteredTransferList, {
+			json: opts.json,
+			fields: parseFields(opts),
+		});
+	} catch (err) {
+		reportErrorAndExit(err, {
+			json: opts.json,
+			verbose: opts.verbose,
+			hint: addressErrorHint(err),
+		});
+	}
+}
+
 export function registerAccountTransfersCommand(account: Command, parent: Command): void {
 	account
 		.command("transfers")
@@ -113,35 +149,6 @@ Sort:
 `,
 		)
 		.action(async (address: string | undefined) => {
-			const { getClient, parseFields } = await import("../../index.js");
-			const opts = parent.opts<GlobalOptions>();
-			try {
-				const resolved = resolveAddress(address);
-				const client = getClient(opts);
-				// NOTE: --confirmed has no effect here —
-				// /v1/accounts/:address/transactions/trc20 has no /walletsolidity
-				// mirror. Accepted silently for flag uniformity; tracked as a
-				// Phase D follow-up.
-				const range = parseTimeRange(opts.before, opts.after);
-				const rows = await fetchAccountTransfers(client, resolved, {
-					limit: Number.parseInt(opts.limit, 10),
-					minTimestamp: range.minTimestamp,
-					maxTimestamp: range.maxTimestamp,
-				});
-				const sorted = sortTransfers(rows, {
-					sortBy: opts.sortBy,
-					reverse: opts.reverse,
-				});
-				printListResult(sorted, renderCenteredTransferList, {
-					json: opts.json,
-					fields: parseFields(opts),
-				});
-			} catch (err) {
-				reportErrorAndExit(err, {
-					json: opts.json,
-					verbose: opts.verbose,
-					hint: addressErrorHint(err),
-				});
-			}
+			await accountTransfersAction(address, parent);
 		});
 }

@@ -156,6 +156,32 @@ export async function fetchAccountTokens(
 	return results;
 }
 
+export async function accountTokensAction(
+	address: string | undefined,
+	parent: Command,
+): Promise<void> {
+	const { getClient, parseFields } = await import("../../index.js");
+	const opts = parent.opts<GlobalOptions>();
+	try {
+		const resolved = resolveAddress(address);
+		const client = getClient(opts);
+		const allTokens = await fetchAccountTokens(client, resolved);
+		const limit = Number.parseInt(opts.limit, 10);
+		const tokens = allTokens.slice(0, limit);
+
+		printListResult(tokens, renderTokenList, {
+			json: opts.json,
+			fields: parseFields(opts),
+		});
+	} catch (err) {
+		reportErrorAndExit(err, {
+			json: opts.json,
+			verbose: opts.verbose,
+			hint: addressErrorHint(err),
+		});
+	}
+}
+
 export function registerAccountTokensCommand(account: Command, parent: Command): void {
 	account
 		.command("tokens")
@@ -173,25 +199,6 @@ Examples:
 `,
 		)
 		.action(async (address: string | undefined) => {
-			const { getClient, parseFields } = await import("../../index.js");
-			const opts = parent.opts<GlobalOptions>();
-			try {
-				const resolved = resolveAddress(address);
-				const client = getClient(opts);
-				const allTokens = await fetchAccountTokens(client, resolved);
-				const limit = Number.parseInt(opts.limit, 10);
-				const tokens = allTokens.slice(0, limit);
-
-				printListResult(tokens, renderTokenList, {
-					json: opts.json,
-					fields: parseFields(opts),
-				});
-			} catch (err) {
-				reportErrorAndExit(err, {
-					json: opts.json,
-					verbose: opts.verbose,
-					hint: addressErrorHint(err),
-				});
-			}
+			await accountTokensAction(address, parent);
 		});
 }
