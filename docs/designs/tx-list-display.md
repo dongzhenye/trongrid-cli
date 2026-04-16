@@ -5,7 +5,7 @@ Human-mode rendering rules for `account txs` and `contract txs`. JSON output is 
 ## Column Order
 
 ```
-TX | Time (UTC) | [Confirmed] | Type / Method | From → To | Amount | [Fee] | [Result]
+TX | Time (UTC) | [Confirmed] | Type/Method | From → To | Amount | [Fee] | [Result]
 ```
 
 Brackets denote conditional columns — see §Status Columns below.
@@ -33,7 +33,7 @@ Only shown when at least one transaction in the batch is unconfirmed.
 | Unconfirmed | `⌛` (U+231B) | default |
 | Confirmed | `✓` | green (`pass`) |
 
-### Type / Method (always)
+### Type/Method (always)
 
 Merged column for transaction type and smart contract method.
 
@@ -56,7 +56,7 @@ Merged column for transaction type and smart contract method.
 
 **Visual distinction:** ABI-resolved method names are lowercase (`transfer`), chain type names are title case (`Transfer`). Two sources are distinguishable at a glance.
 
-**Method resolution for `contract txs`:** When `--method` filter is used, ABI is already fetched. For unfiltered listing, method resolution requires an additional `getcontract` call — this is opt-in via the merged Type / Method column.
+**Method resolution for `contract txs`:** When `--method` filter is used, ABI is already fetched. For unfiltered listing, method resolution requires an additional `getcontract` call — this is opt-in via the merged Type/Method column.
 
 **Configurable mapping:** The type mapping table is maintained as a static map in source code (`src/output/tx-type-map.ts`). New chain types can be added without touching rendering logic.
 
