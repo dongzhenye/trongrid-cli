@@ -10,7 +10,7 @@
 |---|---|
 | `main` tip | Phase F merged + post-merge polish, 2026-04-16 |
 | Active phase | **Phase G** — Governance + stats |
-| Pending cross-cut | Transfer list display redesign (draft design ready, implementation pending) |
+| Pending cross-cut | Transfer list display redesign (design finalized, implementation pending) |
 | Tests | 448 passing |
 | Prod deps | 1 (`commander`) |
 | Commands | 31 across 7 resources |
