@@ -140,4 +140,4 @@ JSON output is unaffected by this design. All fields are present regardless of h
 - Column alignment rules: `src/output/columns.ts`, memory `feedback_human_render_alignment`
 - Centered vs uncentered transfer lists: memory `feedback_transfer_list_two_styles`
 - Terminology glossary: `docs/designs/glossary.md`
-- Human display conventions (§7): `docs/designs/cli-best-practices.md`
+- Human display conventions: [`docs/designs/human-display.md`](./human-display.md)

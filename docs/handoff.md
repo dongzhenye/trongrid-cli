@@ -54,7 +54,7 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - Uncentered transfer list renderer (from/to as peers) → `src/output/transfers.ts`
 - Positioning tension documented → `docs/designs/phase-e-token-family.md` §Strategic context
 - `account tokens` display: `[TYPE] SYMBOL ID balance` — key before metric, no parentheses on ID column → `src/commands/account/tokens.ts`
-- Human display conventions (§7): thousands separators (US comma), address truncation 6+6, timestamps UTC → `docs/research/cli-best-practices.md`
+- Human display conventions: thousands separators (US comma), address truncation 6+6, timestamps UTC → [`docs/designs/human-display.md`](./designs/human-display.md)
 - Address truncation minimum 6+6 (anti-spoofing) → `src/output/columns.ts` default
 - `addThousandsSep` at renderer layer, not in `formatMajor` (JSON unaffected) → `src/output/columns.ts`
 - `uint256.max` allowance → "Unlimited" in human mode, `unlimited: true` in JSON → `src/commands/token/allowance.ts`
