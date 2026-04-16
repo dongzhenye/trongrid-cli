@@ -460,8 +460,10 @@ describe("renderTokenList (human output)", () => {
 			},
 		];
 		renderTokenList(tokens);
-		// First line is the header, second line is the token row.
-		const row = captured[1];
+		// captured[0] = "Found N tokens:", captured[1] = header row, captured[2+] = data
+		expect(captured[1]).toContain("Type");
+		expect(captured[1]).toContain("Balance");
+		const row = captured[2];
 		expect(row).toContain("[TRC20]");
 		expect(row).toContain("USDT");
 		// Contract address rendered in parentheses with both-ends truncation (4+4).
@@ -480,7 +482,7 @@ describe("renderTokenList (human output)", () => {
 			},
 		];
 		renderTokenList(tokens);
-		const row = captured[1];
+		const row = captured[2]; // skip header
 		expect(row).toContain("[TRC20]");
 		expect(row).toContain("[?]");
 		expect(row).toContain("(TXYZ...xxxx)");
@@ -507,11 +509,12 @@ describe("renderTokenList (human output)", () => {
 		];
 		renderTokenList(tokens);
 		expect(captured[0]).toContain("Found 2 tokens");
-		expect(captured[1]).toContain("(raw 1000000)");
-		expect(captured[2]).toContain("[TRC10]");
+		// captured[1] = header, captured[2] = first data, captured[3] = second data
+		expect(captured[2]).toContain("(raw 1000000)");
+		expect(captured[3]).toContain("[TRC10]");
 		// TRC10 has unresolved decimals — shows (decimals unresolved), not (raw …)
-		expect(captured[2]).not.toContain("(raw");
-		expect(captured[2]).toContain("(decimals unresolved)");
+		expect(captured[3]).not.toContain("(raw");
+		expect(captured[3]).toContain("(decimals unresolved)");
 	});
 
 	it("shows symbol from batch info when available", () => {
@@ -527,7 +530,7 @@ describe("renderTokenList (human output)", () => {
 			},
 		];
 		renderTokenList(tokens);
-		const row = captured[1];
+		const row = captured[2]; // skip header
 		expect(row).toContain("USDT");
 		expect(row).toContain("(TR7N...Lj6t)");
 	});
@@ -543,7 +546,7 @@ describe("renderTokenList (human output)", () => {
 			},
 		];
 		renderTokenList(tokens);
-		const row = captured[1];
+		const row = captured[2]; // skip header
 		expect(row).toContain("[TRC10]");
 		expect(row).toContain("42");
 		expect(row).not.toContain("(raw");

@@ -97,6 +97,7 @@ export function renderUncenteredTransferList(rows: UncenteredTransferRow[]): voi
 	const headerNoun = rows.length === 1 ? "transfer" : "transfers";
 	console.log(muted(`Found ${rows.length} ${headerNoun}:\n`));
 
+	const header = ["Time", "From", "", "To", "Amount", "TX"];
 	const cells: string[][] = rows.map((r) => [
 		formatTimestamp(r.block_timestamp),
 		truncateAddress(r.from, 4, 4),
@@ -106,17 +107,20 @@ export function renderUncenteredTransferList(rows: UncenteredTransferRow[]): voi
 		truncateAddress(r.tx_id, 4, 4),
 	]);
 
-	// Right-align value column
+	const allRows = [header, ...cells];
+
+	// Right-align amount column
 	const valueCol = 4;
-	const valueWidth = Math.max(...cells.map((c) => (c[valueCol] ?? "").length));
-	for (const row of cells) {
+	const valueWidth = Math.max(...allRows.map((c) => (c[valueCol] ?? "").length));
+	for (const row of allRows) {
 		const cur = row[valueCol] ?? "";
 		row[valueCol] = alignNumber(cur, valueWidth);
 	}
 
-	const widths = computeColumnWidths(cells);
-	const lines = renderColumns(cells, widths);
-	for (const line of lines) {
-		console.log(`  ${line}`);
+	const widths = computeColumnWidths(allRows);
+	const lines = renderColumns(allRows, widths);
+	console.log(`  ${muted(lines[0] ?? "")}`);
+	for (let i = 1; i < lines.length; i++) {
+		console.log(`  ${lines[i]}`);
 	}
 }

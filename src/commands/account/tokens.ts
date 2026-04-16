@@ -58,6 +58,7 @@ export function renderTokenList(tokens: TokenBalance[]): void {
 	console.log(muted(`Found ${tokens.length} ${noun}:\n`));
 
 	// Column order: type tag | symbol | contract (truncated) | balance | raw annotation
+	const header = ["Type", "Symbol", "Contract", "Balance", ""];
 	const cells: string[][] = tokens.map((t) => {
 		const symbolCol = t.symbol ?? (t.decimals === undefined ? "[?]" : "");
 		const contractCol = `(${truncateAddress(t.contract_address, 4, 4)})`;
@@ -75,17 +76,19 @@ export function renderTokenList(tokens: TokenBalance[]): void {
 		return [`[${t.type}]`, symbolCol, contractCol, balanceCol, rawAnnotation];
 	});
 
+	const allRows = [header, ...cells];
 	const balanceColIdx = 3;
-	const balanceWidth = Math.max(...cells.map((c) => (c[balanceColIdx] ?? "").length));
-	for (const row of cells) {
+	const balanceWidth = Math.max(...allRows.map((c) => (c[balanceColIdx] ?? "").length));
+	for (const row of allRows) {
 		const cur = row[balanceColIdx] ?? "";
 		row[balanceColIdx] = alignNumber(cur, balanceWidth);
 	}
 
-	const widths = computeColumnWidths(cells);
-	const lines = renderColumns(cells, widths);
-	for (const line of lines) {
-		console.log(`  ${line}`);
+	const widths = computeColumnWidths(allRows);
+	const lines = renderColumns(allRows, widths);
+	console.log(`  ${muted(lines[0] ?? "")}`);
+	for (let i = 1; i < lines.length; i++) {
+		console.log(`  ${lines[i]}`);
 	}
 }
 

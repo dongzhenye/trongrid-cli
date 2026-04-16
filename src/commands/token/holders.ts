@@ -130,36 +130,32 @@ export function renderHolderList(items: HolderRow[]): void {
 	}
 
 	const noun = items.length === 1 ? "holder" : "holders";
-	console.log(muted(`Found ${items.length} ${noun}`));
+	console.log(muted(`Found ${items.length} ${noun}:\n`));
 
-	// Pre-format cells so computeColumnWidths sees the final rendered widths.
-	const rankStrs = items.map((r) => String(r.rank));
-	const addrStrs = items.map((r) => truncateAddress(r.address));
-	const balStrs = items.map((r) => r.balance_major);
-	const sharStrs = items.map((r) => `${r.share_pct}%`);
+	const header = ["#", "Address", "Balance", "Share"];
+	const cells: string[][] = items.map((r) => [
+		String(r.rank),
+		truncateAddress(r.address),
+		r.balance_major,
+		`${r.share_pct}%`,
+	]);
 
-	const widths = computeColumnWidths(
-		items.map((_, i) => [
-			rankStrs[i] ?? "",
-			addrStrs[i] ?? "",
-			balStrs[i] ?? "",
-			sharStrs[i] ?? "",
-		]),
-	);
+	// Include header in width calculation
+	const allRows = [header, ...cells];
+	const widths = computeColumnWidths(allRows);
 
-	const lines = renderColumns(
-		items.map((_, i) => [
-			alignNumber(rankStrs[i] ?? "", widths[0] ?? 0),
-			addrStrs[i] ?? "",
-			alignNumber(balStrs[i] ?? "", widths[2] ?? 0),
-			alignNumber(sharStrs[i] ?? "", widths[3] ?? 0),
-		]),
-		// widths already applied above via alignNumber; pass identity widths here
-		[widths[0] ?? 0, widths[1] ?? 0, widths[2] ?? 0, widths[3] ?? 0],
-	);
+	// Right-align rank, balance, share columns (indices 0, 2, 3)
+	for (const row of allRows) {
+		for (const col of [0, 2, 3]) {
+			row[col] = alignNumber(row[col] ?? "", widths[col] ?? 0);
+		}
+	}
 
-	for (const line of lines) {
-		console.log(line);
+	const lines = renderColumns(allRows, widths);
+	// First line is header — render muted
+	console.log(`  ${muted(lines[0] ?? "")}`);
+	for (let i = 1; i < lines.length; i++) {
+		console.log(`  ${lines[i]}`);
 	}
 }
 
