@@ -11,6 +11,7 @@ import {
 } from "../../output/columns.js";
 import { printListResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
 import { humanTxType } from "../../output/tx-type-map.js";
+import { hexToBase58 } from "../../utils/address.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 import { applySort, type SortConfig, type SortOptions } from "../../utils/sort.js";
 
@@ -89,6 +90,19 @@ function extractMethodSelector(data?: string): string | undefined {
 	return `0x${data.slice(0, 8).toLowerCase()}`;
 }
 
+/** Convert hex address (41-prefixed) to Base58Check, pass through if already Base58 or empty */
+function safeToBase58(addr: string): string {
+	if (!addr) return "";
+	// Already Base58 (starts with T, 34 chars)
+	if (/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(addr)) return addr;
+	// Hex format (41-prefixed or raw)
+	try {
+		return hexToBase58(addr);
+	} catch {
+		return addr;
+	}
+}
+
 export async function fetchAccountTxs(
 	client: ApiClient,
 	address: string,
@@ -112,8 +126,8 @@ export async function fetchAccountTxs(
 			type_display: deriveTypeDisplay(contractType, data),
 			method: undefined, // resolved later when ABI is available
 			method_selector: extractMethodSelector(data),
-			from: paramValue?.owner_address ?? "",
-			to: paramValue?.to_address ?? paramValue?.contract_address ?? "",
+			from: safeToBase58(paramValue?.owner_address ?? ""),
+			to: safeToBase58(paramValue?.to_address ?? paramValue?.contract_address ?? ""),
 			amount,
 			amount_unit: "sun" as const,
 			amount_trx: sunToTrx(amount),
@@ -171,7 +185,7 @@ export function renderTxs(items: AccountTxRow[], subjectAddress?: string): void 
 	// Build header
 	const header: string[] = ["TX", "Time (UTC)"];
 	if (showConfirmed) header.push("Confirmed");
-	header.push("Type / Method", "From", "", "To", "Amount", "Unit", "Fee", "Unit");
+	header.push("Type / Method", "From", "", "To", "Amount", "Fee");
 	if (showResult) header.push("Result");
 
 	// Build data rows
@@ -190,10 +204,8 @@ export function renderTxs(items: AccountTxRow[], subjectAddress?: string): void 
 			subjectAddress && t.from === subjectAddress ? muted(fromDisplay) : fromDisplay,
 			"\u2192",
 			subjectAddress && t.to === subjectAddress ? muted(toDisplay) : toDisplay,
-			addThousandsSep(t.amount_trx),
-			"TRX",
-			addThousandsSep(t.fee_trx),
-			"TRX",
+			`${addThousandsSep(t.amount_trx)} TRX`,
+			`${addThousandsSep(t.fee_trx)} TRX`,
 		);
 
 		if (showResult) {
@@ -205,7 +217,7 @@ export function renderTxs(items: AccountTxRow[], subjectAddress?: string): void 
 
 	const allRows = [header, ...cells];
 
-	// Right-align Amount column
+	// Right-align Amount column (value+unit combined)
 	const amountIdx = header.indexOf("Amount");
 	if (amountIdx >= 0) {
 		const amountWidth = Math.max(...allRows.map((r) => (r[amountIdx] ?? "").length));
@@ -214,7 +226,7 @@ export function renderTxs(items: AccountTxRow[], subjectAddress?: string): void 
 		}
 	}
 
-	// Right-align Fee column
+	// Right-align Fee column (value+unit combined)
 	const feeIdx = header.indexOf("Fee");
 	if (feeIdx >= 0) {
 		const feeWidth = Math.max(...allRows.map((r) => (r[feeIdx] ?? "").length));
