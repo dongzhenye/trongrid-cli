@@ -14,7 +14,7 @@ import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js
  * loses the permission-as-unit structure that multi-sig audit workflows
  * depend on.
  *
- * JSON shape per a deliberate exception to docs/design/units.md (no S-
+ * JSON shape per a deliberate exception to docs/designs/units.md (no S-
  * class applies — no quantity fields). Documented in the Phase D spec
  * under "intentional deviation".
  *

@@ -34,7 +34,7 @@ That line is self-contained — this doc briefs a cold agent on state, locked-in
 
 **New commands shipped**: `account transfers`, `account delegations`, `account permissions`. The last is deliberately structured (not a sortable list) — `--sort-by` / `--reverse` are rejected with `UsageError` and a distinct hint.
 
-**D-prep plumbing** (P1–P9) turned `--fields` into a real filter in human mode, wired validators into the exit-code-2 contract, added a stable sort tie-breaker, extracted three-layer output primitives (`columns.ts` + `transfers.ts`), rebalanced error/hint copy across all producers, rendered full help on bare invoke, and applied `.helpGroup()` to sub-command leaves (supported as of commander v14, investigation in `docs/design/notes/commander-helpgroup-investigation.md`).
+**D-prep plumbing** (P1–P9) turned `--fields` into a real filter in human mode, wired validators into the exit-code-2 contract, added a stable sort tie-breaker, extracted three-layer output primitives (`columns.ts` + `transfers.ts`), rebalanced error/hint copy across all producers, rendered full help on bare invoke, and applied `.helpGroup()` to sub-command leaves (supported as of commander v14, investigation in `docs/designs/notes/commander-helpgroup-investigation.md`).
 
 **Design decisions settled during brainstorm** (2026-04-15) and held through implementation:
 
@@ -71,8 +71,8 @@ Phase D introduces a spec-vs-plan split in project convention: spec is the stabl
 
 Pre-Phase-C decisions (still binding):
 
-- **Command grammar**: action-first positional (`account tokens <address>`, not `account <address> tokens`). Six-reason rationale in `docs/design/commands.md` Part I §2.
-- **`--network` (not `--env`)**: flag stays as-is. Rationale in `docs/design/cli-best-practices.md` §3.
+- **Command grammar**: action-first positional (`account tokens <address>`, not `account <address> tokens`). Six-reason rationale in `docs/designs/commands.md` Part I §2.
+- **`--network` (not `--env`)**: flag stays as-is. Rationale in `docs/designs/cli-best-practices.md` §3.
 - **JSON unit shape S1** (TRX): `balance` + `balance_unit: "sun"` + `decimals: 6` + `balance_trx`.
 - **JSON unit shape S2** (TRC-20/10): `balance` + `decimals` + `balance_major`. Head word `balance` per TIP-20/EIP-20.
 - **Exit code scheme**: `0` success, `1` general, `2` usage, `3` network / auth.
@@ -116,12 +116,12 @@ Open items (not decisions, tracked in `docs/roadmap.md`):
 
 1. **This doc** — you're here.
 2. `docs/roadmap.md` — flat phase list + cross-walk from old labels.
-3. `docs/design/mcp-skills-review.md` — §4 has Q1–Q5 resolutions with rationale.
-4. `docs/design/commands.md` — Part II is the full target command surface.
-5. `docs/design/units.md` — JSON unit shape contract. Any new quantity field must conform.
+3. `docs/designs/mcp-skills-review.md` — §4 has Q1–Q5 resolutions with rationale.
+4. `docs/designs/commands.md` — Part II is the full target command surface.
+5. `docs/designs/units.md` — JSON unit shape contract. Any new quantity field must conform.
 6. `AGENTS.md` (repo root) — contribution constraints (all commits must follow).
 7. `docs/architecture.md` — tech decisions and the "Defaults & conventions" table.
-8. `docs/design/cli-best-practices.md` — scorecard for "what's done vs pending".
+8. `docs/designs/cli-best-practices.md` — scorecard for "what's done vs pending".
 9. `docs/specs/phase-d.md` — active-phase spec (brainstorming output: goal, architecture, file map, exit criteria).
 10. `docs/plans/phase-d.md` — active-phase implementation plan (step-level detail expanded from the spec; pending until `superpowers:writing-plans` runs).
 11. `docs/plans/phase-c.md` — reference for command-level task structure and TDD pattern.

@@ -104,7 +104,7 @@ Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 - [x] List headers: fixed `Found 1 tokens` / `Found 1 transactions` plural hardcoding; both `renderTxs` and `renderTokenList` now emit singular/plural correctly (P6b)
 - [x] `applySort` stable tie-breaker: `tieBreakField` per `SortConfig` (P3). **Follow-up:** string-compare hazard on numeric-string fields tracked below.
 - [x] `UsageError` sweep: `validateAddress`, `detectBlockIdentifier`, `detectTokenIdentifier`, `resolveAddress` all throw `UsageError` → exit code 2 (P4)
-- [x] Sub-command help retains `helpGroup` categories — supported as of commander v14.0.3, applied to all leaves (P9; investigation in `docs/design/notes/commander-helpgroup-investigation.md`)
+- [x] Sub-command help retains `helpGroup` categories — supported as of commander v14.0.3, applied to all leaves (P9; investigation in `docs/designs/notes/commander-helpgroup-investigation.md`)
 - [x] Bare `trongrid` (no command) renders full help via registered root action (P8)
 - [x] `renderTxs` exported + direct-invocation test coverage parity with `renderTokenList` (P6b + P7 subsumed)
 - [x] **Bonus (not originally planned):** three-layer output architecture extracted — `src/output/columns.ts` (Layer-1 primitives) + `src/output/transfers.ts` (Layer-2 `renderCenteredTransferList`) — used by `account transfers` and available for Phase E's uncentered transfer list variant (P6a / P6b)
@@ -164,7 +164,7 @@ Spec: [`specs/phase-d.md`](./specs/phase-d.md). Plan: [`plans/phase-d.md`](./pla
 
 **Goal**: Ship the live competitor parity matrix, finalize README, and cut the first tagged release to npm.
 
-- [ ] `docs/design/competitor-parity.md` — live structured command-by-command / endpoint-by-endpoint mapping (`trongrid-cli ↔ TronGrid MCP ↔ TronScan MCP`); source-of-truth for README strengths + gap-tracking
+- [ ] `docs/designs/competitor-parity.md` — live structured command-by-command / endpoint-by-endpoint mapping (`trongrid-cli ↔ TronGrid MCP ↔ TronScan MCP`); source-of-truth for README strengths + gap-tracking
 - [ ] README — installation + auth + 5 usage examples + link to `AGENTS.md`
 - [ ] `package.json` name + author + keywords finalized (see [npm Name & Org](memory) open item)
 - [ ] Dry-run publish + local install test (`npx trongrid@latest`)

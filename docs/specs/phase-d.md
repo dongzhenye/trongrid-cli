@@ -17,9 +17,9 @@
 
 **Spec references (authoritative):**
 
-- [`docs/design/commands.md`](../design/commands.md) Part II — `account` section; `--before` / `--after` global flags (new in this plan)
-- [`docs/design/units.md`](../design/units.md) — S1 (TRX) + S2 (TRC-10/20) + the "intentional deviation" note for `account permissions`
-- [`docs/design/mcp-skills-review.md`](../design/mcp-skills-review.md) §4 — Q2 (approvals as a command, deferred), Q5 (Stake 2.0 default) resolutions
+- [`docs/designs/commands.md`](../design/commands.md) Part II — `account` section; `--before` / `--after` global flags (new in this plan)
+- [`docs/designs/units.md`](../design/units.md) — S1 (TRX) + S2 (TRC-10/20) + the "intentional deviation" note for `account permissions`
+- [`docs/designs/mcp-skills-review.md`](../design/mcp-skills-review.md) §4 — Q2 (approvals as a command, deferred), Q5 (Stake 2.0 default) resolutions
 - [`docs/plans/phase-c.md`](../plans/phase-c.md) — task-level structure and commit rhythm template; read this to understand the "scaffold → endpoint → register" 3-commit-per-command pattern and the `superpowers:subagent-driven-development` triad
 - [`docs/architecture.md`](../architecture.md) — "Defaults & conventions" decision table
 - [`docs/roadmap.md`](../roadmap.md) — Phase D checklist + cross-walk from old labels
@@ -76,7 +76,7 @@ Nine items, all touching existing files. Zero new commands. Ordered so the depen
 | `tests/commands/account-txs.test.ts` | **new** section — render snapshot test invoking the exported `renderTxs` directly (parity with `renderTokenList` which already had this) | P7 |
 | `src/index.ts` | Root command default action renders full help when no subcommand is given | P8 |
 | `tests/cli/bare-invoke.test.ts` | **new** — verifies `trongrid` (no args) output equals `trongrid --help` output modulo trailing whitespace | P8 |
-| **`docs/design/notes/commander-helpgroup-investigation.md`** | **new** — investigation record of whether commander.js `.helpGroup()` applies to sub-command containers. Lands as a `docs:` commit regardless of outcome (per memory `feedback_commit_rhythm`). If supported, an additional code commit follows applying `.helpGroup()` to each parent (`account`, `block`, `token`, `tx`, `auth`, `config`). | P9 |
+| **`docs/designs/notes/commander-helpgroup-investigation.md`** | **new** — investigation record of whether commander.js `.helpGroup()` applies to sub-command containers. Lands as a `docs:` commit regardless of outcome (per memory `feedback_commit_rhythm`). If supported, an additional code commit follows applying `.helpGroup()` to each parent (`account`, `block`, `token`, `tx`, `auth`, `config`). | P9 |
 
 ### Task outline (D-prep, 10 commits)
 
@@ -113,7 +113,7 @@ Each task below becomes one commit unless noted. Commit subjects follow Conventi
   Investigation record. Lands as a `docs:` commit regardless of outcome (per `feedback_commit_rhythm`). If the investigation finds support, a second commit follows:
   - **P9-impl** (contingent) — `feat: propagate helpGroup to account/block/token/tx/auth/config parents`
 
-  If unsupported, P9 is the only commit and `docs/design/notes/commander-helpgroup-investigation.md` records the negative finding + points at the upstream issue/PR that would unblock.
+  If unsupported, P9 is the only commit and `docs/designs/notes/commander-helpgroup-investigation.md` records the negative finding + points at the upstream issue/PR that would unblock.
 
 ### D-prep exit criteria
 

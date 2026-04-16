@@ -1410,7 +1410,7 @@ EOF
 ### Task P9 — `helpGroup` investigation + contingent impl
 
 **Files:**
-- Create: `docs/design/notes/commander-helpgroup-investigation.md`
+- Create: `docs/designs/notes/commander-helpgroup-investigation.md`
 - (contingent) Modify: each sub-command registration file that has leaf commands to group
 
 **Goal:** Phase C trial item #8 observed that `trongrid account --help` shows a flat Commands list while `trongrid --help` shows grouped categories ("Read commands:"). The `.helpGroup()` method is already used on sub-command *containers* (e.g. `account` parent at `src/commands/account/view.ts:46`), but leaf commands inside the parent have no grouping. The investigation asks: does `.helpGroup()` on leaves group them inside their parent's help output?
@@ -1424,7 +1424,7 @@ Quick research tasks:
 - Check the commander.js changelog for the version that introduced `.helpGroup()`
 - Look for open issues / PRs about leaf-level grouping: `gh search issues --repo tj/commander.js helpGroup`
 
-Write findings directly into `docs/design/notes/commander-helpgroup-investigation.md`.
+Write findings directly into `docs/designs/notes/commander-helpgroup-investigation.md`.
 
 - [ ] **Step 2: Write a throwaway experiment**
 
@@ -1447,7 +1447,7 @@ Observe: does the output show "Group A:" and "Group B:" as section headers with 
 
 - [ ] **Step 3: Write the investigation doc**
 
-Create `docs/design/notes/commander-helpgroup-investigation.md` with:
+Create `docs/designs/notes/commander-helpgroup-investigation.md` with:
 - What the Phase C trial item #8 asked
 - The commander.js version in use (check `package.json`)
 - The experimental finding (supported / unsupported / partially supported with caveats)
@@ -1458,7 +1458,7 @@ Create `docs/design/notes/commander-helpgroup-investigation.md` with:
 - [ ] **Step 4: Commit the investigation (regardless of outcome)**
 
 ```bash
-git add docs/design/notes/commander-helpgroup-investigation.md
+git add docs/designs/notes/commander-helpgroup-investigation.md
 git commit -m "$(cat <<'EOF'
 docs: investigation — commander.js helpGroup on sub-command leaves
 
@@ -1498,7 +1498,7 @@ the structure in.
 
 Closes Phase C trial walkthrough item #8 (investigation found
 commander.js supports leaf grouping — see
-docs/design/notes/commander-helpgroup-investigation.md).
+docs/designs/notes/commander-helpgroup-investigation.md).
 
 Phase D P9-impl.
 "
@@ -1545,7 +1545,7 @@ import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js
 import { applySort, type SortConfig } from "../../utils/sort.js";
 
 /**
- * Unit shape per docs/design/units.md S2 (TRC-10/20 scalable quantity).
+ * Unit shape per docs/designs/units.md S2 (TRC-10/20 scalable quantity).
  * Includes `direction: "out" | "in"` — this is a **centered** transfer
  * list (per memory feedback_transfer_list_two_styles); the direction is
  * computed at fetch time against the queried subject address so agents
@@ -2034,7 +2034,7 @@ import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js
 import { applySort, type SortConfig } from "../../utils/sort.js";
 
 /**
- * Stake 2.0 delegation row. Unit shape per docs/design/units.md S1
+ * Stake 2.0 delegation row. Unit shape per docs/designs/units.md S1
  * (TRX quantity): amount + amount_unit: "sun" + decimals: 6 + amount_trx.
  *
  * `direction` discriminates incoming vs outgoing delegations. Flattened
@@ -2411,7 +2411,7 @@ import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js
  * loses the permission-as-unit structure that multi-sig audit workflows
  * depend on.
  *
- * JSON shape per a deliberate exception to docs/design/units.md (no S-
+ * JSON shape per a deliberate exception to docs/designs/units.md (no S-
  * class applies — no quantity fields). Documented in the Phase D spec
  * under "intentional deviation".
  *

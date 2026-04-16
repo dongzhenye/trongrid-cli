@@ -25,7 +25,7 @@ program
 	.option("--before <ts|date>", "only include items before this unix-seconds or ISO-8601 timestamp")
 	.option("--after <ts|date>", "only include items after this unix-seconds or ISO-8601 timestamp")
 	.option("--confirmed", "read confirmed (irreversible, ~60s lag) state instead of latest", false)
-	// Deterministic exit code scheme (see docs/design/cli-best-practices.md §4):
+	// Deterministic exit code scheme (see docs/designs/cli-best-practices.md §4):
 	//   0 — success (help / version display included)
 	//   1 — general / unexpected error (thrown by TrongridError with non-auth status)
 	//   2 — usage error (unknown flag / subcommand / missing argument)

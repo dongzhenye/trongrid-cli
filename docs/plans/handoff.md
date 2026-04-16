@@ -21,10 +21,10 @@
 Each entry is a closed decision. Rationale lives at the linked SSOT — don't re-derive here.
 
 **Architecture & conventions:**
-- Command grammar: action-first positional → [`docs/design/commands.md` §2](../design/commands.md)
-- `--network` not `--env` → [`docs/design/cli-best-practices.md` §3](../design/cli-best-practices.md)
-- JSON unit shapes S1 / S2 → [`docs/design/units.md`](../design/units.md)
-- Exit codes 0/1/2/3 → [`docs/design/cli-best-practices.md` §4](../design/cli-best-practices.md)
+- Command grammar: action-first positional → [`docs/designs/commands.md` §2](../design/commands.md)
+- `--network` not `--env` → [`docs/designs/cli-best-practices.md` §3](../design/cli-best-practices.md)
+- JSON unit shapes S1 / S2 → [`docs/designs/units.md`](../design/units.md)
+- Exit codes 0/1/2/3 → [`docs/designs/cli-best-practices.md` §4](../design/cli-best-practices.md)
 - Credential priority chain → [`docs/architecture.md`](../architecture.md)
 - One prod dep (`commander`) → [`docs/architecture.md` §Dependencies](../architecture.md)
 - Semantic color tokens only → `src/output/colors.ts`
@@ -34,7 +34,7 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - No MCP server facade → memory `project_no_mcp_layer`
 
 **Sort & filter UX (Phase C Q1–Q5):**
-- `--confirmed` default off → [`docs/design/mcp-skills-review.md` §4 Q1](../design/mcp-skills-review.md)
+- `--confirmed` default off → [`docs/designs/mcp-skills-review.md` §4 Q1](../design/mcp-skills-review.md)
 - Sort: per-command default + `--reverse` + `--sort-by`; `--order` rejected → Q3
 - Token identifier auto-detection + `--type` override → Q4
 - Stake default V2 → Q5
@@ -44,7 +44,7 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - Three-layer output: columns.ts → transfers.ts → command → [`docs/specs/phase-d.md`](../specs/phase-d.md)
 - `account permissions` structured not list; rejects sort flags → `src/commands/account/permissions.ts`
 - `UsageError` on all validators → exit 2 → `src/output/format.ts`
-- `helpGroup` on sub-command leaves → `docs/design/notes/commander-helpgroup-investigation.md`
+- `helpGroup` on sub-command leaves → `docs/designs/notes/commander-helpgroup-investigation.md`
 
 **Open items** (not decisions — tracked in [`docs/roadmap.md` Phase D Deferred](../roadmap.md)):
 - npm package name choice
@@ -57,8 +57,8 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 
 1. **This doc** — state + decisions + pointers
 2. [`docs/roadmap.md`](../roadmap.md) — phase list, what's next, deferred items
-3. [`docs/design/commands.md`](../design/commands.md) — target command surface (Part II)
-4. [`docs/design/units.md`](../design/units.md) — JSON unit shape contract
+3. [`docs/designs/commands.md`](../design/commands.md) — target command surface (Part II)
+4. [`docs/designs/units.md`](../design/units.md) — JSON unit shape contract
 5. [`AGENTS.md`](../../AGENTS.md) — contribution constraints
 6. [`docs/architecture.md`](../architecture.md) — tech decisions
 7. Active-phase spec/plan under `docs/specs/` and `docs/plans/`

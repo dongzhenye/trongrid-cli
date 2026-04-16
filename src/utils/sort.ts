@@ -25,7 +25,7 @@ export interface SortOptions {
 /**
  * Client-side sort for fetched list results.
  *
- * Per Q3 resolution in docs/design/mcp-skills-review.md: each list command
+ * Per Q3 resolution in docs/designs/mcp-skills-review.md: each list command
  * declares its default field + per-field inherent directions. --sort-by
  * switches field (using the new field's inherent direction). --reverse
  * flips whatever direction would otherwise apply.

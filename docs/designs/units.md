@@ -156,9 +156,9 @@ Head words are the **semantic noun** of a quantity — the `{head}` placeholder 
 
 **Key principle**: `balance` is NOT a fixed field name — it is the right choice for the "address's available token balance" situation. Other situations pick other heads. The `{head} + decimals + {head}_major` shape works for all of them.
 
-**Convergent design — TronGrid MCP**: TronGrid's published MCP design independently arrived at the same paired-field shape: `balance` head word, `_major` major-unit suffix on raw integers, and `balance_unit: "sun"` + `balance_trx` for the TRX flavor. We add static `decimals: 6` on TRX (per P4) where TronGrid omits it. The convergence is not coordination; it's two independent reads of the same correctness problem (LLMs and humans both miscount sun and TRC-20 raw integers without paired-field hints). See [`docs/design/mcp-skills-review.md`](./mcp-skills-review.md) §2 A1.
+**Convergent design — TronGrid MCP**: TronGrid's published MCP design independently arrived at the same paired-field shape: `balance` head word, `_major` major-unit suffix on raw integers, and `balance_unit: "sun"` + `balance_trx` for the TRX flavor. We add static `decimals: 6` on TRX (per P4) where TronGrid omits it. The convergence is not coordination; it's two independent reads of the same correctness problem (LLMs and humans both miscount sun and TRC-20 raw integers without paired-field hints). See [`docs/designs/mcp-skills-review.md`](./mcp-skills-review.md) §2 A1.
 
-**Deliberate divergence — TronScan MCP**: TronScan returns raw integers only; sun→TRX (÷10⁶) and token-precision (÷10^decimals) conversion is documented in skill prose and treated as the caller's job. We reject this choice because it pushes a known correctness bug onto every consumer. The discrepancy is intentional, not drift. See [`docs/design/mcp-skills-review.md`](./mcp-skills-review.md) §3 X2.
+**Deliberate divergence — TronScan MCP**: TronScan returns raw integers only; sun→TRX (÷10⁶) and token-precision (÷10^decimals) conversion is documented in skill prose and treated as the caller's job. We reject this choice because it pushes a known correctness bug onto every consumer. The discrepancy is intentional, not drift. See [`docs/designs/mcp-skills-review.md`](./mcp-skills-review.md) §3 X2.
 
 ## 4. Scenarios
 
