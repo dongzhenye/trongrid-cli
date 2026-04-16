@@ -7,6 +7,7 @@ import {
 	computeColumnWidths,
 	renderColumns,
 	truncateAddress,
+	visibleLength,
 } from "../../output/columns.js";
 import {
 	formatTimestamp,
@@ -178,7 +179,7 @@ function renderSection(label: string, rows: DelegationRow[]): void {
 	]);
 
 	const amountCol = 0;
-	const amountWidth = Math.max(...cells.map((c) => (c[amountCol] ?? "").length));
+	const amountWidth = Math.max(...cells.map((c) => visibleLength(c[amountCol] ?? "")));
 	for (const row of cells) {
 		const cur = row[amountCol] ?? "";
 		row[amountCol] = alignNumber(cur, amountWidth);
