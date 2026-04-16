@@ -58,23 +58,17 @@ export function renderTokenList(tokens: TokenBalance[]): void {
 	const noun = tokens.length === 1 ? "token" : "tokens";
 	console.log(muted(`Found ${tokens.length} ${noun}:\n`));
 
-	// Column order: type tag | symbol | contract (truncated) | balance | raw annotation
-	const header = ["Type", "Symbol", "Contract", "Balance", ""];
+	// Column order: type tag | symbol | contract (muted) | balance
+	const header = ["Type", "Symbol", "Contract", "Balance"];
 	const cells: string[][] = tokens.map((t) => {
 		const symbolCol = t.symbol ?? (t.decimals === undefined ? "[?]" : "");
-		const contractCol = `(${truncateAddress(t.contract_address)})`;
+		const contractCol = muted(truncateAddress(t.contract_address));
 		const balanceCol = addThousandsSep(t.balance_major ?? t.balance);
 
-		// Trial #7: suppress redundant raw when major equals raw (e.g. decimals=0)
-		// Trial #6: show "(decimals unresolved)" instead of raw annotation on failure
-		let rawAnnotation = "";
-		if (t.decimals === undefined) {
-			rawAnnotation = muted("(decimals unresolved)");
-		} else if (t.balance_major !== undefined && t.balance_major !== t.balance) {
-			rawAnnotation = muted(`(raw ${t.balance})`);
-		}
+		// Trial #6: show marker when decimals unresolved
+		const suffix = t.decimals === undefined ? ` ${muted("(decimals unresolved)")}` : "";
 
-		return [`[${t.type}]`, symbolCol, contractCol, balanceCol, rawAnnotation];
+		return [`[${t.type}]`, symbolCol, contractCol, `${balanceCol}${suffix}`];
 	});
 
 	const allRows = [header, ...cells];
