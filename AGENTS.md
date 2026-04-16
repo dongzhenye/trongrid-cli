@@ -222,11 +222,11 @@ src/
 |---|---|
 | [`docs/designs/units.md`](./docs/designs/units.md) | JSON quantity field shape (principles P1–P7, scenarios S1–S5) |
 | [`docs/designs/commands.md`](./docs/designs/commands.md) | Command grammar design decisions + full reference |
-| [`docs/designs/competitors.md`](./docs/designs/competitors.md) | CLI competitor research (cast / solana / wallet-cli / aptos) |
-| [`docs/designs/cli-best-practices.md`](./docs/designs/cli-best-practices.md) | CLI best-practices checklist for humans + agents |
+| [`docs/research/competitors.md`](./docs/research/competitors.md) | CLI competitor research (cast / solana / wallet-cli / aptos) |
+| [`docs/research/cli-best-practices.md`](./docs/research/cli-best-practices.md) | CLI best-practices checklist for humans + agents |
 | [`docs/architecture.md`](./docs/architecture.md) | Project-wide tech decisions summary |
 | [`docs/roadmap.md`](./docs/roadmap.md) | Flat phase list (A–O) + cross-walk from old labels |
-| [`docs/plans/handoff.md`](./docs/plans/handoff.md) | Cold-start agent briefing — state, decisions, reading order |
+| [`docs/handoff.md`](./docs/handoff.md) | Cold-start agent briefing — state, decisions, reading order |
 
 ---
 

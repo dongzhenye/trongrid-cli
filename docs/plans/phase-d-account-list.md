@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
-> This is the **plan** (step-level implementation detail, agent-facing). The corresponding **spec** (goal, architecture, decision rationale, memory references) lives at [`../specs/phase-d.md`](../specs/phase-d.md) and stays stable as the "what and why" while this plan iterates as the "how". Read the spec first for context before executing any task below.
+> This is the **plan** (step-level implementation detail, agent-facing). The corresponding **spec** (goal, architecture, decision rationale, memory references) lives at [`../designs/phase-d-account-list.md`](../designs/phase-d-account-list.md) and stays stable as the "what and why" while this plan iterates as the "how". Read the spec first for context before executing any task below.
 
 **Goal:** Ship 9 cross-cutting plumbing fixes from the Phase C trial walkthrough (D-prep PR), then three new account list commands built on the cleaned foundation (D-main PR).
 
@@ -16,9 +16,9 @@
 
 ## Context — read before starting
 
-1. [`../specs/phase-d.md`](../specs/phase-d.md) — the Phase D spec, authoritative for scope + architecture + decision rationale.
-2. [`phase-c.md`](./phase-c.md) — the Phase C plan; its 3-commit-per-command rhythm is the execution template for D-main tasks.
-3. [`../design/units.md`](../design/units.md) — JSON unit shape contract (S1 / S2 classes). Any new quantity field must conform.
+1. [`../designs/phase-d-account-list.md`](../designs/phase-d-account-list.md) — the Phase D spec, authoritative for scope + architecture + decision rationale.
+2. [`phase-c-block-account-token.md`](./phase-c-block-account-token.md) — the Phase C plan; its 3-commit-per-command rhythm is the execution template for D-main tasks.
+3. [`../designs/units.md`](../designs/units.md) — JSON unit shape contract (S1 / S2 classes). Any new quantity field must conform.
 4. [`../../AGENTS.md`](../../AGENTS.md) — contribution rules (one prod dep, semantic colors, `reportErrorAndExit`, `--json` on every data command).
 5. Memory files (read via MEMORY.md index before touching rendering or commits):
    - `feedback_human_render_alignment` — column alignment primitives
@@ -1945,7 +1945,7 @@ max_timestamp parameters, computes direction against the subject
 address, and emits AccountTransferRow rows with full S2 unit shape.
 
 --before / --after are global per the Phase D pagination decision
-(see docs/specs/phase-d.md section "Out of scope" - cursor paging
+(see docs/designs/phase-d-account-list.md section "Out of scope" - cursor paging
 deliberately not exposed; range filtering covers the 95% case).
 
 Phase D M1.2.

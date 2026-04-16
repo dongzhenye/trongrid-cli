@@ -2,11 +2,11 @@
 
 A command-line interface for [TronGrid](https://www.trongrid.io/) — query TRON blockchain data from your terminal or AI coding agent.
 
-> **Status**: Design phase. See [docs/](./docs/) for the full spec.
+> **Status**: Active development (Phase F). 17 commands shipped, ~47 planned. See [docs/](./docs/) for the full spec.
 
-## Features (planned)
+## Features
 
-- **~47 commands** across 13 blockchain resources (account, tx, block, token, contract, SR, and more)
+- **17 commands shipped** across 6 resources (account, tx, block, token, contract, config) — ~47 planned across 13 resources
 - **Human-friendly** by default — formatted output, colors, unit conversion (sun to TRX)
 - **Agent-friendly** with `--json` — structured output for Claude Code, Codex, Gemini CLI, Cursor, and any tool with shell access
 - **Zero config** start — works without API key (rate-limited), `trongrid auth login` for full access
@@ -35,8 +35,10 @@ For a data-driven analysis of why TypeScript + npm is the right distribution str
 |-----|---------|
 | [Product Design](./docs/product.md) | User scenarios, gap analysis, design philosophy |
 | [Architecture](./docs/architecture.md) | Tech decisions with evidence and rationale |
-| [Commands — Design and Reference](./docs/designs/commands.md) | Command grammar design decisions + full command map and global flags |
-| [Roadmap](./docs/roadmap.md) | Phase A (foundation) to Phase C (expand) |
+| [Commands](./docs/designs/commands.md) | Command grammar design + full command reference |
+| [Roadmap](./docs/roadmap.md) | Phase A–O, first npm publish at Phase I |
+| [Competitor Research](./docs/research/competitors.md) | CLI landscape analysis (cast, solana, wallet-cli, aptos) |
+| [Handoff](./docs/handoff.md) | Current state, locked decisions, cold-start reading order |
 
 ## License
 

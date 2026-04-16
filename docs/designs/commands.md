@@ -1,3 +1,4 @@
+<!-- lifecycle: living -->
 # Commands — Design and Reference
 
 This document combines the design decisions behind `trongrid-cli`'s command grammar with the full command reference. The design section is the *why*; the reference section is the *what*. Both live in one doc so the rationale cannot drift away from the shipped surface.

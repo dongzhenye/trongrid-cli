@@ -13,9 +13,9 @@
 **Spec:**
 
 - [`architecture.md` §Positional argument ordering](../architecture.md#positional-argument-ordering) — why default address is committed
-- [`design/units.md`](../design/units.md) — JSON unit shape contract (P1–P7 + S1–S5); the authoritative source for `account tokens` class S2 shape and `account view` class S1 shape
+- [`design/units.md`](../designs/units.md) — JSON unit shape contract (P1–P7 + S1–S5); the authoritative source for `account tokens` class S2 shape and `account view` class S1 shape
 - [`architecture.md` §Output Design](../architecture.md#output-design) — project-level summary linking to `design/units.md`
-- [`design/competitors.md` §Decision 2](../design/competitors.md#decision-2-token-decimals-strategy) — rationale for the hybrid decimals strategy
+- [`design/competitors.md` §Decision 2](../research/competitors.md#decision-2-token-decimals-strategy) — rationale for the hybrid decimals strategy
 - [`roadmap.md` Phase B](../roadmap.md#phase-b--post-foundation-improvements-%E2%9C%85-pre-publish-untagged) — scope and priority (renamed from "Phase A+" 2026-04-15)
 
 **Out of scope:**
@@ -1541,7 +1541,7 @@ EOF
 
 - Inspect: `docs/architecture.md` (§Output Design scenario table)
 - Inspect: `docs/designs/units.md` (§S2 example + §3 head-word rationale)
-- Inspect: `docs/research.md` (§Decision 2 JSON example)
+- Inspect: `docs/research/competitors.md` (§Decision 2 JSON example)
 
 **Scope:** Now mandatory (upgraded from conditional in the original plan). Part B changes the public JSON contract in a way that commit 1–3 of the units.md rollout already anticipated, so the doc text should already match. This task is a final cross-check before closing Phase A+ — any drift discovered here is a bug in the rollout.
 
@@ -1566,7 +1566,7 @@ Verify for both TRC-20 and TRC-10 entries:
 
 The S2 row should read: `` `balance` (raw) + `balance_major` + `decimals` ``. Flag any divergence.
 
-- [ ] **Step 4: Compare the output to the example in `docs/research.md` §Decision 2**
+- [ ] **Step 4: Compare the output to the example in `docs/research/competitors.md` §Decision 2**
 
 The JSON example under "JSON output shape" should match the implemented contract. Flag any divergence.
 

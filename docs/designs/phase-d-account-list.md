@@ -1,6 +1,7 @@
+<!-- lifecycle: frozen -->
 # Phase D — Account list family + Phase-C trial plumbing
 
-> **For agentic workers:** this document is the Phase D **spec** (brainstorming output, human-facing) — it defines goal, architecture, file map, task outline, and exit criteria, and it stays stable as the "what and why". Its sibling **plan** (step-level implementation detail, agent-facing) lives at [`../plans/phase-d.md`](../plans/phase-d.md) and is produced from this spec by the `superpowers:writing-plans` skill; the plan iterates as the "how". Execution runs on the plan via `superpowers:subagent-driven-development` one task at a time — same rhythm as the historical [`../plans/phase-c.md`](../plans/phase-c.md) (which predates the spec/plan split and is plan-level only).
+> **For agentic workers:** this document is the Phase D **spec** (brainstorming output, human-facing) — it defines goal, architecture, file map, task outline, and exit criteria, and it stays stable as the "what and why". Its sibling **plan** (step-level implementation detail, agent-facing) lives at [`../plans/phase-d-account-list.md`](../plans/phase-d-account-list.md) and is produced from this spec by the `superpowers:writing-plans` skill; the plan iterates as the "how". Execution runs on the plan via `superpowers:subagent-driven-development` one task at a time — same rhythm as the historical [`../plans/phase-c-block-account-token.md`](../plans/phase-c-block-account-token.md) (which predates the spec/plan split and is plan-level only).
 >
 > **Phase D is split across two PRs** on branch `feat/phase-d-account-list`:
 >
@@ -17,10 +18,10 @@
 
 **Spec references (authoritative):**
 
-- [`docs/designs/commands.md`](../design/commands.md) Part II — `account` section; `--before` / `--after` global flags (new in this plan)
-- [`docs/designs/units.md`](../design/units.md) — S1 (TRX) + S2 (TRC-10/20) + the "intentional deviation" note for `account permissions`
-- [`docs/designs/mcp-skills-review.md`](../design/mcp-skills-review.md) §4 — Q2 (approvals as a command, deferred), Q5 (Stake 2.0 default) resolutions
-- [`docs/plans/phase-c.md`](../plans/phase-c.md) — task-level structure and commit rhythm template; read this to understand the "scaffold → endpoint → register" 3-commit-per-command pattern and the `superpowers:subagent-driven-development` triad
+- [`docs/designs/commands.md`](./commands.md) Part II — `account` section; `--before` / `--after` global flags (new in this plan)
+- [`docs/designs/units.md`](./units.md) — S1 (TRX) + S2 (TRC-10/20) + the "intentional deviation" note for `account permissions`
+- [`docs/research/mcp-skills.md`](../research/mcp-skills.md) §4 — Q2 (approvals as a command, deferred), Q5 (Stake 2.0 default) resolutions
+- [`docs/plans/phase-c-block-account-token.md`](../plans/phase-c-block-account-token.md) — task-level structure and commit rhythm template; read this to understand the "scaffold → endpoint → register" 3-commit-per-command pattern and the `superpowers:subagent-driven-development` triad
 - [`docs/architecture.md`](../architecture.md) — "Defaults & conventions" decision table
 - [`docs/roadmap.md`](../roadmap.md) — Phase D checklist + cross-walk from old labels
 - [`AGENTS.md`](../../AGENTS.md) — contribution rules (one prod dep, semantic colors, `reportErrorAndExit`, `--json` on every data command)
@@ -272,7 +273,7 @@ positioning (tracked in status.md decision ledger).
 
 Dropped: `account resources` consistency pass — verified already shipped
 during Phase B (ex-A+); see the scope-correction note near the top of
-docs/specs/phase-d.md for the audit trail.
+docs/designs/phase-d-account-list.md for the audit trail.
 ```
 
 ---
