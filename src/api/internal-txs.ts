@@ -7,6 +7,7 @@ import {
 	truncateAddress,
 } from "../output/columns.js";
 import { formatTimestamp, sunToTrx } from "../output/format.js";
+import { hexToBase58 } from "../utils/address.js";
 import { applySort, type SortConfig, type SortOptions } from "../utils/sort.js";
 import type { ApiClient } from "./client.js";
 
@@ -24,19 +25,54 @@ export interface InternalTxRow {
 	rejected: boolean;
 }
 
+/**
+ * Internal transactions are embedded inside regular transactions at
+ * GET /v1/accounts/{addr}/transactions as `internal_transactions[]`.
+ * Each entry has hex addresses (41-prefixed) and a nested data object.
+ */
 interface RawInternalTx {
-	internal_id?: string;
-	hash?: string;
-	block_timestamp?: number;
-	caller_address?: string;
-	transferTo_address?: string;
-	callValueInfo?: Array<{ callValue?: number }>;
-	call_type?: string;
-	rejected?: boolean;
+	internal_tx_id?: string;
+	from_address?: string; // hex 41-prefixed
+	to_address?: string; // hex 41-prefixed
+	data?: {
+		note?: string; // hex-encoded call type, e.g. "63616c6c" = "call"
+		rejected?: boolean;
+		call_value?: Record<string, number>; // e.g. {"_": 111000000}
+	};
 }
 
-interface InternalTxsResponse {
-	data?: RawInternalTx[];
+interface RawTransaction {
+	txID?: string;
+	block_timestamp?: number;
+	internal_transactions?: RawInternalTx[];
+}
+
+interface TransactionsResponse {
+	data?: RawTransaction[];
+}
+
+/** Decode hex-encoded note to string (e.g. "63616c6c" → "call") */
+function decodeHexNote(hex: string): string {
+	if (!hex) return "call";
+	try {
+		const bytes = new Uint8Array(hex.length / 2);
+		for (let i = 0; i < bytes.length; i++) {
+			bytes[i] = Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+		}
+		return new TextDecoder().decode(bytes) || "call";
+	} catch {
+		return "call";
+	}
+}
+
+/** Convert hex address to Base58, or return as-is on failure */
+function safeHexToBase58(hex: string): string {
+	if (!hex) return "";
+	try {
+		return hexToBase58(hex);
+	} catch {
+		return hex;
+	}
 }
 
 export async function fetchInternalTxs(
@@ -44,30 +80,40 @@ export async function fetchInternalTxs(
 	address: string,
 	opts: { limit: number; minTimestamp?: number; maxTimestamp?: number },
 ): Promise<InternalTxRow[]> {
+	// Fetch regular transactions — internal txs are nested inside each one
 	const params = new URLSearchParams();
-	params.set("limit", String(opts.limit));
+	// Fetch more parent txs than limit since not all have internals
+	params.set("limit", String(Math.min(opts.limit * 3, 200)));
 	if (opts.minTimestamp !== undefined) params.set("min_timestamp", String(opts.minTimestamp));
 	if (opts.maxTimestamp !== undefined) params.set("max_timestamp", String(opts.maxTimestamp));
 
-	const path = `/v1/accounts/${address}/transactions/internal?${params.toString()}`;
-	const raw = await client.get<InternalTxsResponse>(path);
+	const path = `/v1/accounts/${address}/transactions?${params.toString()}`;
+	const raw = await client.get<TransactionsResponse>(path);
 
-	return (raw.data ?? []).map((tx) => {
-		const value = tx.callValueInfo?.[0]?.callValue ?? 0;
-		return {
-			internal_id: tx.internal_id ?? "",
-			tx_id: tx.hash ?? "",
-			block_timestamp: tx.block_timestamp ?? 0,
-			from: tx.caller_address ?? "",
-			to: tx.transferTo_address ?? "",
-			call_type: tx.call_type ?? "call",
-			value,
-			value_unit: "sun" as const,
-			decimals: 6 as const,
-			value_trx: sunToTrx(value),
-			rejected: tx.rejected ?? false,
-		};
-	});
+	const rows: InternalTxRow[] = [];
+	for (const tx of raw.data ?? []) {
+		for (const itx of tx.internal_transactions ?? []) {
+			const callValue = itx.data?.call_value;
+			// call_value is {"_": amount} or {"tokenId": amount}
+			const value = callValue ? (Object.values(callValue)[0] ?? 0) : 0;
+			rows.push({
+				internal_id: itx.internal_tx_id ?? "",
+				tx_id: tx.txID ?? "",
+				block_timestamp: tx.block_timestamp ?? 0,
+				from: safeHexToBase58(itx.from_address ?? ""),
+				to: safeHexToBase58(itx.to_address ?? ""),
+				call_type: decodeHexNote(itx.data?.note ?? ""),
+				value,
+				value_unit: "sun" as const,
+				decimals: 6 as const,
+				value_trx: sunToTrx(value),
+				rejected: itx.data?.rejected ?? false,
+			});
+		}
+	}
+
+	// Return up to limit internal txs
+	return rows.slice(0, opts.limit);
 }
 
 const INTERNAL_TXS_SORT_CONFIG: SortConfig<InternalTxRow> = {
