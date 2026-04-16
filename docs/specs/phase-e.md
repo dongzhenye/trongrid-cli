@@ -101,14 +101,14 @@ Column order: `time | from | → | to | value_major | tx_id`. Right-aligns value
 
 Three items from Phase C trial feedback, all touching `src/commands/account/tokens.ts` and its renderer:
 
-**Trial #1 — Symbol as primary identifier.** Replace the current `[TYPE] contract(truncated) balance` display with `[TYPE] SYMBOL balance (contract)`. Token metadata comes from the new batch token info utility. Fallback when batch fails: truncated contract address as before.
+**Trial #1 �� Symbol as primary identifier.** Replace the current `[TYPE] contract(truncated) balance` display with `[TYPE] SYMBOL (contract) balance`. Key columns first (symbol as friendly name + contract as unique ID, grouped together), then metric column (balance). Token metadata comes from the new batch token info utility. Fallback when batch fails: truncated contract address as before.
 
 The `TokenBalance` interface gains optional `symbol?: string` and `name?: string` fields. `fetchAccountTokens` calls `fetchBatchTrc20Info` for all TRC-20 addresses in one shot, then maps results onto each `TokenBalance`.
 
 **Trial #6 — Lookup-failure marker.** When `decimals` is undefined (batch + fallback both failed), the human renderer shows:
 
 ```
-  [TRC20] [?] TXyz...4321  1234567890 (decimals unresolved)
+  [TRC20] [?] (TXyz...4321)  1234567890 (decimals unresolved)
 ```
 
 The `[?]` prefix and `(decimals unresolved)` suffix replace the current silent raw-only fallback, giving the user context on why the balance looks odd.
