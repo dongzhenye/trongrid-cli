@@ -33,22 +33,34 @@ Utility: `addThousandsSep()` in `src/output/columns.ts`. Applied at the renderer
 
 ### 2.2 Formatting by field type
 
-Different field types have different precision and display rules. The table below maps field type to its formatting characteristics:
+Different field types have different precision and display rules:
 
-| Field type | Precision | Trailing zeros | Rounding | Unit | Example |
-|------------|-----------|---------------|----------|------|---------|
-| **Token amount** (TRC-20/10) | Full — show all significant digits | No padding, no trimming | None — exact value | Symbol appended: `1,000.0 USDT` | `38927318000.083827 USDT` |
-| **TRX amount** (native) | 6 decimals max (sun precision) | No trailing zeros | None — exact value | `TRX` appended | `5.889752 TRX` |
-| **USD value** | 2 decimal places, always | Yes — `$1,000.00` | Floor (conservative) | `$` prefix | `$1,000.00` |
-| **Percentage** | 2 decimal places | Yes — `15.25%` | Standard rounding | `%` suffix | `15.25%` |
-| **Count / integer** | 0 decimals | N/A | N/A | Context-dependent | `1,234` |
-| **Fee** (TRX) | Same as TRX amount | Same as TRX | Same as TRX | `TRX` appended | `0.345 TRX` |
+| Field type | Precision | Pad zeros | Trim zeros | Rounding | Unit | Example |
+|------------|-----------|-----------|------------|----------|------|---------|
+| **Token amount** (TRC-20/10) | All significant digits | No | No | None (exact) | Symbol suffix | `1,000 USDT` |
+| **TRX amount** (native) | ≤ 6 decimals (sun) | No | Yes | None (exact) | `TRX` suffix | `5.889752 TRX` |
+| **USD value** | 2 decimals, always | Yes | No | Floor | `$` prefix | `$1,000.00` |
+| **Percentage** | 2 decimals, always | Yes | No | Round half-up | `%` suffix | `15.25%` |
+| **Count / integer** | 0 decimals | N/A | N/A | N/A | Context | `1,234` |
+| **Fee** (TRX) | Same as TRX | Same | Same | Same | `TRX` suffix | `0.345 TRX` |
+
+**Pad zeros** = append trailing zeros to reach fixed decimal places (e.g., `500` → `500.00`).
+**Trim zeros** = strip trailing zeros after the decimal point (e.g., `5.100000` → `5.1`).
+
+Examples showing the difference:
+
+| Raw value | Token amount | USD value |
+|-----------|-------------|-----------|
+| `1000` (0 decimals) | `1,000 USDT` | `$1,000.00` |
+| `1000.5` | `1,000.5 USDT` | `$1,000.50` |
+| `1000.100000` | `1,000.1 USDT` (trimmed) | `$1,000.10` (padded) |
+| `0.083827` | `0.083827 USDT` (full) | `$0.08` (floored) |
 
 **Key principles:**
 
-- **Token amounts are exact, never abbreviated.** Tokens have varying decimals (0–18). After applying `formatMajor`, show all significant digits. Use string arithmetic (not float) to avoid precision loss. The raw balance is a string in JSON for this reason.
-- **USD values are financial.** Two decimals, floor-rounded (showing $999.99 instead of $1,000.00 is safer than the reverse), `$` prefix, thousands separator. Follows financial industry convention.
-- **Unit placement:** numeric value right-aligned for decimal stacking, unit left-aligned adjacent (1-space gap). In combined columns (`1,000.0 USDT`), the number is right-aligned and unit follows.
+- **Token amounts are exact, never abbreviated.** Tokens have varying decimals (0–18). After applying `formatMajor`, show all significant digits — no padding (no assumed precision baseline) and no trimming of meaningful digits. Use string arithmetic (not float) to avoid precision loss. The raw balance is a string in JSON for this reason.
+- **USD values are financial.** Always 2 decimals, floor-rounded (showing $999.99 instead of $1,000.00 is safer than the reverse), `$` prefix, thousands separator. Follows financial industry convention.
+- **Unit placement:** numeric value right-aligned for decimal stacking, unit left-aligned adjacent (1-space gap). In combined columns (`1,000 USDT`), the number is right-aligned and unit follows.
 
 ### 2.3 Extreme values
 
