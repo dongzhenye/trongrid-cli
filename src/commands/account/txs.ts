@@ -188,10 +188,19 @@ export function renderTxs(items: AccountTxRow[], subjectAddress?: string): void 
 	header.push("Type / Method", "From", "", "To", "Amount", "Fee");
 	if (showResult) header.push("Result");
 
-	// Build data rows
+	// Build data rows — collect amount/fee numbers separately for alignment
+	const amountNums: string[] = ["Amount"];
+	const feeNums: string[] = ["Fee"];
+
 	const cells: string[][] = items.map((t) => {
-		const fromDisplay = truncateAddress(t.from);
-		const toDisplay = truncateAddress(t.to);
+		const fromRaw = t.from || "-";
+		const toRaw = t.to || "-";
+		const fromDisplay = fromRaw === "-" ? muted("-") : truncateAddress(fromRaw);
+		const toDisplay = toRaw === "-" ? muted("-") : truncateAddress(toRaw);
+		const amountStr = addThousandsSep(t.amount_trx);
+		const feeStr = addThousandsSep(t.fee_trx);
+		amountNums.push(amountStr);
+		feeNums.push(feeStr);
 
 		const row: string[] = [truncateAddress(t.tx_id, 4, 4), formatTxTimestamp(t.timestamp)];
 
@@ -204,8 +213,8 @@ export function renderTxs(items: AccountTxRow[], subjectAddress?: string): void 
 			subjectAddress && t.from === subjectAddress ? muted(fromDisplay) : fromDisplay,
 			"\u2192",
 			subjectAddress && t.to === subjectAddress ? muted(toDisplay) : toDisplay,
-			`${addThousandsSep(t.amount_trx)} TRX`,
-			`${addThousandsSep(t.fee_trx)} TRX`,
+			amountStr, // placeholder — aligned below
+			feeStr, // placeholder — aligned below
 		);
 
 		if (showResult) {
@@ -217,22 +226,27 @@ export function renderTxs(items: AccountTxRow[], subjectAddress?: string): void 
 
 	const allRows = [header, ...cells];
 
-	// Right-align Amount column (value+unit combined)
+	// Right-align Amount numbers, then append " TRX" unit (data rows only)
 	const amountIdx = header.indexOf("Amount");
 	if (amountIdx >= 0) {
-		const amountWidth = Math.max(...allRows.map((r) => (r[amountIdx] ?? "").length));
-		for (const row of allRows) {
-			row[amountIdx] = alignNumber(row[amountIdx] ?? "", amountWidth);
+		const numWidth = Math.max(...amountNums.map((s) => s.length));
+		for (let i = 1; i < allRows.length; i++) {
+			const row = allRows[i]!;
+			row[amountIdx] = `${alignNumber(row[amountIdx] ?? "", numWidth)} TRX`;
 		}
+		// Pad header to match total width (numWidth + 4 for " TRX")
+		allRows[0]![amountIdx] = alignNumber(allRows[0]![amountIdx] ?? "", numWidth + 4);
 	}
 
-	// Right-align Fee column (value+unit combined)
+	// Right-align Fee numbers, then append " TRX" unit (data rows only)
 	const feeIdx = header.indexOf("Fee");
 	if (feeIdx >= 0) {
-		const feeWidth = Math.max(...allRows.map((r) => (r[feeIdx] ?? "").length));
-		for (const row of allRows) {
-			row[feeIdx] = alignNumber(row[feeIdx] ?? "", feeWidth);
+		const numWidth = Math.max(...feeNums.map((s) => s.length));
+		for (let i = 1; i < allRows.length; i++) {
+			const row = allRows[i]!;
+			row[feeIdx] = `${alignNumber(row[feeIdx] ?? "", numWidth)} TRX`;
 		}
+		allRows[0]![feeIdx] = alignNumber(allRows[0]![feeIdx] ?? "", numWidth + 4);
 	}
 
 	const widths = computeColumnWidths(allRows);
