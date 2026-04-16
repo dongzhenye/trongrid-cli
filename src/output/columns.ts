@@ -36,11 +36,14 @@ export function alignText(value: string, width: number, side: "left" | "right" =
 }
 
 /**
- * Both-ends truncated address form: head chars, `...`, tail chars.
- * Default 4+4 produces an 11-char stable width (e.g. "TR7N...Lj6t").
- * Addresses shorter than head+tail+3 are returned unchanged.
+ * Both-ends truncated form: head chars, `...`, tail chars.
+ * Default 6+6 for addresses — minimum safe display to prevent
+ * spoofing attacks where an attacker creates addresses with matching
+ * first/last chars. TX hashes are not spoofable and can use shorter
+ * truncation (callers pass explicit 4+4 for tx_id).
+ * Strings shorter than head+tail+3 are returned unchanged.
  */
-export function truncateAddress(addr: string, head = 4, tail = 4): string {
+export function truncateAddress(addr: string, head = 6, tail = 6): string {
 	if (addr.length <= head + tail + 3) return addr;
 	return `${addr.slice(0, head)}...${addr.slice(-tail)}`;
 }

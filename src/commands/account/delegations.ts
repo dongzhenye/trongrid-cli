@@ -172,7 +172,7 @@ function renderSection(label: string, rows: DelegationRow[]): void {
 		"TRX",
 		r.resource,
 		r.direction === "out" ? "→" : "←",
-		truncateAddress(r.direction === "out" ? r.to : r.from, 4, 4),
+		truncateAddress(r.direction === "out" ? r.to : r.from),
 		`expires ${formatTimestamp(r.expire_time * 1000)}`,
 		r.lock ? muted("(locked)") : "",
 	]);

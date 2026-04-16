@@ -61,7 +61,7 @@ export function renderTokenList(tokens: TokenBalance[]): void {
 	const header = ["Type", "Symbol", "Contract", "Balance", ""];
 	const cells: string[][] = tokens.map((t) => {
 		const symbolCol = t.symbol ?? (t.decimals === undefined ? "[?]" : "");
-		const contractCol = `(${truncateAddress(t.contract_address, 4, 4)})`;
+		const contractCol = `(${truncateAddress(t.contract_address)})`;
 		const balanceCol = t.balance_major ?? t.balance;
 
 		// Trial #7: suppress redundant raw when major equals raw (e.g. decimals=0)

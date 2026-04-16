@@ -27,8 +27,8 @@ describe("alignText", () => {
 });
 
 describe("truncateAddress", () => {
-	it("returns 4+4 truncated form by default", () => {
-		expect(truncateAddress("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")).toBe("TR7N...Lj6t");
+	it("returns 6+6 truncated form by default (anti-spoofing)", () => {
+		expect(truncateAddress("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")).toBe("TR7NHq...gjLj6t");
 	});
 	it("respects custom head/tail widths", () => {
 		expect(truncateAddress("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", 3, 3)).toBe("TR7...j6t");
