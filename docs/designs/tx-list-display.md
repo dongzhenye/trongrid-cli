@@ -1,28 +1,29 @@
+<!-- lifecycle: living -->
 # Transaction List Display Design
 
-Human-mode rendering rules for `account txs` and `contract txs`. JSON output is unaffected — this doc governs the human-readable table layout only.
+Component-specific display rules for `account txs` and `contract txs`.
+
+> **Parent conventions:** [`human-display.md`](./human-display.md) governs shared rules (null display, number formatting, address truncation, alignment, sorting framework, filtering principles, field projection). This doc only defines transaction-list-specific decisions.
+
+---
 
 ## Column Order
 
 ```
-TX | Time (UTC) | [Confirmed] | Type/Method | From → To | Amount | [Fee] | [Result]
+TX | Time (UTC) ↓ | [Confirmed] | Type/Method | From → To | Amount | Fee | [Result]
 ```
 
-Brackets denote conditional columns — see §Status Columns below.
+Brackets denote conditional columns — see §Status Columns below. `↓` indicates default sort direction (per [`human-display.md` §6.1](./human-display.md#61-default-sort)).
 
 ## Column Definitions
 
-### TX (always)
+### TX
 
-Truncated transaction hash, 4+4 chars. First column — serves as row identifier.
+Truncated transaction hash, 4+4 chars.
 
-### Time (UTC) (always)
+### Time (UTC)
 
-Formatted timestamp. UTC label is in the column header, not repeated per value.
-
-Format: `YYYY-MM-DD HH:MM` (no seconds, no "UTC" suffix per row).
-
-Future: configurable local time display. Default remains UTC.
+`YYYY-MM-DD HH:MM` — UTC label in header, not per row.
 
 ### Confirmed (conditional)
 
@@ -31,87 +32,135 @@ Only shown when at least one transaction in the batch is unconfirmed.
 | State | Symbol | Color |
 |-------|--------|-------|
 | Unconfirmed | `⌛` (U+231B) | default |
-| Confirmed | `✓` | green (`pass`) |
+| Confirmed | `✓` | `pass` |
 
-### Type/Method (always)
+### Type/Method
 
-Merged column for transaction type and smart contract method.
-
-**Mapping rules (human mode only — JSON keeps raw `contract_type`):**
+Merged column. Mapping rules (human mode only — JSON keeps raw `contract_type`):
 
 | Chain type | Has call data | Display | Case |
 |------------|--------------|---------|------|
-| TriggerSmartContract | Method name resolved from ABI | `transfer`, `approve`, ... | lowercase |
-| TriggerSmartContract | Method unknown, has data | `0xa9059cbb` (4-byte selector) | — |
+| TriggerSmartContract | Method name from ABI | `transfer`, `approve`, ... | lowercase |
+| TriggerSmartContract | Unknown, has data | `0xa9059cbb` (4-byte selector) | — |
 | TriggerSmartContract | No data | `Contract Call` | title case |
 | TransferContract | — | `Transfer` | title case |
-| TransferAssetContract | — | `Token Transfer` | title case |
+| TransferAssetContract | — | `TRC-10 Send` | title case |
 | FreezeBalanceV2Contract | — | `Freeze` | title case |
 | UnfreezeBalanceV2Contract | — | `Unfreeze` | title case |
 | DelegateResourceContract | — | `Delegate` | title case |
-| UndelegateResourceContract | — | `Undelegate` | title case |
+| UnDelegateResourceContract | — | `Undelegate` | title case |
 | VoteWitnessContract | — | `Vote` | title case |
+| WithdrawBalanceContract | — | `Claim Reward` | title case |
 | AccountCreateContract | — | `Activate` | title case |
 | Other | — | Strip `Contract` suffix | title case |
 
-**Visual distinction:** ABI-resolved method names are lowercase (`transfer`), chain type names are title case (`Transfer`). Two sources are distinguishable at a glance.
+ABI-resolved names are lowercase; chain types are title case — visually distinguishable.
 
-**Method resolution for `contract txs`:** When `--method` filter is used, ABI is already fetched. For unfiltered listing, method resolution requires an additional `getcontract` call — this is opt-in via the merged Type/Method column.
+Configurable: `src/output/tx-type-map.ts`.
 
-**Configurable mapping:** The type mapping table is maintained as a static map in source code (`src/output/tx-type-map.ts`). New chain types can be added without touching rendering logic.
+### From → To
 
-### From → To (always)
+Two address columns separated by `→`. Subject-address muting per [`human-display.md` §8.4](./human-display.md#84-design-decisions).
 
-Two address columns separated by `→`. Both always shown.
+| Command | Subject address |
+|---------|----------------|
+| `account txs <addr>` | `<addr>` — muted wherever it appears |
+| `contract txs <addr>` | `<addr>` — contract usually in To |
 
-**Muting rule:** If a "subject address" is known (the address being queried), any occurrence of that address in From or To is rendered with `muted()` color. The other address (counterparty) renders in default color. When no subject address is known, both render normally.
+### Amount
 
-- `account txs TKHu...`: `TKHu...` is the subject, muted wherever it appears
-- `contract txs TR7N...`: `TR7N...` is the subject, muted wherever it appears
-- Both From and To can be muted (e.g., Freeze to self)
+Native TRX value (`call_value` or `amount`). S1 unit shape. For TriggerSmartContract, typically `0 TRX` (token amounts are in events). Formatting per [`human-display.md` §2.2](./human-display.md#22-formatting-by-field-type) (TRX amount type). Extreme values per §2.3.
 
-No parentheses — muting is achieved purely through color.
+### Fee
 
-### Amount (always)
-
-TRX value transferred with the transaction (`call_value` for TriggerSmartContract, `amount` for TransferContract). S1 unit shape (sun → TRX). Right-aligned with thousands separators.
-
-Note: for TRC-20 operations (transfer, approve), this is typically `0 TRX` because token amounts live in event logs, not in the transaction value field. This is correct and expected — the Amount column shows the native TRX value.
-
-### Fee (conditional)
-
-Transaction fee in TRX. Right-aligned with thousands separators.
-
-**Priority:** Amount column takes precedence. If terminal width is constrained, Fee column is omitted before Amount. Implementation: always render Fee for now; terminal-width-aware omission is a future enhancement.
+Transaction fee in TRX. Same formatting as Amount.
 
 ### Result (conditional)
 
-Only shown when at least one transaction in the batch has a non-success result (`contractRet !== "SUCCESS"`).
+Only shown when at least one transaction has a non-success result.
 
 | State | Symbol | Color |
 |-------|--------|-------|
-| Success | `✓` | green (`pass`) |
-| Failed | `✗` | red (`fail`) |
+| Success | `✓` | `pass` |
+| Failed | `✗` | `fail` |
 
 ## Status Column Logic
 
-Both Confirmed and Result columns are **batch-adaptive**: they only appear when the batch contains at least one non-default-state entry. This keeps the common case (all confirmed + all success) clean and compact.
+Both Confirmed and Result are **batch-adaptive**:
 
-```
-Batch state               → Columns shown
-All confirmed, all success → TX, Time, Type/Method, From→To, Amount, Fee
-Has unconfirmed            → + Confirmed (after Time)
-Has failed                 → + Result (at end)
-Both                       → + Confirmed + Result
-```
+| Batch state | Extra columns |
+|-------------|---------------|
+| All confirmed + all success | None |
+| Has unconfirmed | + Confirmed (after Time) |
+| Has failed | + Result (at end) |
+| Both | + Confirmed + Result |
 
-## Renderer Reuse
+---
 
-`renderTxs` accepts an optional `subjectAddress` parameter for muting. Both `account txs` and `contract txs` pass their queried address. The renderer is shared — no separate contract-specific renderer needed.
+## Fields
+
+| Field | JSON key | Default column | Sortable | Filterable |
+|-------|----------|---------------|----------|------------|
+| TX hash | `tx_id` | ✓ | — | — |
+| Timestamp | `timestamp` | ✓ | ✓ (**default**, desc) | ✓ `--before`/`--after` |
+| Type/Method | `type_display` | ✓ | — | ✓ `--method` (contract txs only) |
+| Method selector | `method_selector` | hidden | — | ✓ `--method` (by 4-byte hex) |
+| From | `from` | ✓ | — | ✓ `--from` (planned) |
+| To | `to` | ✓ | — | ✓ `--to` (planned) |
+| Amount | `amount` / `amount_trx` | ✓ | ✓ (desc) | ✓ `--min-amount`/`--max-amount` (planned) |
+| Fee | `fee` / `fee_trx` | ✓ | ✓ (desc) | — |
+| Block number | `block_number` | hidden | ✓ (desc) | ✓ `--min-block`/`--max-block` (planned) |
+| Direction | `direction` | hidden | ✓ (planned) | ✓ `--direction in\|out` (planned) |
+| Status | `status` | conditional | — | — |
+| Confirmed | `confirmed` | conditional | — | — |
+| Contract type | `contract_type` | hidden | — | — |
+| Method name | `method` | hidden | — | — |
+
+Hidden fields follow [`human-display.md` §8.3](./human-display.md#83-hidden-fields) — fully sortable/filterable/projectable, just not in default human columns.
+
+---
+
+## Sorting
+
+**Default:** `timestamp` desc.
+
+Client-side sort warning applies per [`human-display.md` §6.3](./human-display.md#63-client-side-sort-warning) when `--sort-by` overrides the default on a paginated result.
+
+---
+
+## Filtering
+
+### Implemented
+
+| Filter | Flag | Server/Client |
+|--------|------|---------------|
+| Time range | `--before`/`--after` | Server (API params) |
+| Confirmation | `--confirmed` | Server (API param) |
+| Method (contract txs) | `--method <name\|selector>` | Client (ABI lookup + data matching) |
+
+### Planned
+
+| Filter | Flag | Server/Client |
+|--------|------|---------------|
+| Sender | `--from <address>` | Client |
+| Recipient | `--to <address>` | Client |
+| Direction | `--direction in\|out` | Client (requires subject address) |
+| Amount range | `--min-amount`/`--max-amount` | Client |
+| Block range | `--min-block`/`--max-block` | Client |
+
+Filter interaction with `--limit` per [`human-display.md` §7.4](./human-display.md#74-filter-interaction-with---limit).
+
+---
+
+## Renderer
+
+`renderTxs(items, subjectAddress?)` — shared by `account txs` and `contract txs`. Both pass their queried address for muting.
+
+---
 
 ## JSON Output
 
-JSON output is unaffected by this design. All fields are present regardless of human-mode column visibility:
+All fields present regardless of human-mode column visibility:
 
 ```json
 {
@@ -119,6 +168,7 @@ JSON output is unaffected by this design. All fields are present regardless of h
   "block_number": 12345,
   "timestamp": 1776315840000,
   "contract_type": "TriggerSmartContract",
+  "type_display": "transfer",
   "method": "transfer",
   "method_selector": "0xa9059cbb",
   "from": "TKHuVq...",
@@ -135,9 +185,11 @@ JSON output is unaffected by this design. All fields are present regardless of h
 }
 ```
 
+---
+
 ## References
 
-- Column alignment rules: `src/output/columns.ts`, memory `feedback_human_render_alignment`
-- Centered vs uncentered transfer lists: memory `feedback_transfer_list_two_styles`
-- Terminology glossary: `docs/designs/glossary.md`
-- Human display conventions: [`docs/designs/human-display.md`](./human-display.md)
+- Parent conventions: [`human-display.md`](./human-display.md)
+- Type mapping source: `src/output/tx-type-map.ts`
+- Renderer: `src/commands/account/txs.ts`
+- Column primitives: `src/output/columns.ts`
