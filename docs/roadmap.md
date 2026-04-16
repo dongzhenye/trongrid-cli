@@ -170,8 +170,9 @@ Spec: [`designs/phase-e-token-family.md`](./designs/phase-e-token-family.md). Pl
 - [ ] `contract call <address> <method> [args]` — requires general-purpose ABI encoder, deferred to post-positioning-decision phase
 - [ ] `contract estimate <address> <method> [args]` — same as call
 - [ ] `contract permissions <address>` — CA has no practical multi-sig management scenario
-- [ ] List display design docs — each list type should have a dedicated design document (like `tx-list-display.md`) covering column layout, conditional columns, muting, sort, and human/JSON shape. Pending:
-  - [ ] Transfer list display (`account transfers` centered + `token transfers` uncentered) — currently undocumented; also needs header rows and thousands separators
+- [ ] Extremely large numbers (uint256.max) in human mode — scam/phishing tokens send `2^256 - 1` Transfer events; `formatMajor` renders 80+ char numbers that break table layout. Options: scientific notation for > 15 digits, or `[dust]` marker for amounts ≈ uint256.max. Affects `account transfers`, `contract transfers`, `token transfers`. Surfaced during Phase F E2E.
+- [ ] List display design docs — each list type should have a dedicated design document (like [`tx-list-display.md`](./designs/tx-list-display.md)) covering column layout, conditional columns, muting, sort, and human/JSON shape. **Transfer list is highest priority** — current centered/uncentered renderers lack headers, thousands separators, and subject-address muting. Pending:
+  - [ ] Transfer list display (`account transfers` centered + `token transfers` uncentered) — **priority**: most visible UX gap; needs the from/to redesign similar to tx-list-display
   - [ ] Token list display (`account tokens` / `contract tokens`)
   - [ ] Delegation list display (`account delegations` — two-section layout)
   - [ ] Event list display (`contract events`)
