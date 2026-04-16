@@ -1,8 +1,14 @@
+import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import { fetchBatchTrc20Info } from "../../api/token-info.js";
-import { UsageError } from "../../output/format.js";
-import { base58ToHex } from "../../utils/address.js";
-import type { TokenIdentifier } from "../../utils/token-identifier.js";
+import type { GlobalOptions } from "../../index.js";
+import { printResult, reportErrorAndExit, UsageError } from "../../output/format.js";
+import { base58ToHex, validateAddress } from "../../utils/address.js";
+import {
+	detectTokenIdentifier,
+	type TokenIdentifier,
+	type TokenTypeOverride,
+} from "../../utils/token-identifier.js";
 import { formatMajor } from "../../utils/tokens.js";
 
 export interface AllowanceResult {
@@ -98,4 +104,78 @@ export async function fetchAllowance(
 		decimals,
 		allowance_major: formatMajor(allowanceRaw, decimals),
 	};
+}
+
+function hintForTokenAllowance(err: unknown): string | undefined {
+	if (!(err instanceof Error)) return undefined;
+	const msg = err.message.toLowerCase();
+	if (msg.includes("trx") && msg.includes("allowance")) {
+		return "TRX has no allowance mechanism — allowance is a TRC-20 concept.";
+	}
+	if (msg.includes("not yet supported")) {
+		return "Support is planned for a future release.";
+	}
+	return undefined;
+}
+
+export function registerTokenAllowanceCommand(token: Command, parent: Command): void {
+	token
+		.command("allowance")
+		.description("Check TRC-20 allowance granted by owner to spender")
+		.helpGroup("Read commands:")
+		.argument("<token>", "TRC-20 address or verified symbol")
+		.argument("<owner>", "Owner address (the grantor)")
+		.argument("<spender>", "Spender address (the grantee)")
+		.option("--type <type>", "force token standard")
+		.addHelpText(
+			"after",
+			`
+Examples:
+  $ trongrid token allowance USDT TOwner... TSpender...
+  $ trongrid token allowance USDT TOwner... TSpender... --json
+`,
+		)
+		.action(
+			async (
+				tokenInput: string,
+				ownerInput: string,
+				spenderInput: string,
+				localOpts: { type?: TokenTypeOverride },
+			) => {
+				const { getClient, parseFields } = await import("../../index.js");
+				const opts = parent.opts<GlobalOptions>();
+				try {
+					const id = detectTokenIdentifier(tokenInput, localOpts.type);
+					const owner = validateAddress(ownerInput);
+					const spender = validateAddress(spenderInput);
+					const client = getClient(opts);
+					const data = await fetchAllowance(client, id, owner, spender);
+
+					const tokenLabel = data.token_name
+						? `${data.token_symbol} (${data.token_name})`
+						: (data.token_symbol ?? data.token_address);
+					printResult(
+						data,
+						[
+							["token", "Token", tokenLabel],
+							["token_address", "Contract", data.token_address],
+							["owner", "Owner", data.owner],
+							["spender", "Spender", data.spender],
+							[
+								"allowance_major",
+								"Allowance",
+								`${data.allowance_major} ${data.token_symbol ?? ""}`,
+							],
+						],
+						{ json: opts.json, fields: parseFields(opts) },
+					);
+				} catch (err) {
+					reportErrorAndExit(err, {
+						json: opts.json,
+						verbose: opts.verbose,
+						hint: hintForTokenAllowance(err),
+					});
+				}
+			},
+		);
 }

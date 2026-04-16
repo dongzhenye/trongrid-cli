@@ -8,6 +8,10 @@ import {
 	type TokenTypeOverride,
 } from "../../utils/token-identifier.js";
 import { formatMajor } from "../../utils/tokens.js";
+import { registerTokenAllowanceCommand } from "./allowance.js";
+import { registerTokenBalanceCommand } from "./balance.js";
+import { registerTokenHoldersCommand } from "./holders.js";
+import { registerTokenTransfersCommand } from "./transfers.js";
 
 export interface TokenViewData {
 	type: "TRC10" | "TRC20";
@@ -167,7 +171,7 @@ export function hintForTokenView(err: unknown): string | undefined {
 export function registerTokenCommands(parent: Command): void {
 	const token = parent
 		.command("token")
-		.description("Token queries (TRC-10 + TRC-20)")
+		.description("Token queries (TRC-20 + TRX)")
 		.helpGroup("Read commands:");
 
 	token
@@ -186,7 +190,7 @@ Examples:
   $ trongrid token view USDT --json
   $ trongrid token view 1002000 --type trc10
 
-Verified symbols (Wave 1): USDT, USDC, WTRX, JST, SUN, WIN, BTT.
+Verified symbols: USDT, USDC, WTRX, JST, SUN, WIN, BTT.
 Unknown symbols are rejected — pass the contract address instead.
 `,
 		)
@@ -229,4 +233,9 @@ Unknown symbols are rejected — pass the contract address instead.
 				});
 			}
 		});
+
+	registerTokenHoldersCommand(token, parent);
+	registerTokenTransfersCommand(token, parent);
+	registerTokenBalanceCommand(token, parent);
+	registerTokenAllowanceCommand(token, parent);
 }
