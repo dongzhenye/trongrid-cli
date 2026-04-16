@@ -128,7 +128,7 @@ Plan details: [`plans/phase-c.md`](./plans/phase-c.md).
 
 **Exit criteria met**: all plumbing items ✅, three new commands functional, `tsc` build + lint clean, 280 tests passing (+111 over the 169 baseline). 21 atomic commits on `feat/phase-d-account-list` (10 D-prep + 9 D-main code + 2 docs close + 3 follow-up docs).
 
-Spec: [`specs/phase-d.md`](./specs/phase-d.md). Plan: [`plans/phase-d.md`](./plans/phase-d.md).
+Spec: [`designs/phase-d.md`](./designs/phase-d.md). Plan: [`plans/phase-d.md`](./plans/phase-d.md).
 
 ## Phase E — Token family polish ✅ (pre-publish, untagged)
 
@@ -144,9 +144,9 @@ Spec: [`specs/phase-d.md`](./specs/phase-d.md). Plan: [`plans/phase-d.md`](./pla
 
 **Plumbing shipped**: batch TRC-20 token info client (`src/api/token-info.ts`), hex-to-Base58 + Base58-to-hex conversion (`src/utils/address.ts`), `TokenIdentifier.kind` → `type` rename with TRX/TRC-721/TRC-1155 union variants, uncentered transfer list renderer (`src/output/transfers.ts`).
 
-**Deferred to positioning decision**: TRX holders, TRX network-wide transfers — requires indexed data not available on TronGrid. See `docs/specs/phase-e.md` §Strategic context.
+**Deferred to positioning decision**: TRX holders, TRX network-wide transfers — requires indexed data not available on TronGrid. See `docs/designs/phase-e.md` §Strategic context.
 
-Spec: [`specs/phase-e.md`](./specs/phase-e.md). Plan: [`plans/phase-e.md`](./plans/phase-e.md).
+Spec: [`designs/phase-e.md`](./designs/phase-e.md). Plan: [`plans/phase-e.md`](./plans/phase-e.md).
 
 ## Phase F — Contract family
 

@@ -147,11 +147,11 @@ Key design commitments:
 - **`view` for single-item lookup** — matches `gh`'s verb choice; `list` for many-item, domain verbs for specialized actions.
 - **Entity hierarchy** — top-level resources are blockchain entities with independent attributes; account-scoped views of the same concept live under `account`.
 
-The full design discussion (alternatives considered, six-point rationale for action-first, the three coupling mechanisms, naming and hierarchy tables) and the complete command reference both live in [`design/commands.md`](./design/commands.md). Four-tool competitive evidence base and quantitative scoring backing these decisions lives in [`design/competitors.md` §Decision 1](./design/competitors.md#decision-1-command-argument-ordering).
+The full design discussion (alternatives considered, six-point rationale for action-first, the three coupling mechanisms, naming and hierarchy tables) and the complete command reference both live in [`design/commands.md`](./designs/commands.md). Four-tool competitive evidence base and quantitative scoring backing these decisions lives in [`design/competitors.md` §Decision 1](./design/competitors.md#decision-1-command-argument-ordering).
 
 ### Defaults & conventions (Phase B baseline)
 
-Five operational decisions resolved 2026-04-14 from the [MCP/Skills competitor review](./design/mcp-skills-review.md). Each is a load-bearing default applied uniformly across the Phase B command surface; flags exist as escape hatches.
+Five operational decisions resolved 2026-04-14 from the [MCP/Skills competitor review](./research/mcp-skills.md). Each is a load-bearing default applied uniformly across the Phase B command surface; flags exist as escape hatches.
 
 | # | Decision | Default | Escape | Why |
 |---|---|---|---|---|
@@ -161,7 +161,7 @@ Five operational decisions resolved 2026-04-14 from the [MCP/Skills competitor r
 | 4 | **Token identifier dispatch** | Auto-detect TRC-10 / TRC-20+ from input shape | `--type trc10\|trc20\|trc721\|trc1155` | Token standard is implementation; users care which coin. |
 | 5 | **Stake version** | Stake 2.0 (current) | `--stake-v1` (legacy escape) | 1.0 in active sunset upstream; mirroring legacy as default propagates deprecated behavior for years. |
 
-Detailed rationale for each (alternatives considered, competitor cross-reference, recommendation evolution) lives in [`design/mcp-skills-review.md`](./design/mcp-skills-review.md) §4. Concrete flag specs and per-command application live in [`design/commands.md`](./design/commands.md) Part II.
+Detailed rationale for each (alternatives considered, competitor cross-reference, recommendation evolution) lives in [`design/mcp-skills-review.md`](./research/mcp-skills.md) §4. Concrete flag specs and per-command application live in [`design/commands.md`](./designs/commands.md) Part II.
 
 ## Auth & Config
 
