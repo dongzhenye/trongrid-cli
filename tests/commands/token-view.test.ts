@@ -34,7 +34,7 @@ describe("fetchTokenView — TRC-20", () => {
 		});
 
 		const client = createClient({ network: "mainnet" });
-		const result = await fetchTokenView(client, { kind: "trc20", address: USDT });
+		const result = await fetchTokenView(client, { type: "trc20", address: USDT });
 
 		expect(result).toMatchObject({
 			type: "TRC20",
@@ -75,7 +75,7 @@ describe("fetchTokenView — TRC-10", () => {
 		});
 
 		const client = createClient({ network: "mainnet" });
-		const result = await fetchTokenView(client, { kind: "trc10", assetId: "1002000" });
+		const result = await fetchTokenView(client, { type: "trc10", assetId: "1002000" });
 
 		expect(capturedUrl).toContain("/wallet/getassetissuebyid");
 		// visible:true is required so name/abbr come back as UTF-8 strings,
@@ -99,7 +99,7 @@ describe("fetchTokenView — TRC-10", () => {
 	it("throws with actionable error when asset is not found", async () => {
 		globalThis.fetch = mock(() => Promise.resolve(new Response(JSON.stringify({}))));
 		const client = createClient({ network: "mainnet" });
-		await expect(fetchTokenView(client, { kind: "trc10", assetId: "9999999" })).rejects.toThrow(
+		await expect(fetchTokenView(client, { type: "trc10", assetId: "9999999" })).rejects.toThrow(
 			/token not found/i,
 		);
 	});
@@ -118,7 +118,7 @@ describe("fetchTokenView — TRC-10", () => {
 			),
 		);
 		const client = createClient({ network: "mainnet" });
-		const result = await fetchTokenView(client, { kind: "trc10", assetId: "1000001" });
+		const result = await fetchTokenView(client, { type: "trc10", assetId: "1000001" });
 		expect(result.decimals).toBe(0);
 		expect(result.total_supply_major).toBe("1000");
 	});
@@ -158,10 +158,12 @@ describe("hintForTokenView (Phase D P5: distinct from error)", () => {
 		expect(hint?.toLowerCase()).toContain("tronscan");
 	});
 
-	it("unsupported-standard hint points at a tracking channel, not a restatement", () => {
+	it("unsupported-standard hint points at a tracking channel, not a restatement", async () => {
+		const client = createClient({ network: "mainnet" });
 		let caught: unknown;
 		try {
-			detectTokenIdentifier("foo", "trc721");
+			const addr = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+			await fetchTokenView(client, { type: "trc721", address: addr });
 		} catch (e) {
 			caught = e;
 		}
@@ -170,8 +172,8 @@ describe("hintForTokenView (Phase D P5: distinct from error)", () => {
 		const hint = hintForTokenView(caught);
 		expect(hint).toBeDefined();
 		expect(hint).not.toBe(errMsg);
-		// The error already says "Wave 1 supports TRC-10 and TRC-20 only";
-		// the hint must not restate that same scope statement.
-		expect(hint?.toLowerCase()).not.toContain("wave 1 supports");
+		// The error says "not yet supported for this command";
+		// the hint must add actionable information (GitHub issue tracker).
+		expect(hint?.toLowerCase()).toContain("github issue");
 	});
 });

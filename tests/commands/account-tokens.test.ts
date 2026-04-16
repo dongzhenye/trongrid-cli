@@ -45,6 +45,9 @@ describe("account tokens", () => {
 					),
 				);
 			}
+			if (url.includes("/v1/trc20/info")) {
+				return Promise.resolve(new Response(JSON.stringify({ data: [] })));
+			}
 			if (url.includes("/wallet/getassetissuebyid")) {
 				return Promise.resolve(new Response(JSON.stringify({ id: "1002000", precision: 0 })));
 			}
@@ -110,6 +113,9 @@ describe("account tokens", () => {
 						}),
 					),
 				);
+			}
+			if (url.includes("/v1/trc20/info")) {
+				return Promise.resolve(new Response(JSON.stringify({ data: [] })));
 			}
 			throw new Error(`Unexpected URL: ${url}`);
 		});
@@ -178,6 +184,10 @@ describe("account tokens", () => {
 					),
 				);
 			}
+			// Batch endpoint returns empty — forces individual fallback for both tokens.
+			if (url.includes("/v1/trc20/info")) {
+				return Promise.resolve(new Response(JSON.stringify({ data: [] })));
+			}
 			if (url.includes("/wallet/triggerconstantcontract")) {
 				return Promise.resolve(new Response("not json at all", { status: 500 }));
 			}
@@ -237,6 +247,91 @@ describe("account tokens", () => {
 			decimals: 0,
 			balance_major: "42",
 		});
+	});
+
+	it("populates symbol and name from batch /v1/trc20/info response", async () => {
+		const CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+
+		globalThis.fetch = mock((url: string) => {
+			if (url.includes("/v1/accounts/")) {
+				return Promise.resolve(
+					new Response(
+						JSON.stringify({
+							data: [{ trc20: [{ [CONTRACT]: "6000000" }] }],
+						}),
+					),
+				);
+			}
+			if (url.includes("/v1/trc20/info")) {
+				return Promise.resolve(
+					new Response(
+						JSON.stringify({
+							data: [
+								{
+									contract_address: CONTRACT,
+									name: "Tether USD",
+									symbol: "USDT",
+									decimals: "6",
+									type: "trc20",
+									total_supply: "999999999999",
+								},
+							],
+						}),
+					),
+				);
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		const client = createClient({ network: "mainnet" });
+		const tokens = await fetchAccountTokens(client, "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW");
+
+		expect(tokens).toHaveLength(1);
+		expect(tokens[0]).toMatchObject({
+			type: "TRC20",
+			contract_address: CONTRACT,
+			balance: "6000000",
+			decimals: 6,
+			balance_major: "6.0",
+			symbol: "USDT",
+			name: "Tether USD",
+		});
+	});
+
+	it("gracefully degrades to individual resolver when batch fetch fails", async () => {
+		const CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+
+		globalThis.fetch = mock((url: string) => {
+			if (url.includes("/v1/accounts/")) {
+				return Promise.resolve(
+					new Response(
+						JSON.stringify({
+							data: [{ trc20: [{ [CONTRACT]: "1000000" }] }],
+						}),
+					),
+				);
+			}
+			// Batch endpoint hard-fails — individual on-chain path should take over.
+			if (url.includes("/v1/trc20/info")) {
+				return Promise.resolve(new Response("Service Unavailable", { status: 503 }));
+			}
+			// Individual resolver falls back to static map for USDT.
+			if (url.includes("/wallet/triggerconstantcontract")) {
+				throw new Error("should not be called for USDT (static map)");
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		const client = createClient({ network: "mainnet" });
+		const tokens = await fetchAccountTokens(client, "TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW");
+
+		// USDT is in the static map so individual resolver returns 6.
+		expect(tokens[0]).toMatchObject({
+			decimals: 6,
+			balance_major: "1.0",
+		});
+		// Symbol not populated (batch failed, individual resolver doesn't return it).
+		expect(tokens[0].symbol).toBeUndefined();
 	});
 });
 
@@ -353,7 +448,7 @@ describe("renderTokenList (human output)", () => {
 		expect(captured[0]).toContain("Found 2 tokens");
 	});
 
-	it("renders `<major> (raw <raw>)` when balance_major is set", () => {
+	it("renders `SYMBOL (contract) balance (raw N)` when balance_major is set", () => {
 		const tokens: TokenBalance[] = [
 			{
 				type: "TRC20",
@@ -361,19 +456,23 @@ describe("renderTokenList (human output)", () => {
 				balance: "1234000",
 				decimals: 6,
 				balance_major: "1.234",
+				symbol: "USDT",
 			},
 		];
 		renderTokenList(tokens);
-		// First line is the header, second line is the token row.
-		const row = captured[1];
+		// captured[0] = "Found N tokens:", captured[1] = header row, captured[2+] = data
+		expect(captured[1]).toContain("Type");
+		expect(captured[1]).toContain("Balance");
+		const row = captured[2];
 		expect(row).toContain("[TRC20]");
-		// Addresses now render in both-ends truncated form (4+4).
-		expect(row).toContain("TR7N...Lj6t");
+		expect(row).toContain("USDT");
+		// Contract address rendered in parentheses with both-ends truncation (4+4).
+		expect(row).toContain("(TR7NHq...gjLj6t)");
 		expect(row).toContain("1.234");
 		expect(row).toContain("(raw 1234000)");
 	});
 
-	it("falls back to raw-only when balance_major is undefined", () => {
+	it("shows [?] and (decimals unresolved) when balance_major is undefined", () => {
 		const tokens: TokenBalance[] = [
 			{
 				type: "TRC20",
@@ -383,10 +482,12 @@ describe("renderTokenList (human output)", () => {
 			},
 		];
 		renderTokenList(tokens);
-		const row = captured[1];
+		const row = captured[2]; // skip header
 		expect(row).toContain("[TRC20]");
-		expect(row).toContain("TXYZ...xxxx");
+		expect(row).toContain("[?]");
+		expect(row).toContain("(TXYZun...owxxxx)");
 		expect(row).toContain("500000");
+		expect(row).toContain("(decimals unresolved)");
 		expect(row).not.toContain("(raw");
 	});
 
@@ -408,8 +509,46 @@ describe("renderTokenList (human output)", () => {
 		];
 		renderTokenList(tokens);
 		expect(captured[0]).toContain("Found 2 tokens");
-		expect(captured[1]).toContain("(raw 1000000)");
-		expect(captured[2]).toContain("[TRC10]");
-		expect(captured[2]).not.toContain("(raw");
+		// captured[1] = header, captured[2] = first data, captured[3] = second data
+		expect(captured[2]).toContain("(raw 1000000)");
+		expect(captured[3]).toContain("[TRC10]");
+		// TRC10 has unresolved decimals — shows (decimals unresolved), not (raw …)
+		expect(captured[3]).not.toContain("(raw");
+		expect(captured[3]).toContain("(decimals unresolved)");
+	});
+
+	it("shows symbol from batch info when available", () => {
+		const tokens: TokenBalance[] = [
+			{
+				type: "TRC20",
+				contract_address: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+				balance: "1000000",
+				decimals: 6,
+				balance_major: "1.0",
+				symbol: "USDT",
+				name: "Tether USD",
+			},
+		];
+		renderTokenList(tokens);
+		const row = captured[2]; // skip header
+		expect(row).toContain("USDT");
+		expect(row).toContain("(TR7NHq...gjLj6t)");
+	});
+
+	it("suppresses (raw N) when balance_major equals balance (decimals=0)", () => {
+		const tokens: TokenBalance[] = [
+			{
+				type: "TRC10",
+				contract_address: "1000001",
+				balance: "42",
+				decimals: 0,
+				balance_major: "42", // same as balance → no raw annotation
+			},
+		];
+		renderTokenList(tokens);
+		const row = captured[2]; // skip header
+		expect(row).toContain("[TRC10]");
+		expect(row).toContain("42");
+		expect(row).not.toContain("(raw");
 	});
 });
