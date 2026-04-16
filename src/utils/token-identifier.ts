@@ -2,10 +2,13 @@ import { UsageError } from "../output/format.js";
 import { resolveSymbolToAddress } from "./tokens.js";
 
 export type TokenIdentifier =
-	| { kind: "trc10"; assetId: string }
-	| { kind: "trc20"; address: string };
+	| { type: "trx" }
+	| { type: "trc10"; assetId: string }
+	| { type: "trc20"; address: string }
+	| { type: "trc721"; address: string }
+	| { type: "trc1155"; address: string };
 
-export type TokenTypeOverride = "trc10" | "trc20" | "trc721" | "trc1155";
+export type TokenTypeOverride = "trx" | "trc10" | "trc20" | "trc721" | "trc1155";
 
 const TRC10_NUMERIC = /^\d{1,7}$/;
 const BASE58_ADDR = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
@@ -38,23 +41,40 @@ export function detectTokenIdentifier(
 		);
 	}
 
-	if (typeOverride === "trc721" || typeOverride === "trc1155") {
-		throw new UsageError(
-			`${typeOverride.toUpperCase()} is not yet implemented. Wave 1 supports TRC-10 and TRC-20 only.`,
-		);
+	// TRX is the native coin — not a token contract.
+	if (input.toUpperCase() === "TRX") {
+		return { type: "trx" };
 	}
 
 	if (HEX_ADDR_0X.test(input)) {
 		throw new UsageError(
-			`0x-prefixed hex addresses are not yet supported in Wave 1. Pass the Base58 address (T...) instead.`,
+			`0x-prefixed hex addresses are not yet supported. Pass the Base58 address (T...) instead.`,
 		);
+	}
+
+	if (typeOverride === "trc721") {
+		if (!BASE58_ADDR.test(input)) {
+			throw new UsageError(
+				`Invalid TRC-721 address: "${input}". Expected 34-char Base58 starting with T.`,
+			);
+		}
+		return { type: "trc721", address: input };
+	}
+
+	if (typeOverride === "trc1155") {
+		if (!BASE58_ADDR.test(input)) {
+			throw new UsageError(
+				`Invalid TRC-1155 address: "${input}". Expected 34-char Base58 starting with T.`,
+			);
+		}
+		return { type: "trc1155", address: input };
 	}
 
 	if (typeOverride === "trc10") {
 		if (!TRC10_NUMERIC.test(input)) {
 			throw new UsageError(`Invalid TRC-10 asset ID: "${input}". Expected 1–7 digits.`);
 		}
-		return { kind: "trc10", assetId: input };
+		return { type: "trc10", assetId: input };
 	}
 
 	if (typeOverride === "trc20") {
@@ -63,14 +83,14 @@ export function detectTokenIdentifier(
 				`Invalid TRC-20 address: "${input}". Expected 34-char Base58 starting with T.`,
 			);
 		}
-		return { kind: "trc20", address: input };
+		return { type: "trc20", address: input };
 	}
 
 	if (TRC10_NUMERIC.test(input)) {
-		return { kind: "trc10", assetId: input };
+		return { type: "trc10", assetId: input };
 	}
 	if (BASE58_ADDR.test(input)) {
-		return { kind: "trc20", address: input };
+		return { type: "trc20", address: input };
 	}
 	if (SYMBOL.test(input)) {
 		const addr = resolveSymbolToAddress(input);
@@ -79,7 +99,7 @@ export function detectTokenIdentifier(
 				`Unknown token symbol: "${input}". Pass the contract address directly, or see docs/designs/commands.md for the list of verified symbols.`,
 			);
 		}
-		return { kind: "trc20", address: addr };
+		return { type: "trc20", address: addr };
 	}
 
 	throw new UsageError(
