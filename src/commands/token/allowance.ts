@@ -22,6 +22,7 @@ export interface AllowanceResult {
 	allowance: string;
 	decimals: number;
 	allowance_major: string;
+	unlimited: boolean;
 }
 
 interface TriggerResponse {
@@ -87,7 +88,13 @@ export async function fetchAllowance(
 	}
 
 	// uint256 → decimal string via BigInt (avoids precision loss above 2^53)
-	const allowanceRaw = BigInt(`0x${hex}`).toString(10);
+	const allowanceBig = BigInt(`0x${hex}`);
+	const allowanceRaw = allowanceBig.toString(10);
+
+	// uint256.max = 2^256 - 1 → "unlimited" in TRC-20/ERC-20 convention.
+	// dApps set approve(spender, type(uint256).max) to avoid repeated approvals.
+	const UINT256_MAX = (1n << 256n) - 1n;
+	const unlimited = allowanceBig === UINT256_MAX;
 
 	// Fetch token metadata for symbol, name, decimals
 	const infoMap = await fetchBatchTrc20Info(client, [contractAddress]);
@@ -103,7 +110,8 @@ export async function fetchAllowance(
 		spender,
 		allowance: allowanceRaw,
 		decimals,
-		allowance_major: formatMajor(allowanceRaw, decimals),
+		allowance_major: unlimited ? "Unlimited" : formatMajor(allowanceRaw, decimals),
+		unlimited,
 	};
 }
 
@@ -165,7 +173,9 @@ Examples:
 							[
 								"allowance_major",
 								"Allowance",
-								`${addThousandsSep(data.allowance_major)} ${data.token_symbol ?? ""}`,
+								data.unlimited
+									? "Unlimited"
+									: `${addThousandsSep(data.allowance_major)} ${data.token_symbol ?? ""}`,
 							],
 						],
 						{ json: opts.json, fields: parseFields(opts) },
