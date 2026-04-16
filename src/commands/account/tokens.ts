@@ -4,6 +4,7 @@ import { fetchBatchTrc20Info, type Trc20Info } from "../../api/token-info.js";
 import type { GlobalOptions } from "../../index.js";
 import { muted } from "../../output/colors.js";
 import {
+	addThousandsSep,
 	alignNumber,
 	computeColumnWidths,
 	renderColumns,
@@ -62,7 +63,7 @@ export function renderTokenList(tokens: TokenBalance[]): void {
 	const cells: string[][] = tokens.map((t) => {
 		const symbolCol = t.symbol ?? (t.decimals === undefined ? "[?]" : "");
 		const contractCol = `(${truncateAddress(t.contract_address)})`;
-		const balanceCol = t.balance_major ?? t.balance;
+		const balanceCol = addThousandsSep(t.balance_major ?? t.balance);
 
 		// Trial #7: suppress redundant raw when major equals raw (e.g. decimals=0)
 		// Trial #6: show "(decimals unresolved)" instead of raw annotation on failure

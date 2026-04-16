@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import { fetchBatchTrc20Info } from "../../api/token-info.js";
 import type { GlobalOptions } from "../../index.js";
+import { addThousandsSep } from "../../output/columns.js";
 import { printResult, reportErrorAndExit, UsageError } from "../../output/format.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 import {
@@ -159,7 +160,7 @@ Examples:
 							[
 								["token", "Token", "TRX (Tronix)"],
 								["address", "Address", trxData.address],
-								["balance_trx", "Balance", `${trxData.balance_trx} TRX`],
+								["balance_trx", "Balance", `${addThousandsSep(trxData.balance_trx)} TRX`],
 							],
 							{ json: opts.json, fields: parseFields(opts) },
 						);
@@ -177,7 +178,7 @@ Examples:
 								[
 									"balance_major",
 									"Balance",
-									`${trc20Data.balance_major} ${trc20Data.token_symbol ?? ""}`.trim(),
+									`${addThousandsSep(trc20Data.balance_major)} ${trc20Data.token_symbol ?? ""}`.trim(),
 								],
 							],
 							{ json: opts.json, fields: parseFields(opts) },

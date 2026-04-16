@@ -1,5 +1,11 @@
 import { muted } from "./colors.js";
-import { alignNumber, computeColumnWidths, renderColumns, truncateAddress } from "./columns.js";
+import {
+	addThousandsSep,
+	alignNumber,
+	computeColumnWidths,
+	renderColumns,
+	truncateAddress,
+} from "./columns.js";
 import { formatTimestamp } from "./format.js";
 
 /**
@@ -103,7 +109,7 @@ export function renderUncenteredTransferList(rows: UncenteredTransferRow[]): voi
 		truncateAddress(r.from),
 		"→",
 		truncateAddress(r.to),
-		r.value_major,
+		addThousandsSep(r.value_major),
 		truncateAddress(r.tx_id, 4, 4), // tx hashes aren't spoofable — keep short
 	]);
 
