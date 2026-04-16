@@ -1,3 +1,4 @@
+<!-- lifecycle: frozen -->
 # Phase E — Token family polish
 
 > **For agentic workers:** this document is the Phase E **spec** (brainstorming output, human-facing) — it defines goal, architecture, file map, task outline, and exit criteria, and it stays stable as the "what and why". Its sibling **plan** (step-level implementation detail, agent-facing) lives at [`../plans/phase-e.md`](../plans/phase-e.md) and is produced from this spec by the `superpowers:writing-plans` skill; the plan iterates as the "how".
