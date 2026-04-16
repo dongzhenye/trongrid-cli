@@ -5,6 +5,7 @@ import {
 	computeColumnWidths,
 	renderColumns,
 	truncateAddress,
+	visibleLength,
 } from "../output/columns.js";
 import { formatTimestamp, sunToTrx } from "../output/format.js";
 import { hexToBase58 } from "../utils/address.js";
@@ -154,7 +155,7 @@ export function renderInternalTxs(rows: InternalTxRow[]): void {
 
 	// Right-align value column
 	const valueCol = 5;
-	const valueWidth = Math.max(...allRows.map((c) => (c[valueCol] ?? "").length));
+	const valueWidth = Math.max(...allRows.map((c) => visibleLength(c[valueCol] ?? "")));
 	for (const row of allRows) {
 		const cur = row[valueCol] ?? "";
 		row[valueCol] = alignNumber(cur, valueWidth);
