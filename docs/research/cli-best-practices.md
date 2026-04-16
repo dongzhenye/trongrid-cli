@@ -311,35 +311,7 @@ These gaps were cheap to fix and would have been more expensive once Phase B bak
 
 ## §7 Human display conventions
 
-Rules for human-mode output. `--json` mode is unaffected — JSON fields keep raw values (machine contract per `AGENTS.md` §4).
-
-### Numbers — thousands separators
-
-All balance / amount / quantity values in human mode use US-convention thousands separators: comma for thousands, period for decimal.
-
-| Raw | Human |
-|-----|-------|
-| `16809182.347903` | `16,809,182.347903` |
-| `42` | `42` |
-| `-1234567.89` | `-1,234,567.89` |
-
-Utility: `addThousandsSep()` in `src/output/columns.ts`. Applied at the renderer layer, not in `formatMajor()` (which is shared with JSON).
-
-### Addresses — truncation minimums
-
-Truncated address display must show at least **first 6 + last 6** characters to prevent address spoofing attacks (attacker creates addresses matching visible prefix/suffix).
-
-| Form | Example | Use case |
-|------|---------|----------|
-| Full (34 chars) | `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t` | Single-value views, few-column tables |
-| Truncated (6+6) | `TR7NHq...gjLj6t` | List columns with space constraints |
-| TX hash (4+4 OK) | `abc1...cdef` | TX hashes are not spoofable |
-
-Utility: `truncateAddress()` in `src/output/columns.ts`, default (6, 6).
-
-### Timestamps
-
-UTC always. Format: `YYYY-MM-DD HH:MM:SS UTC`. No local time (cross-machine reproducibility). Utility: `formatTimestamp()` in `src/output/format.ts`.
+> **Extracted** to [`designs/human-display.md`](../designs/human-display.md) — the living design authority for display rules (thousands separators, address truncation, timestamps, empty values, column headers). This section originated here but is now maintained there.
 
 ---
 
@@ -350,6 +322,7 @@ UTC always. Format: `YYYY-MM-DD HH:MM:SS UTC`. No local time (cross-machine repr
 - **Community standard**: [clig.dev — Command Line Interface Guidelines](https://clig.dev/)
 - **Internal cross-references:**
   - [`architecture.md`](../architecture.md) — project-wide tech decisions
-  - [`commands.md`](./commands.md) — command grammar design + full reference
+  - [`commands.md`](../designs/commands.md) — command grammar design + full reference
   - [`competitors.md`](./competitors.md) — four-tool CLI research backing argument-ordering and token-decimals decisions
-  - [`units.md`](./units.md) — JSON output unit shape contract
+  - [`units.md`](../designs/units.md) — JSON output unit shape contract
+  - [`human-display.md`](../designs/human-display.md) — human display conventions (extracted from §7)

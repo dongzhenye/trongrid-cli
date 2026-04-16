@@ -5,6 +5,7 @@ import {
 	computeColumnWidths,
 	renderColumns,
 	truncateAddress,
+	visibleLength,
 } from "./columns.js";
 import { formatTimestamp } from "./format.js";
 
@@ -61,7 +62,7 @@ export function renderCenteredTransferList(rows: CenteredTransferRow[]): void {
 
 	// Right-align amount column to max width in the batch.
 	const amountCol = 2;
-	const amountWidth = Math.max(...cells.map((c) => (c[amountCol] ?? "").length));
+	const amountWidth = Math.max(...cells.map((c) => visibleLength(c[amountCol] ?? "")));
 	for (const row of cells) {
 		const cur = row[amountCol] ?? "";
 		row[amountCol] = alignNumber(cur, amountWidth);
@@ -117,7 +118,7 @@ export function renderUncenteredTransferList(rows: UncenteredTransferRow[]): voi
 
 	// Right-align amount column
 	const valueCol = 4;
-	const valueWidth = Math.max(...allRows.map((c) => (c[valueCol] ?? "").length));
+	const valueWidth = Math.max(...allRows.map((c) => visibleLength(c[valueCol] ?? "")));
 	for (const row of allRows) {
 		const cur = row[valueCol] ?? "";
 		row[valueCol] = alignNumber(cur, valueWidth);
