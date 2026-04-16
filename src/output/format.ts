@@ -167,7 +167,7 @@ function defaultHintFor(err: unknown): string | undefined {
 
 /**
  * Print an error and exit with a deterministic code, per scheme in
- * `docs/design/cli-best-practices.md` §4.
+ * `docs/designs/cli-best-practices.md` §4.
  *
  *   - {@link UsageError} → 2 (usage error — bad flag value, unknown field)
  *   - {@link TrongridError} → `err.exitCode` (3 for network / auth, 1 otherwise)

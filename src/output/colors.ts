@@ -3,7 +3,7 @@ import { styleText } from "node:util";
 /**
  * Semantic color tokens for terminal output, based on the seven-token palette
  * recommended by the Google Cloud Tech CLI design article (March 2026) and
- * codified in docs/design/cli-best-practices.md §6.
+ * codified in docs/designs/cli-best-practices.md §6.
  *
  * Policy:
  *   - Use these tokens instead of raw `styleText(...)` calls so the palette

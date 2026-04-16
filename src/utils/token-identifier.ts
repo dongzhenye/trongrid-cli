@@ -76,7 +76,7 @@ export function detectTokenIdentifier(
 		const addr = resolveSymbolToAddress(input);
 		if (!addr) {
 			throw new UsageError(
-				`Unknown token symbol: "${input}". Pass the contract address directly, or see docs/design/commands.md for the list of verified symbols.`,
+				`Unknown token symbol: "${input}". Pass the contract address directly, or see docs/designs/commands.md for the list of verified symbols.`,
 			);
 		}
 		return { kind: "trc20", address: addr };

@@ -47,7 +47,7 @@ Agents should prefer the `hint` over the `error` when deciding how to recover: t
 
 ## 4. Quantity fields — JSON unit-shape contract
 
-All amount / balance / quantity fields follow the contract in [`docs/design/units.md`](./docs/design/units.md). There are two common shapes.
+All amount / balance / quantity fields follow the contract in [`docs/designs/units.md`](./docs/designs/units.md). There are two common shapes.
 
 **Scenario S1 — TRX amounts (fixed unit = sun, decimals = 6):**
 
@@ -180,8 +180,8 @@ If you are an AI agent writing code for `trongrid-cli` (not just calling it), fo
 - **One production dependency:** `commander`. Native `fetch` and `node:util` `styleText` cover HTTP and color.
 - **Commit format:** Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`). English only, header ≤ 50 chars, lowercase.
 - **Branch strategy:** GitHub Flow — work on a feature branch, PR to `main`, merge with `--no-ff`.
-- **New quantity fields** must follow the JSON unit-shape contract in [`docs/design/units.md`](./docs/design/units.md). Do not invent new naming patterns.
-- **New commands** must follow the grammar committed in [`docs/design/commands.md`](./docs/design/commands.md): two-level noun-verb, action-first positional, trailing identifier, `[address]` for optional with `default_address` fallback.
+- **New quantity fields** must follow the JSON unit-shape contract in [`docs/designs/units.md`](./docs/designs/units.md). Do not invent new naming patterns.
+- **New commands** must follow the grammar committed in [`docs/designs/commands.md`](./docs/designs/commands.md): two-level noun-verb, action-first positional, trailing identifier, `[address]` for optional with `default_address` fallback.
 - **Error paths** must go through `reportErrorAndExit` from `src/output/format.ts` — it handles the `Hint:` line, exit codes, and `--verbose` upstream expansion automatically.
 - **Color** must go through the semantic tokens in `src/output/colors.ts` (`accent` / `command` / `pass` / `warn` / `fail` / `muted` / `id`) — not raw `styleText` calls.
 
@@ -219,10 +219,10 @@ src/
 
 | Doc | Topic |
 |---|---|
-| [`docs/design/units.md`](./docs/design/units.md) | JSON quantity field shape (principles P1–P7, scenarios S1–S5) |
-| [`docs/design/commands.md`](./docs/design/commands.md) | Command grammar design decisions + full reference |
-| [`docs/design/competitors.md`](./docs/design/competitors.md) | CLI competitor research (cast / solana / wallet-cli / aptos) |
-| [`docs/design/cli-best-practices.md`](./docs/design/cli-best-practices.md) | CLI best-practices checklist for humans + agents |
+| [`docs/designs/units.md`](./docs/designs/units.md) | JSON quantity field shape (principles P1–P7, scenarios S1–S5) |
+| [`docs/designs/commands.md`](./docs/designs/commands.md) | Command grammar design decisions + full reference |
+| [`docs/designs/competitors.md`](./docs/designs/competitors.md) | CLI competitor research (cast / solana / wallet-cli / aptos) |
+| [`docs/designs/cli-best-practices.md`](./docs/designs/cli-best-practices.md) | CLI best-practices checklist for humans + agents |
 | [`docs/architecture.md`](./docs/architecture.md) | Project-wide tech decisions summary |
 | [`docs/roadmap.md`](./docs/roadmap.md) | Flat phase list (A–O) + cross-walk from old labels |
 | [`docs/plans/handoff.md`](./docs/plans/handoff.md) | Cold-start agent briefing — state, decisions, reading order |

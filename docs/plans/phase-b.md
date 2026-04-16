@@ -600,7 +600,7 @@ Commit message header: `feat: make address optional in account resources`
 
 **Files:**
 
-- Modify: `docs/design/commands.md` (moved from `docs/commands.md` in a later commit; use the current path)
+- Modify: `docs/designs/commands.md` (moved from `docs/commands.md` in a later commit; use the current path)
 
 - [ ] **Step 1: Update the account section to show `[address]` instead of `<address>`:**
 
@@ -619,7 +619,7 @@ Leave the other `account <cmd>` entries (txs, transfers, delegations, permission
 - [ ] **Step 2: Commit**
 
 ```bash
-git add docs/design/commands.md
+git add docs/designs/commands.md
 git commit -m "$(cat <<'EOF'
 docs: mark account view/tokens/resources address as optional
 
@@ -720,7 +720,7 @@ feat: emit decimals field in account view (class S1 bonus rule)
 
 Adds decimals: 6 to AccountViewData and fetchAccountView
 return per the class S1 bonus rule documented in
-docs/design/units.md §P4. The field is strictly redundant
+docs/designs/units.md §P4. The field is strictly redundant
 with balance_unit: "sun" for a TRON-native consumer, but
 makes the JSON self-contained for generic parsers and
 agents without ecosystem priors. Zero runtime cost — a
@@ -1368,7 +1368,7 @@ Modify `src/commands/account/tokens.ts`:
 ```ts
 import { resolveTrc20Decimals, resolveTrc10Decimals } from "../../utils/tokens.js";
 
-// Fields follow scenario S2 from docs/design/units.md:
+// Fields follow scenario S2 from docs/designs/units.md:
 // {head} + decimals + {head}_major. The head is `balance` because this
 // represents an address's available token balance (TIP-20 `balanceOf`
 // return-parameter convention). Covers both TRC-20 and TRC-10 since both
@@ -1460,7 +1460,7 @@ fields, populated via resolveTrc20Decimals (hybrid static map
 (/wallet/getassetissuebyid.precision) for TRC-10. Both types
 run in parallel via Promise.all.
 
-Field naming follows scenario S2 from docs/design/units.md:
+Field naming follows scenario S2 from docs/designs/units.md:
 {head} + decimals + {head}_major, with head = "balance"
 per the TIP-20 balanceOf convention.
 
@@ -1540,8 +1540,8 @@ EOF
 **Files:**
 
 - Inspect: `docs/architecture.md` (§Output Design scenario table)
-- Inspect: `docs/design/units.md` (§S2 example + §3 head-word rationale)
-- Inspect: `docs/design/competitors.md` (§Decision 2 JSON example)
+- Inspect: `docs/designs/units.md` (§S2 example + §3 head-word rationale)
+- Inspect: `docs/research.md` (§Decision 2 JSON example)
 
 **Scope:** Now mandatory (upgraded from conditional in the original plan). Part B changes the public JSON contract in a way that commit 1–3 of the units.md rollout already anticipated, so the doc text should already match. This task is a final cross-check before closing Phase A+ — any drift discovered here is a bug in the rollout.
 
@@ -1553,7 +1553,7 @@ bun run src/index.ts --json account tokens TJCnKsPa7y5okkXvQAidZBzqx3QyQ6sxMW
 
 Pick an address that holds at least one TRC-20 and one TRC-10. Save the output.
 
-- [ ] **Step 2: Compare every field in the output to the S2 shape in `docs/design/units.md` §4**
+- [ ] **Step 2: Compare every field in the output to the S2 shape in `docs/designs/units.md` §4**
 
 Verify for both TRC-20 and TRC-10 entries:
 - `balance` is a string (raw integer).
@@ -1566,7 +1566,7 @@ Verify for both TRC-20 and TRC-10 entries:
 
 The S2 row should read: `` `balance` (raw) + `balance_major` + `decimals` ``. Flag any divergence.
 
-- [ ] **Step 4: Compare the output to the example in `docs/design/competitors.md` §Decision 2**
+- [ ] **Step 4: Compare the output to the example in `docs/research.md` §Decision 2**
 
 The JSON example under "JSON output shape" should match the implemented contract. Flag any divergence.
 

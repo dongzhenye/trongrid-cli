@@ -12,7 +12,7 @@ export class TrongridError extends Error {
 
 	/**
 	 * Deterministic process exit code, per the four-level scheme documented in
-	 * `docs/design/cli-best-practices.md` §4:
+	 * `docs/designs/cli-best-practices.md` §4:
 	 *   0 — success
 	 *   1 — general / unexpected error
 	 *   2 — usage error (bad flag / missing argument) — set by commander's exitOverride

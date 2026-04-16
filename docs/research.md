@@ -644,9 +644,9 @@ Based on this research, the following Phase A+ decisions cluster into "ready to 
 
 ### Suggested next steps
 
-1. **Commit this doc** as `docs/design/competitors.md`.
+1. **Commit this doc** as `docs/designs/competitors.md`.
 2. **Decide the 4 interlocked questions** together — ideally in one design-review session.
-3. **Update `docs/architecture.md`** with the chosen JSON contract for `account tokens` (adding `decimals` / `balance_major`; see `docs/design/units.md` for the full unit shape contract).
-4. **Update `docs/design/commands.md`** if command ordering changes or if default-address flag is added.
+3. **Update `docs/architecture.md`** with the chosen JSON contract for `account tokens` (adding `decimals` / `balance_major`; see `docs/designs/units.md` for the full unit shape contract).
+4. **Update `docs/designs/commands.md`** if command ordering changes or if default-address flag is added.
 5. **Implement Phase A+ code quality fixes** per `docs/roadmap.md`, informed by this research.
 6. **Next research round**: TronScan + TronGrid MCP/Skills review (Phase A+ Design research item 2). User has provided 2 of 4 links (TronScan MCP + Skills); TronGrid MCP + Skills links still needed.

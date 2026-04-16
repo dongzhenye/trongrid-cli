@@ -9,7 +9,7 @@ import { parseTimeRange } from "../../utils/time-range.js";
 import { formatMajor } from "../../utils/tokens.js";
 
 /**
- * Unit shape per docs/design/units.md S2 (TRC-10/20 scalable quantity).
+ * Unit shape per docs/designs/units.md S2 (TRC-10/20 scalable quantity).
  * Includes `direction: "out" | "in"` — this is a **centered** transfer
  * list (per memory feedback_transfer_list_two_styles); the direction is
  * computed at fetch time against the queried subject address so agents

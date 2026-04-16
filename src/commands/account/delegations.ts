@@ -18,7 +18,7 @@ import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js
 import { applySort, type SortConfig, type SortOptions } from "../../utils/sort.js";
 
 /**
- * Stake 2.0 delegation row. Unit shape per docs/design/units.md S1
+ * Stake 2.0 delegation row. Unit shape per docs/designs/units.md S1
  * (TRX quantity): amount + amount_unit: "sun" + decimals: 6 + amount_trx.
  *
  * `direction` discriminates incoming vs outgoing delegations. Flattened

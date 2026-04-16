@@ -12,9 +12,9 @@
 
 **Spec references (authoritative):**
 
-- `docs/design/commands.md` Part II — `account`, `block`, `token` sections + §Global flags (`--confirmed`, `--reverse`, `--sort-by`)
-- `docs/design/units.md` — S1 (TRX fields inside block/tx metadata), S2 (token `total_supply` + `_major`)
-- `docs/design/mcp-skills-review.md` §4 — Q1 (confirmed), Q3 (sort), Q4 (token dispatch) resolutions
+- `docs/designs/commands.md` Part II — `account`, `block`, `token` sections + §Global flags (`--confirmed`, `--reverse`, `--sort-by`)
+- `docs/designs/units.md` — S1 (TRX fields inside block/tx metadata), S2 (token `total_supply` + `_major`)
+- `docs/designs/mcp-skills-review.md` §4 — Q1 (confirmed), Q3 (sort), Q4 (token dispatch) resolutions
 - `docs/architecture.md` §Defaults & conventions — the 5-row decision table
 - `AGENTS.md` — contribution rules (one prod dep, semantic colors, `reportErrorAndExit`, `--json` on every data command)
 - `docs/plans/phase-a-plus.md` — reference for task/commit rhythm
@@ -149,7 +149,7 @@ git add src/index.ts tests/commands/global-flags.test.ts
 git commit -m "$(cat <<'EOF'
 feat: add --confirmed global flag
 
-Adds the --confirmed option defined in docs/design/commands.md Part II.
+Adds the --confirmed option defined in docs/designs/commands.md Part II.
 Default off — read latest state, accept ~0.01% reorg risk for 20x
 freshness. Opt-in for high-stakes reads (exchange deposits, settlement,
 bridges).
@@ -686,7 +686,7 @@ git add src/index.ts tests/commands/global-flags.test.ts
 git commit -m "$(cat <<'EOF'
 feat: add --reverse / --sort-by global flags
 
-Per the Q3 resolution in docs/design/mcp-skills-review.md §4:
+Per the Q3 resolution in docs/designs/mcp-skills-review.md §4:
 each list command picks a default sort field + direction; --reverse
 flips direction (Unix muscle memory: ls -r, sort -r, du -r);
 --sort-by switches field with the new field's inherent direction.
@@ -803,7 +803,7 @@ export interface SortOptions {
 /**
  * Client-side sort for fetched list results.
  *
- * Per Q3 resolution in docs/design/mcp-skills-review.md: each list command
+ * Per Q3 resolution in docs/designs/mcp-skills-review.md: each list command
  * declares its default field + per-field inherent directions. --sort-by
  * switches field (using the new field's inherent direction). --reverse
  * flips whatever direction would otherwise apply.
@@ -1517,7 +1517,7 @@ export function detectTokenIdentifier(
     const addr = resolveSymbolToAddress(input);
     if (!addr) {
       throw new Error(
-        `Unknown token symbol: "${input}". Pass the contract address directly, or see docs/design/commands.md for the list of verified symbols.`,
+        `Unknown token symbol: "${input}". Pass the contract address directly, or see docs/designs/commands.md for the list of verified symbols.`,
       );
     }
     return { kind: "trc20", address: addr };
@@ -1546,7 +1546,7 @@ feat: add detectTokenIdentifier helper
 
 Dispatches CLI token input (1-7 digit numeric → TRC-10, 34-char Base58
 T... → TRC-20, symbol → verified-map → TRC-20) per the Q4 resolution
-in docs/design/mcp-skills-review.md §4. --type flag overrides dispatch
+in docs/designs/mcp-skills-review.md §4. --type flag overrides dispatch
 for ambiguous inputs.
 
 Guardrails:

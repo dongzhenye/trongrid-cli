@@ -12,7 +12,7 @@ import { printListResult, reportErrorAndExit } from "../../output/format.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 import { formatMajor, resolveTrc10Decimals, resolveTrc20Decimals } from "../../utils/tokens.js";
 
-// Fields follow scenario S2 from docs/design/units.md:
+// Fields follow scenario S2 from docs/designs/units.md:
 // {head} + decimals + {head}_major. The head is `balance` because this
 // represents an address's available token balance (TIP-20 `balanceOf`
 // return-parameter convention). Covers both TRC-20 and TRC-10 since both
