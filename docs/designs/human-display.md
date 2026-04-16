@@ -45,4 +45,6 @@ JSON mode: use `null` or omit the field per the unit shape contract. Never use `
 
 All list commands must have a header row by default. The header is rendered with `muted()` color, data rows are plain. Omit headers only when the layout is self-evident (e.g., single-column output).
 
-See also: [`tx-list-display.md`](./tx-list-display.md) for the transaction list column design (conditional columns, subject-address muting, Type/Method mapping).
+See also:
+- [`tx-list-display.md`](./tx-list-display.md) — transaction list column design (conditional columns, subject-address muting, Type/Method mapping)
+- [`units.md`](./units.md) — JSON output unit shape contract (the machine-side counterpart to this doc's human-side rules)
