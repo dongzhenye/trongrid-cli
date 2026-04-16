@@ -63,7 +63,7 @@ describe("fetchAllowance — TRC-20", () => {
 		const result = await fetchAllowance(client, id, OWNER, SPENDER);
 
 		expect(result).toMatchObject({
-			token: CONTRACT,
+			token: "USDT",
 			token_address: CONTRACT,
 			token_symbol: "USDT",
 			token_name: "Tether USD",

@@ -102,7 +102,7 @@ export async function fetchAllowance(
 	const decimals = info?.decimals ?? 6; // safe fallback for display; 6 is most common (USDT, USDC)
 
 	return {
-		token: contractAddress,
+		token: info?.symbol ?? contractAddress,
 		token_address: contractAddress,
 		token_symbol: info?.symbol,
 		token_name: info?.name,
@@ -119,7 +119,7 @@ function hintForTokenAllowance(err: unknown): string | undefined {
 	if (!(err instanceof Error)) return undefined;
 	const msg = err.message.toLowerCase();
 	if (msg.includes("trx") && msg.includes("allowance")) {
-		return "TRX has no allowance mechanism — allowance is a TRC-20 concept.";
+		return 'Use "trongrid token balance TRX <address>" to check TRX balance instead.';
 	}
 	if (msg.includes("not yet supported")) {
 		return "Support is planned for a future release.";
@@ -155,6 +155,17 @@ Examples:
 				const opts = parent.opts<GlobalOptions>();
 				try {
 					const id = detectTokenIdentifier(tokenInput, localOpts.type);
+					// Type check before address validation — "TRX has no allowance"
+					// is more useful than "invalid address" when the real issue is
+					// the token type.
+					if (id.type === "trx") {
+						throw new UsageError("TRX has no allowance mechanism (allowance is a TRC-20 concept).");
+					}
+					if (id.type !== "trc20") {
+						throw new UsageError(
+							`${id.type.toUpperCase()} tokens are not yet supported for this command. Support is planned for a future release.`,
+						);
+					}
 					const owner = validateAddress(ownerInput);
 					const spender = validateAddress(spenderInput);
 					const client = getClient(opts);

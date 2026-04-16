@@ -149,6 +149,14 @@ Examples:
 				const opts = parent.opts<GlobalOptions>();
 				try {
 					const id = detectTokenIdentifier(tokenInput, localOpts.type);
+					// Type check before address resolution — "TRC-10 not supported"
+					// is more useful than "no address provided" when the real issue
+					// is the token type.
+					if (id.type !== "trx" && id.type !== "trc20") {
+						throw new UsageError(
+							`${id.type.toUpperCase()} tokens are not yet supported for this command. Support is planned for a future release.`,
+						);
+					}
 					const address = resolveAddress(addressArg);
 					const client = getClient(opts);
 					const data = await fetchTokenBalance(client, id, address);
