@@ -8,9 +8,10 @@
 
 | | |
 |---|---|
-| `main` tip | Phase F merged, 2026-04-16 |
+| `main` tip | Phase F merged + post-merge polish, 2026-04-16 |
 | Active phase | **Phase G** — Governance + stats |
-| Tests | 435 passing |
+| Pending cross-cut | Transfer list display redesign (draft design ready, implementation pending) |
+| Tests | 448 passing |
 | Prod deps | 1 (`commander`) |
 | Commands | 31 across 7 resources |
 
@@ -70,6 +71,9 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - Terminology glossary: API-to-CLI field mapping for cross-command consistency → `docs/designs/glossary.md`
 - Internal txs embedded in regular tx response, not separate endpoint → `src/api/internal-txs.ts`
 - Transaction list display redesign: from/to columns, subject muting, type/method mapping, conditional status columns → [`docs/designs/tx-list-display.md`](./designs/tx-list-display.md)
+- ANSI-aware column alignment: `visibleLength()` strips escape codes before measuring → `src/output/columns.ts`
+- Human display conventions extracted to living design doc → [`docs/designs/human-display.md`](./designs/human-display.md)
+- Transfer list display design (draft): unify centered/uncentered to from/to + muting → [`docs/designs/transfer-list-display.md`](./designs/transfer-list-display.md)
 
 **Open items** (not decisions — tracked in [`docs/roadmap.md`](./roadmap.md)):
 - npm package name choice
