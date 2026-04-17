@@ -102,6 +102,15 @@ describe("renderTransferList", () => {
 		expect(dataRow).toContain("66rdz8");
 	});
 
+	it("falls back to ? when both token_symbol and token_address are missing", () => {
+		// Edge case: API returns transfer events without token_info populated
+		// (observed when querying a contract address as if it were an account).
+		renderTransferList([mkTransferRow({ token_symbol: undefined, token_address: "" })]);
+		const dataRow = captured[2];
+		expect(dataRow).toBeDefined();
+		expect(dataRow).toContain("1,000.53 ?");
+	});
+
 	it("adds thousands separators to amounts", () => {
 		renderTransferList([mkTransferRow({ value_major: "1000000.5" })]);
 		const joined = captured.join("\n");

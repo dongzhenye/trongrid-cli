@@ -81,7 +81,7 @@ export function renderTransferList(rows: TransferRow[], subjectAddress?: string)
 	for (let i = 1; i < allRows.length; i++) {
 		const row = allRows[i]!;
 		const r = rows[i - 1]!;
-		const unit = r.token_symbol ?? truncateAddress(r.token_address);
+		const unit = r.token_symbol ?? (r.token_address ? truncateAddress(r.token_address) : "?");
 		if (unit.length > maxUnitWidth) maxUnitWidth = unit.length;
 		row[amountIdx] = `${alignNumber(row[amountIdx] ?? "", numWidth)} ${unit}`;
 	}
