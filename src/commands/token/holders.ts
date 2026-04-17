@@ -98,13 +98,14 @@ export async function fetchTokenHolders(
 }
 
 const HOLDERS_SORT_CONFIG: SortConfig<HolderRow> = {
-	// Default to rank (numeric) not balance (string) — avoids the applySort
-	// string-compare bug where "1317..." < "800..." lexicographically.
-	// Server already returns balance-desc order; rank preserves it.
 	defaultField: "rank",
 	fieldDirections: {
 		rank: "asc",
-		balance: "desc", // NOTE: string-compare bug still affects --sort-by balance
+		balance: "desc",
+	},
+	fieldTypes: {
+		rank: "number",
+		balance: "bigint",
 	},
 	tieBreakField: "rank",
 };

@@ -124,6 +124,11 @@ const INTERNAL_TXS_SORT_CONFIG: SortConfig<InternalTxRow> = {
 		value: "desc",
 		call_type: "asc",
 	},
+	fieldTypes: {
+		block_timestamp: "number",
+		value: "bigint",
+		// call_type omitted — defaults to "string" (intended)
+	},
 	tieBreakField: "block_timestamp",
 };
 

@@ -103,6 +103,11 @@ const TOKEN_TRANSFERS_SORT_CONFIG: SortConfig<TransferRow> = {
 		block_number: "desc",
 		value: "desc",
 	},
+	fieldTypes: {
+		block_timestamp: "number",
+		block_number: "number",
+		value: "bigint",
+	},
 	tieBreakField: "block_timestamp",
 };
 

@@ -142,6 +142,10 @@ const DELEGATIONS_SORT_CONFIG: SortConfig<DelegationRow> = {
 		amount: "desc",
 		expire_time: "asc",
 	},
+	fieldTypes: {
+		amount: "bigint",
+		expire_time: "number",
+	},
 	tieBreakField: "expire_time",
 };
 
