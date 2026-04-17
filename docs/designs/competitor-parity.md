@@ -83,7 +83,7 @@ For audit / scope verification — which TronGrid REST endpoint each `trongrid-c
 |---------|-------------|
 | `account view` | `POST /wallet/getaccount` |
 | `account resources` | `POST /wallet/getaccountresource` |
-| `account tokens` | `GET /v1/accounts/{addr}` (token list embedded in account object) |
+| `account tokens` | `GET /v1/accounts/{addr}` (token list) + `GET /v1/trc20/info?contract_list=` (batch metadata for symbols/decimals) |
 | `account txs` | `GET /v1/accounts/{addr}/transactions` |
 | `account transfers` | `GET /v1/accounts/{addr}/transactions/trc20` |
 | `account internals` | `GET /v1/accounts/{addr}/transactions` (internal_transactions[] field) |
@@ -103,7 +103,7 @@ For audit / scope verification — which TronGrid REST endpoint each `trongrid-c
 | `token view` (TRC-20) | `POST /wallet/triggerconstantcontract` (name, symbol, decimals, totalSupply selectors) |
 | `token view` (TRC-10) | `POST /wallet/getassetissuebyid` |
 | `token holders` | `GET /v1/contracts/{addr}/tokens` |
-| `token transfers` | `GET /v1/contracts/{addr}/events` (Transfer event filter applied client-side) |
+| `token transfers` | `GET /v1/contracts/{addr}/events?event_name=Transfer` |
 | `token balance` (TRX) | `GET /v1/accounts/{address}` |
 | `token balance` (TRC-20) | `GET /v1/accounts/{address}/trc20/balance` |
 | `token allowance` | `POST /wallet/triggerconstantcontract` (`allowance(address,address)` selector) |
