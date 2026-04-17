@@ -100,6 +100,7 @@ const TOKEN_TRANSFERS_SORT_CONFIG: SortConfig<TransferRow> = {
 	defaultField: "block_timestamp",
 	fieldDirections: {
 		block_timestamp: "desc",
+		block_number: "desc",
 		value: "desc",
 	},
 	tieBreakField: "block_timestamp",
@@ -134,7 +135,7 @@ Examples:
 
 Sort:
   default — block_timestamp desc (newest first)
-  fields  — block_timestamp, value (all default desc)
+  fields  — block_timestamp, block_number, value (all default desc)
 `,
 		)
 		.action(async (input: string, localOpts: { type?: TokenTypeOverride; confirmed?: boolean }) => {
