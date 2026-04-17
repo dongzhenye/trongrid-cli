@@ -38,6 +38,16 @@ export function formatTimestamp(ms: number): string {
 	return `${new Date(ms).toISOString().slice(0, 19).replace("T", " ")} UTC`;
 }
 
+/**
+ * Compact timestamp for list columns: `YYYY-MM-DD HH:MM` (no seconds).
+ * The `(UTC)` label lives in the column header, not repeated per row.
+ * Counterpart to {@link formatTimestamp} which returns the detail format
+ * (`YYYY-MM-DD HH:MM:SS UTC`) for single-value views.
+ */
+export function formatListTimestamp(ms: number): string {
+	return new Date(ms).toISOString().slice(0, 16).replace("T", " ");
+}
+
 export function sunToTrx(sun: number): string {
 	const sign = sun < 0 ? "-" : "";
 	const abs = Math.abs(sun);
