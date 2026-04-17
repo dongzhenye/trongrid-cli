@@ -245,7 +245,7 @@ Commands representing identified user needs that depend on endpoints not yet ava
 
 - [ ] `trongrid schema <command>` — machine-readable command schema (per Google CLI principle #2)
 - [ ] `--fields` field-mask examples in `AGENTS.md`
-- [ ] Command aliases and shortcuts
+- [ ] Command aliases and shortcuts — including opt-in second-bin registration via `config set bin_alias <name>` (default off; suggested default value `tron`). Canonical `trongrid` always available; alias registers a separate symlink so users get a shorter daily-use name without losing the stable name. Decided 2026-04-17 during Phase G publish prep — package name `trongrid-cli`, canonical bin `trongrid`, alias as opt-in convenience.
 - [ ] Pipe-friendly defaults (auto-detect non-TTY → JSON)
 - [ ] Completion scripts (bash/zsh/fish)
 
