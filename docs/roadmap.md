@@ -1,33 +1,35 @@
 # Roadmap
 
-> **Convention update 2026-04-15.** This roadmap follows the flat-phase convention in [`meta/WORKFLOW.md §2`](https://github.com/dongzhenye/meta). Phase letters are continuous across project lifetime; waves / sub-phases are explicitly not used. Git tags are only cut on code-changing phases **after** the first npm publish (Phase I) — prior phases are marked ✅ without a tag.
+> **Convention update 2026-04-15.** This roadmap follows the flat-phase convention in [`meta/WORKFLOW.md §2`](https://github.com/dongzhenye/meta). Phase letters are continuous across project lifetime; waves / sub-phases are explicitly not used. Git tags are only cut on code-changing phases **starting at Phase G (first npm publish)** — prior phases (A–F) are marked ✅ without a tag.
+>
+> **Reshuffle 2026-04-17.** First npm publish (originally planned as Phase I) brought forward to **Phase G** to ship sooner. Old Phase G (Governance + stats) → new **Phase H**; old Phase H (Write-side) → new **Phase I**. J–O letters unchanged; version numbers shift +2 because two previously-untagged phases now sit after a tagged release. Per project convention, open phases are free to shift letters.
 >
 > Cross-walk from the pre-2026-04-15 labels:
 >
-> | Old label | New phase | Theme |
-> |---|---|---|
-> | Phase A | **Phase A** | Foundation |
-> | Phase A+ | **Phase B** | Post-Foundation Improvements |
-> | Phase B Wave 1 | **Phase C** | `block view` + `account txs` + `token view` |
-> | Phase B Wave 2 | **Phase D** | Account list family + Phase-C trial plumbing |
-> | Phase B Wave 3 | **Phase E** | Token family polish |
-> | Phase B Wave 4 | **Phase F** | Contract family |
-> | Phase B Wave 5 | **Phase G** | Governance + stats |
-> | Phase B Wave 6 | **Phase H** | Write-side (scope TBD) |
-> | Phase B Wave N | **Phase I** | Parity matrix + README + first npm publish |
-> | Phase C (Expand) P0 | **Phase J** | OAuth auth UX |
-> | Phase C (Expand) P1 distribution | **Phase K** | Homebrew + GH Releases binaries |
-> | Phase C (Expand) P1 gap commands | **Phase L** | `token price` / `account tags` / `contract creator` |
-> | Phase C (Expand) P2 dynamic symbols | **Phase M** | Runtime verified-token resolution |
-> | Phase C (Expand) P2 advanced | **Phase N** | Schema introspection, aliases, completions |
-> | Phase C (Expand) P3 | **Phase O** | Plugin marketplace, MCP server mode (conditional) |
+> | Old label | 2026-04-15 phase | 2026-04-17 phase | Theme |
+> |---|---|---|---|
+> | Phase A | Phase A | **Phase A** | Foundation |
+> | Phase A+ | Phase B | **Phase B** | Post-Foundation Improvements |
+> | Phase B Wave 1 | Phase C | **Phase C** | `block view` + `account txs` + `token view` |
+> | Phase B Wave 2 | Phase D | **Phase D** | Account list family + Phase-C trial plumbing |
+> | Phase B Wave 3 | Phase E | **Phase E** | Token family polish |
+> | Phase B Wave 4 | Phase F | **Phase F** | Contract family |
+> | Phase B Wave 5 | Phase G | **Phase H** | Governance + stats |
+> | Phase B Wave 6 | Phase H | **Phase I** | Write-side (scope TBD) |
+> | Phase B Wave N | Phase I | **Phase G** | First npm publish |
+> | Phase C (Expand) P0 | Phase J | **Phase J** | OAuth auth UX |
+> | Phase C (Expand) P1 distribution | Phase K | **Phase K** | Homebrew + GH Releases binaries |
+> | Phase C (Expand) P1 gap commands | Phase L | **Phase L** | `token price` / `account tags` / `contract creator` |
+> | Phase C (Expand) P2 dynamic symbols | Phase M | **Phase M** | Runtime verified-token resolution |
+> | Phase C (Expand) P2 advanced | Phase N | **Phase N** | Schema introspection, aliases, completions |
+> | Phase C (Expand) P3 | Phase O | **Phase O** | Plugin marketplace, MCP server mode (conditional) |
 
 ## Overview
 
 ```
 Phase A–F  (pre-publish, merged)       Architecture + early command surface
-Phase G–H  (pre-publish, in flight)    Command surface fill-out
-Phase I    (FIRST npm publish, v0.1.0) Distribution begins
+Phase G    (FIRST npm publish, v0.1.0) Distribution begins (read-side CLI)
+Phase H–I  (post-publish, command fill-out)  Governance + stats, then write-side
 Phase J–O  (expand)                    Auth UX, distribution, gaps, advanced
 ```
 
@@ -170,9 +172,9 @@ Spec: [`designs/phase-e-token-family.md`](./designs/phase-e-token-family.md). Pl
 - [ ] `contract call <address> <method> [args]` — requires general-purpose ABI encoder, deferred to post-positioning-decision phase
 - [ ] `contract estimate <address> <method> [args]` — same as call
 - [ ] `contract permissions <address>` — CA has no practical multi-sig management scenario
-- [ ] Extremely large numbers (uint256.max) in human mode — scam/phishing tokens send `2^256 - 1` Transfer events; `formatMajor` renders 80+ char numbers that break table layout. Options: scientific notation for > 15 digits, or `[dust]` marker for amounts ≈ uint256.max. Affects `account transfers`, `contract transfers`, `token transfers`. Surfaced during Phase F E2E.
-- [ ] List display design docs — each list type should have a dedicated design document (like [`tx-list-display.md`](./designs/tx-list-display.md)) covering column layout, conditional columns, muting, sort, and human/JSON shape. **Transfer list is highest priority** — current centered/uncentered renderers lack headers, thousands separators, and subject-address muting. Pending:
-  - [ ] Transfer list display (`account transfers` centered + `token transfers` uncentered) — **priority**: most visible UX gap; needs the from/to redesign similar to tx-list-display
+- [x] ~~Extremely large numbers (uint256.max) in human mode~~ — moved to **Phase G** (will ship with first publish to avoid scam-token visual breakage on launch)
+- [ ] List display design docs — each list type should have a dedicated design document (like [`tx-list-display.md`](./designs/tx-list-display.md)) covering column layout, conditional columns, muting, sort, and human/JSON shape. Pending:
+  - [x] ~~Transfer list display~~ — done; see [`transfer-list-display.md`](./designs/transfer-list-display.md) and [`plans/transfer-list-display-p0.md`](./plans/transfer-list-display-p0.md) (merged 2026-04-17)
   - [ ] Token list display (`account tokens` / `contract tokens`)
   - [ ] Delegation list display (`account delegations` — two-section layout)
   - [ ] Event list display (`contract events`)
@@ -181,7 +183,24 @@ Spec: [`designs/phase-e-token-family.md`](./designs/phase-e-token-family.md). Pl
 
 Spec: [`specs/phase-f.md`](./specs/phase-f.md). Plan: [`plans/phase-f.md`](./plans/phase-f.md).
 
-## Phase G — Governance + stats
+## Phase G — First npm publish (will release as v0.1.0)
+
+**Goal**: Ship `trongrid@0.1.0` to npm with the read-side CLI surface from Phases A–F (31 commands), plus two pre-publish bug fixes that would otherwise embarrass early users. Brought forward from Phase I per release timing.
+
+- [ ] Fix `applySort` numeric sort — give `SortConfig` a `fieldTypes` map; numeric fields (e.g. `value`) compare as `BigInt`/`Number`, not lexicographic string
+- [ ] Handle extreme values in transfer list display — scientific notation for `value_major` > 10^15, `⚠ ` prefix for `== uint256.max` per [`human-display.md` §2.3](./designs/human-display.md)
+- [ ] README — installation + auth + 5 usage examples + link to `AGENTS.md`
+- [ ] `docs/designs/competitor-parity.md` — live command/endpoint mapping vs TronGrid MCP + TronScan MCP
+- [ ] Finalize `package.json` — check `trongrid` npm name availability (fallback `trongrid-cli` → `@dongzhenye/trongrid`); add description, keywords, repo, homepage, license, files
+- [ ] Pre-publish dry-run + local install test (`npm pack --dry-run`, `npm install -g ./trongrid-0.1.0.tgz`)
+- [ ] `npm publish --access public`
+- [ ] Git tag `v0.1.0` + GitHub Release with auto-generated notes
+
+**This is the first tagged release.** Phases A–F ship behavior-complete but untagged because there is no distribution contract to honor pre-publish (empty-diff tags would pollute the eventual registry).
+
+Spec: [`designs/phase-g-first-publish.md`](./designs/phase-g-first-publish.md). Plan: forthcoming.
+
+## Phase H — Governance + stats (will release as v0.2.0)
 
 - [ ] `sr list` / `sr view <address>` — Super Representatives
 - [ ] `proposal list` / `proposal view <id>` — governance proposals
@@ -190,23 +209,9 @@ Spec: [`specs/phase-f.md`](./specs/phase-f.md). Plan: [`plans/phase-f.md`](./pla
 - [ ] `bandwidth price` — bandwidth pricing
 - [ ] `network status` / `network maintenance` / `network burn` — node + chain status
 
-## Phase H — Write-side (scope TBD)
+## Phase I — Write-side (will release as v0.3.0, scope TBD)
 
-**Open question**: does the first public release include write-side (`tx broadcast`, freeze/unfreeze, delegate, vote, etc.) or stay read-only? Decision blockers: `--yes` / `--confirm` UX, SIGINT handling, actor tracking, and secret-key workflow. Scope locks at Phase G close.
-
-## Phase I — Parity matrix + README + first npm publish (will release as v0.1.0)
-
-**Goal**: Ship the live competitor parity matrix, finalize README, and cut the first tagged release to npm.
-
-- [ ] `docs/designs/competitor-parity.md` — live structured command-by-command / endpoint-by-endpoint mapping (`trongrid-cli ↔ TronGrid MCP ↔ TronScan MCP`); source-of-truth for README strengths + gap-tracking
-- [ ] README — installation + auth + 5 usage examples + link to `AGENTS.md`
-- [ ] `package.json` name + author + keywords finalized (see [npm Name & Org](memory) open item)
-- [ ] Dry-run publish + local install test (`npx trongrid@latest`)
-- [ ] `npm publish`
-- [ ] First `git tag v0.2.0` + GitHub Release
-- [ ] Announce
-
-**This is the first tagged release.** Phases A–H ship behavior-complete but untagged because there is no distribution contract to honor pre-publish (empty-diff tags would pollute the eventual registry).
+**Open question**: scope of write-side support (`tx broadcast`, freeze/unfreeze, delegate, vote, etc.). Decision blockers: `--yes` / `--confirm` UX, SIGINT handling, actor tracking, and secret-key workflow. Scope locks at Phase H close.
 
 ## Phase J — Auth UX upgrade
 
@@ -253,10 +258,12 @@ Commands representing identified user needs that depend on endpoints not yet ava
 
 Following [SemVer](https://semver.org/). Conservative versioning — stay in `0.x.y` indefinitely.
 
-| Version | Milestone |
-|---------|-----------|
-| (untagged) | Phases A–H — pre-publish, behavior-complete on each phase close |
-| 0.1.0 | **Phase I — first npm publish** (parity matrix + README + tag) |
-| 0.2.0+ | Phase J onward — each code-changing phase cuts a minor bump |
+| Version | Phase | Milestone |
+|---------|-------|-----------|
+| (untagged) | A–F | pre-publish, behavior-complete on each phase close |
+| 0.1.0 | G | **first npm publish** (read-side CLI + README + parity matrix + bug fixes) |
+| 0.2.0 | H | Governance + stats |
+| 0.3.0 | I | Write-side (scope TBD) |
+| 0.4.0+ | J onward | each code-changing phase cuts a minor bump |
 
-Pre-publish phases don't consume version space — the first tagged release begins at `0.1.0`, the SemVer convention for a new package. Phases J–O cut sequential minor bumps as code-changing phases close. No `1.0.0` — there is no reason to promise backward compatibility for a CLI that should stay free to evolve.
+Pre-publish phases don't consume version space — the first tagged release begins at `0.1.0`, the SemVer convention for a new package. Phases H–O cut sequential minor bumps as code-changing phases close. No `1.0.0` — there is no reason to promise backward compatibility for a CLI that should stay free to evolve.
