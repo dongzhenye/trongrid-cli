@@ -3,10 +3,7 @@ import type { ApiClient } from "../../api/client.js";
 import { fetchBatchTrc20Info } from "../../api/token-info.js";
 import type { GlobalOptions } from "../../index.js";
 import { printListResult, reportErrorAndExit, UsageError } from "../../output/format.js";
-import {
-	renderUncenteredTransferList,
-	type UncenteredTransferRow,
-} from "../../output/transfers.js";
+import { type TransferRow, renderTransferList } from "../../output/transfers.js";
 import { hexToBase58 } from "../../utils/address.js";
 import { applySort, type SortConfig } from "../../utils/sort.js";
 import { parseTimeRange } from "../../utils/time-range.js";
@@ -39,7 +36,7 @@ export async function fetchTokenTransfers(
 		maxBlockTimestamp?: number;
 		onlyConfirmed?: boolean;
 	},
-): Promise<UncenteredTransferRow[]> {
+): Promise<TransferRow[]> {
 	const params = new URLSearchParams();
 	params.set("event_name", "Transfer");
 	params.set("order_by", "block_timestamp,desc");
@@ -57,11 +54,13 @@ export async function fetchTokenTransfers(
 	const path = `/v1/contracts/${contractAddress}/events?${params.toString()}`;
 	const raw = await client.get<ContractEventsResponse>(path);
 
-	// Fetch token metadata for decimals
+	// Fetch token metadata for decimals + symbol
 	const infoMap = await fetchBatchTrc20Info(client, [contractAddress]);
-	const decimals = infoMap.get(contractAddress)?.decimals ?? 0;
+	const tokenInfo = infoMap.get(contractAddress);
+	const decimals = tokenInfo?.decimals ?? 0;
+	const symbol = tokenInfo?.symbol;
 
-	const rows: UncenteredTransferRow[] = [];
+	const rows: TransferRow[] = [];
 	for (const event of raw.data ?? []) {
 		const fromHex = event.result?.from;
 		const toHex = event.result?.to;
@@ -81,19 +80,23 @@ export async function fetchTokenTransfers(
 
 		rows.push({
 			tx_id: event.transaction_id ?? "",
+			block_number: event.block_number ?? 0,
 			block_timestamp: event.block_timestamp ?? 0,
 			from: fromBase58,
 			to: toBase58,
 			value,
+			value_unit: "raw",
 			decimals,
 			value_major: formatMajor(value, decimals),
+			token_address: contractAddress,
+			token_symbol: symbol,
 		});
 	}
 
 	return rows;
 }
 
-const TOKEN_TRANSFERS_SORT_CONFIG: SortConfig<UncenteredTransferRow> = {
+const TOKEN_TRANSFERS_SORT_CONFIG: SortConfig<TransferRow> = {
 	defaultField: "block_timestamp",
 	fieldDirections: {
 		block_timestamp: "desc",
@@ -103,9 +106,9 @@ const TOKEN_TRANSFERS_SORT_CONFIG: SortConfig<UncenteredTransferRow> = {
 };
 
 export function sortTokenTransfers(
-	items: UncenteredTransferRow[],
+	items: TransferRow[],
 	opts: { sortBy?: string; reverse?: boolean },
-): UncenteredTransferRow[] {
+): TransferRow[] {
 	return applySort(items, TOKEN_TRANSFERS_SORT_CONFIG, opts);
 }
 
@@ -165,7 +168,7 @@ Sort:
 					reverse: opts.reverse,
 				});
 
-				printListResult(sorted, renderUncenteredTransferList, {
+				printListResult(sorted, renderTransferList, {
 					json: opts.json,
 					fields: parseFields(opts),
 				});
