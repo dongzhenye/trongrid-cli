@@ -9,9 +9,8 @@ import {
 import { formatListTimestamp } from "./format.js";
 
 /**
- * Unified transfer row type — replaces CenteredTransferRow and
- * UncenteredTransferRow. Used by all transfer list commands:
- * `account transfers`, `token transfers`, `contract transfers`.
+ * Transfer row type for `account transfers`, `token transfers`,
+ * `contract transfers`.
  *
  * Column layout per docs/designs/transfer-list-display.md:
  *   TX | Time (UTC) | From → To | Amount (number + token unit)
