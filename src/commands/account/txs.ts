@@ -9,7 +9,7 @@ import {
 	renderColumns,
 	truncateAddress,
 } from "../../output/columns.js";
-import { printListResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
+import { formatListTimestamp, printListResult, reportErrorAndExit, sunToTrx } from "../../output/format.js";
 import { humanTxType } from "../../output/tx-type-map.js";
 import { hexToBase58 } from "../../utils/address.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
@@ -157,14 +157,6 @@ export function sortTxs(items: AccountTxRow[], opts: SortOptions): AccountTxRow[
 }
 
 /**
- * Format a unix-ms timestamp as `YYYY-MM-DD HH:MM` (UTC, no seconds).
- * The "UTC" label lives in the column header, not repeated per row.
- */
-function formatTxTimestamp(ms: number): string {
-	return new Date(ms).toISOString().slice(0, 16).replace("T", " ");
-}
-
-/**
  * Human-mode renderer for transaction lists. Supports subject-address
  * muting (From/To matching the queried address are dimmed) and
  * conditional columns (Confirmed, Result) that only appear when the
@@ -202,7 +194,7 @@ export function renderTxs(items: AccountTxRow[], subjectAddress?: string): void 
 		amountNums.push(amountStr);
 		feeNums.push(feeStr);
 
-		const row: string[] = [truncateAddress(t.tx_id, 4, 4), formatTxTimestamp(t.timestamp)];
+		const row: string[] = [truncateAddress(t.tx_id, 4, 4), formatListTimestamp(t.timestamp)];
 
 		if (showConfirmed) {
 			row.push(t.confirmed ? pass("\u2713") : "\u231B");
