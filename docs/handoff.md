@@ -8,13 +8,14 @@
 
 | | |
 |---|---|
-| `main` tip | Phase F merged + display design docs, 2026-04-16 |
-| Active phase | **Phase G** — Governance + stats |
-| Pending cross-cut | _(none — transfer list display P0 complete)_ |
+| `main` tip | Phase G released as `trongrid-cli@0.1.0`, 2026-04-17 |
+| Active phase | **Phase H** — Governance + stats (will release as v0.2.0) |
+| Pending cross-cut | _(none)_ |
 | Design docs | `human-display.md` (living, comprehensive) ← `tx-list-display.md` / `transfer-list-display.md` |
-| Tests | 449 passing |
+| Tests | 463 passing |
 | Prod deps | 1 (`commander`) |
 | Commands | 31 across 7 resources |
+| Published | [`trongrid-cli` on npm](https://www.npmjs.com/package/trongrid-cli) |
 
 ---
 
@@ -77,11 +78,21 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - Transfer list display design: unify centered/uncentered to from/to + muting; fields table with sortable/filterable matrix; P0–P3 priority → [`docs/designs/transfer-list-display.md`](./designs/transfer-list-display.md)
 - Transfer list display P0: unified `renderTransferList(rows, subjectAddress?)` + `TransferRow` retire centered/uncentered split; subject-address muting, header row, thousands separators, token symbol in Amount column; `formatListTimestamp` consolidated into `src/output/format.ts` → [`docs/designs/transfer-list-display.md`](./designs/transfer-list-display.md)
 
+**Phase G implementation (first npm publish, v0.1.0):**
+- npm package name `trongrid-cli` (canonical bin `trongrid`); `trongrid` was taken by TRON-US official `trongrid-js` SDK → [`docs/designs/phase-g-first-publish.md`](./designs/phase-g-first-publish.md)
+- `applySort` numeric sort: `SortConfig.fieldTypes` map adds `bigint`/`number` variants; lex compare preserved as default for backward compat → `src/utils/sort.ts`
+- Extreme value display: `formatExtremeIfNeeded` returns scientific notation for `value_major` integer part > 16 digits; `⚠ ` warning prefix when raw value === uint256.max → `src/output/format.ts`
+- README rewritten for v0.1.0 (humans + agents framing) → `README.md`
+- Parity matrix shipped with per-resource coverage + endpoint mapping vs TronGrid MCP / TronScan MCP → [`docs/designs/competitor-parity.md`](./designs/competitor-parity.md)
+- LICENSE = MIT; author = personal (Zhenye Dong); ownership transfer remains a separate post-launch concern
+- Future Phase N opt-in bin alias TODO recorded (config `bin_alias` for second symlink, default off, suggested `tron`); decided during publish prep — keeps `trongrid` as canonical, alias as opt-in convenience → [`docs/roadmap.md`](./roadmap.md) Phase N
+- Trusted Publishing (npm OIDC) is the official recommendation for ongoing CI/CD publishes; deferred until Phase K (distribution channels) — first publish was manual via personal account
+
 **Open items** (not decisions — tracked in [`docs/roadmap.md`](./roadmap.md)):
-- npm package name choice
 - TRON-eco vs TronGrid-only positioning (each phase generates evidence)
 - Token symbol map refresh cadence
 - TRX holders / TRX network-wide transfers (blocked on positioning decision)
+- npm Trusted Publishing (OIDC) setup — defer until CI/CD work in Phase K
 
 ---
 
