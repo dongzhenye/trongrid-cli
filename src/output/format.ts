@@ -213,3 +213,58 @@ function resolveExitCode(err: unknown): number {
 	if (err instanceof TrongridError) return err.exitCode;
 	return 1;
 }
+
+const UINT256_MAX_RAW =
+	"115792089237316195423570985008687907853269984665640564039457584007913129639935";
+
+/**
+ * Convert a decimal-string `value_major` to scientific notation with 2
+ * significant digits in the significand. Returns sign-preserved form.
+ *
+ * Examples:
+ *   toScientific("12345678901234567.5") → "1.23e+16"
+ *   toScientific("1.15") → "1.15e+0"
+ *   toScientific("-12345678901234567.0") → "-1.23e+16"
+ *
+ * Used by {@link formatExtremeIfNeeded}. Caller must have decided that
+ * scientific notation is appropriate (the helper does no magnitude check).
+ */
+export function toScientific(valueMajor: string): string {
+	const negative = valueMajor.startsWith("-");
+	const abs = negative ? valueMajor.slice(1) : valueMajor;
+	const dotIdx = abs.indexOf(".");
+	const intPart = dotIdx >= 0 ? abs.slice(0, dotIdx) : abs;
+	// Use intPart digits to derive significand. Pad if intPart < 3 chars.
+	const digits = (intPart + (dotIdx >= 0 ? abs.slice(dotIdx + 1) : "")).replace(/^0+/, "") || "0";
+	const exponent = intPart.replace(/^0+/, "").length - 1;
+	const adjustedExponent = exponent < 0 ? 0 : exponent;
+	const significand = `${digits[0]}.${(digits.slice(1, 3) || "0").padEnd(2, "0")}`;
+	return `${negative ? "-" : ""}${significand}e+${adjustedExponent}`;
+}
+
+/**
+ * Detect transfer-amount values that would break tabular layout (huge
+ * decimal strings) or signal scam tokens (`value === uint256.max`), and
+ * return a pre-formatted display string. Returns `null` when the value
+ * is in the normal range — caller continues with usual formatting.
+ *
+ * Per docs/designs/human-display.md §2.3:
+ * - integer part > 16 digits → scientific notation only
+ * - raw value === 2^256 - 1 → "⚠ {scientific}" (warning prefix, U+26A0 + space)
+ * - otherwise → null
+ *
+ * The raw-value check uses the on-chain integer string before decimal
+ * conversion; this is the only reliable way to identify uint256.max
+ * regardless of token decimals.
+ */
+export function formatExtremeIfNeeded(rawValue: string, valueMajor: string): string | null {
+	const isUint256Max = rawValue === UINT256_MAX_RAW;
+	const dotIdx = valueMajor.indexOf(".");
+	const intPart = dotIdx >= 0 ? valueMajor.slice(0, dotIdx) : valueMajor;
+	const intLen = intPart.startsWith("-") ? intPart.length - 1 : intPart.length;
+
+	if (!isUint256Max && intLen <= 16) return null;
+
+	const sci = toScientific(valueMajor);
+	return isUint256Max ? `⚠ ${sci}` : sci;
+}

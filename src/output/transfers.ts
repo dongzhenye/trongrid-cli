@@ -6,7 +6,7 @@ import {
 	renderColumns,
 	truncateAddress,
 } from "./columns.js";
-import { formatListTimestamp } from "./format.js";
+import { formatExtremeIfNeeded, formatListTimestamp } from "./format.js";
 
 /**
  * Transfer row type for `account transfers`, `token transfers`,
@@ -57,7 +57,9 @@ export function renderTransferList(rows: TransferRow[], subjectAddress?: string)
 	const cells: string[][] = rows.map((r) => {
 		const fromDisplay = truncateAddress(r.from);
 		const toDisplay = truncateAddress(r.to);
-		const amountStr = addThousandsSep(r.value_major);
+		// Extreme values (scam tokens, huge magnitudes) bypass thousands separator
+		// and render in scientific notation per docs/designs/human-display.md §2.3.
+		const amountStr = formatExtremeIfNeeded(r.value, r.value_major) ?? addThousandsSep(r.value_major);
 		amountNums.push(amountStr);
 
 		return [
