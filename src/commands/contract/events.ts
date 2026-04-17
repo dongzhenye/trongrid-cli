@@ -112,6 +112,10 @@ const EVENTS_SORT_CONFIG: SortConfig<ContractEventRow> = {
 		block_timestamp: "desc",
 		event_name: "asc",
 	},
+	fieldTypes: {
+		block_timestamp: "number",
+		// event_name omitted — defaults to "string" (intended)
+	},
 	tieBreakField: "block_timestamp",
 };
 

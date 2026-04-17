@@ -149,6 +149,12 @@ const TXS_SORT_CONFIG: SortConfig<AccountTxRow> = {
 		fee: "desc",
 		amount: "desc",
 	},
+	fieldTypes: {
+		timestamp: "number",
+		block_number: "number",
+		fee: "number",
+		amount: "number",
+	},
 	tieBreakField: "timestamp",
 };
 

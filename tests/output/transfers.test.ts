@@ -102,6 +102,30 @@ describe("renderTransferList", () => {
 		expect(dataRow).toContain("66rdz8");
 	});
 
+	it("renders uint256.max transfers as warning + scientific notation", () => {
+		const UINT256_MAX =
+			"115792089237316195423570985008687907853269984665640564039457584007913129639935";
+		// USDT has 6 decimals → value_major has 6 decimal places
+		const valueMajor = `${UINT256_MAX.slice(0, -6)}.${UINT256_MAX.slice(-6)}`;
+		renderTransferList([mkTransferRow({ value: UINT256_MAX, value_major: valueMajor })]);
+		const dataRow = captured[2];
+		expect(dataRow).toBeDefined();
+		expect(dataRow).toContain("⚠");
+		expect(dataRow).toContain("1.15e+71");
+		// The 80+ char decimal must NOT appear (would break the table)
+		expect(dataRow).not.toContain("115792089237316195423570985");
+	});
+
+	it("renders abnormally large (>10^16) values in scientific notation without warning", () => {
+		renderTransferList([
+			mkTransferRow({ value: "12345678901234567500000", value_major: "12345678901234567.5" }),
+		]);
+		const dataRow = captured[2];
+		expect(dataRow).toBeDefined();
+		expect(dataRow).toContain("1.23e+16");
+		expect(dataRow).not.toContain("⚠");
+	});
+
 	it("falls back to ? when both token_symbol and token_address are missing", () => {
 		// Edge case: API returns transfer events without token_info populated
 		// (observed when querying a contract address as if it were an account).

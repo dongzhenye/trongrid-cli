@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { UsageError } from "../../src/output/format.js";
-import { applySort } from "../../src/utils/sort.js";
+import { applySort, type SortConfig } from "../../src/utils/sort.js";
 
 const items = [
 	{ id: "a", ts: 10, fee: 100 },
@@ -122,5 +122,75 @@ describe("applySort tieBreakField", () => {
 			{},
 		);
 		expect(sorted.map((r) => r.primary)).toEqual([5, 3]);
+	});
+});
+
+describe("applySort with fieldTypes", () => {
+	interface Row {
+		id: string;
+		value: string; // raw integer string (variable length)
+		count: number; // safe-integer
+		rank: number; // safe-integer
+	}
+
+	const items: Row[] = [
+		{ id: "a", value: "1000", count: 5, rank: 2 },
+		{ id: "b", value: "99", count: 1, rank: 1 },
+		{ id: "c", value: "100", count: 3, rank: 3 },
+	];
+
+	it("bigint sort orders unequal-width numeric strings correctly", () => {
+		const config: SortConfig<Row> = {
+			defaultField: "value",
+			fieldDirections: { value: "desc" },
+			fieldTypes: { value: "bigint" },
+		};
+		const out = applySort(items, config, {});
+		expect(out.map((r) => r.id)).toEqual(["a", "c", "b"]); // 1000 > 100 > 99
+	});
+
+	it("number sort orders integers correctly", () => {
+		const config: SortConfig<Row> = {
+			defaultField: "count",
+			fieldDirections: { count: "desc" },
+			fieldTypes: { count: "number" },
+		};
+		const out = applySort(items, config, {});
+		expect(out.map((r) => r.id)).toEqual(["a", "c", "b"]); // 5, 3, 1
+	});
+
+	it("string sort (default) gives lexicographic order — preserved for backward compat", () => {
+		const config: SortConfig<Row> = {
+			defaultField: "value",
+			fieldDirections: { value: "desc" },
+			// fieldTypes omitted — defaults to string
+		};
+		const out = applySort(items, config, {});
+		// Lex order desc: "99" > "1000" > "100"
+		expect(out.map((r) => r.id)).toEqual(["b", "a", "c"]);
+	});
+
+	it("bigint sort handles asc direction", () => {
+		const config: SortConfig<Row> = {
+			defaultField: "value",
+			fieldDirections: { value: "asc" },
+			fieldTypes: { value: "bigint" },
+		};
+		const out = applySort(items, config, {});
+		expect(out.map((r) => r.id)).toEqual(["b", "c", "a"]); // 99, 100, 1000
+	});
+
+	it("bigint sort falls back to string compare when value is not a valid integer", () => {
+		const dirty: Row[] = [
+			{ id: "a", value: "not_a_number", count: 0, rank: 0 },
+			{ id: "b", value: "100", count: 0, rank: 0 },
+		];
+		const config: SortConfig<Row> = {
+			defaultField: "value",
+			fieldDirections: { value: "desc" },
+			fieldTypes: { value: "bigint" },
+		};
+		// Should not throw; fallback to lex compare
+		expect(() => applySort(dirty, config, {})).not.toThrow();
 	});
 });

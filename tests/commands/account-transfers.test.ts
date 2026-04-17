@@ -154,8 +154,7 @@ describe("sortTransfers (default: block_timestamp desc)", () => {
 
 	it("--sort-by value sorts by value desc (largest first)", () => {
 		const out = sortTransfers(items, { sortBy: "value" });
-		// "300" > "200" > "100" as strings (equal length), but comparison is
-		// string-based via compareField. For equal widths this matches numeric.
+		// True numeric (bigint) compare via SortConfig.fieldTypes.
 		expect(out.map((x) => x.tx_id)).toEqual(["tx_a", "tx_b", "tx_c"]);
 	});
 

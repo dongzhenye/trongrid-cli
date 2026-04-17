@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { TrongridError } from "../../src/api/client.js";
 import {
+	formatExtremeIfNeeded,
 	formatJson,
 	formatJsonList,
 	formatKeyValue,
@@ -328,5 +329,53 @@ describe("reportErrorAndExit", () => {
 		expect(parsed.error).toContain("Cannot reach TronGrid API");
 		expect(parsed.hint).toContain("internet connection");
 		expect(parsed.upstream).toEqual({ detail: "ECONNREFUSED" });
+	});
+});
+
+const UINT256_MAX =
+	"115792089237316195423570985008687907853269984665640564039457584007913129639935";
+
+describe("formatExtremeIfNeeded", () => {
+	it("returns null for normal values", () => {
+		expect(formatExtremeIfNeeded("1000000", "1.0")).toBeNull();
+		expect(formatExtremeIfNeeded("1500530000", "1500.53")).toBeNull();
+		expect(formatExtremeIfNeeded("0", "0")).toBeNull();
+	});
+
+	it("returns null at the integer-length boundary (16 digits)", () => {
+		// Integer part exactly 16 digits → still considered normal
+		const rawValue = "1000000000000000000000"; // doesn't matter, value_major decides
+		const valueMajor = "1000000000000000.0"; // 16-digit integer part
+		expect(formatExtremeIfNeeded(rawValue, valueMajor)).toBeNull();
+	});
+
+	it("returns scientific notation when integer part > 16 digits", () => {
+		const valueMajor = "12345678901234567.5"; // 17-digit integer part
+		const result = formatExtremeIfNeeded("doesnt_matter", valueMajor);
+		expect(result).toBe("1.23e+16");
+	});
+
+	it("returns warning + scientific notation for uint256.max raw value", () => {
+		// Apply 6 decimals: integer part = uint256.max[:-6]
+		const valueMajor = `${UINT256_MAX.slice(0, -6)}.${UINT256_MAX.slice(-6)}`;
+		// First 3 digits of UINT256_MAX are "115" → significand "1.15"
+		// Integer part length: 78 - 6 = 72 → exponent 71
+		const result = formatExtremeIfNeeded(UINT256_MAX, valueMajor);
+		expect(result).toBe("⚠ 1.15e+71");
+	});
+
+	it("warning prefix wins even if integer part isn't extreme", () => {
+		// Hypothetical: a token with 78 decimals would have
+		// uint256.max as value_major "1.157920..." — small int part.
+		// The raw-value match still triggers the warning.
+		const result = formatExtremeIfNeeded(UINT256_MAX, "1.15");
+		expect(result).toBe("⚠ 1.15e+0");
+	});
+
+	it("handles negative values gracefully (sign preserved)", () => {
+		// Defensive — TRC-20 transfers don't go negative, but BalanceDelta
+		// rows in future phases might.
+		const result = formatExtremeIfNeeded("-9", "-12345678901234567.0");
+		expect(result).toBe("-1.23e+16");
 	});
 });
