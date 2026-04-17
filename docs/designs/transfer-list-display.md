@@ -1,4 +1,4 @@
-<!-- lifecycle: draft -->
+<!-- lifecycle: living -->
 # Transfer List Display Design
 
 Component-specific display rules for `account transfers`, `token transfers`, `contract transfers`.
@@ -112,6 +112,8 @@ Filter interaction with `--limit` per [`human-display.md` §7.4](./human-display
 ---
 
 ## Migration from Centered/Uncentered
+
+> **Status:** Migration complete. `CenteredTransferRow` and `UncenteredTransferRow` retired.
 
 | Aspect | Before (centered) | After |
 |--------|-------------------|-------|
