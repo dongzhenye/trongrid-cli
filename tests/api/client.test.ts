@@ -38,6 +38,17 @@ describe("ApiClient", () => {
 		expect(init.body).toBe(JSON.stringify({ address: "TXxx", visible: true }));
 	});
 
+	it("sends User-Agent header identifying the CLI and version", async () => {
+		const mockFetch = mock(() => Promise.resolve(new Response(JSON.stringify({}))));
+		globalThis.fetch = mockFetch;
+
+		const client = createClient({ network: "mainnet" });
+		await client.get("/wallet/getnowblock");
+
+		const [, init] = mockFetch.mock.calls[0];
+		expect(init.headers["User-Agent"]).toMatch(/^trongrid-cli\/\d+\.\d+\.\d+/);
+	});
+
 	it("injects TRON-PRO-API-KEY header when apiKey is provided", async () => {
 		const mockFetch = mock(() => Promise.resolve(new Response(JSON.stringify({}))));
 		globalThis.fetch = mockFetch;

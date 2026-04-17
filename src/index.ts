@@ -6,13 +6,14 @@ import { resolveApiKey } from "./auth/store.js";
 import { muted } from "./output/colors.js";
 import { applyNoColorFromOptions } from "./utils/color.js";
 import { readConfig } from "./utils/config.js";
+import { VERSION } from "./version.js";
 
 const program = new Command();
 
 program
 	.name("trongrid")
 	.description("CLI for TronGrid — query TRON blockchain from terminal or AI agent")
-	.version("0.1.0")
+	.version(VERSION)
 	.option("-j, --json", "output as JSON", false)
 	.option("-n, --network <network>", "network: mainnet, shasta, nile", "mainnet")
 	.option("--api-key <key>", "TronGrid API key (highest priority; overrides env + config)")

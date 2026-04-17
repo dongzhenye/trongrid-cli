@@ -1,3 +1,4 @@
+import { VERSION } from "../version.js";
 import { type ClientOptions, NETWORK_URLS } from "./types.js";
 
 export class TrongridError extends Error {
@@ -37,6 +38,10 @@ export function createClient(options: ClientOptions): ApiClient {
 
 	const headers: Record<string, string> = {
 		"Content-Type": "application/json",
+		// Identify CLI traffic to TronGrid for usage analytics. Helps the
+		// upstream service distinguish CLI calls from generic SDK / curl
+		// usage. Per-version tagging lets us correlate adoption with releases.
+		"User-Agent": `trongrid-cli/${VERSION}`,
 	};
 
 	if (options.apiKey) {
