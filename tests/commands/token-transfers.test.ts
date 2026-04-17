@@ -6,6 +6,7 @@ import {
 } from "../../src/commands/token/transfers.js";
 import { UsageError } from "../../src/output/format.js";
 import { detectTokenIdentifier } from "../../src/utils/token-identifier.js";
+import type { TransferRow } from "../../src/output/transfers.js";
 
 const CONTRACT_ADDRESS = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"; // USDT
 
@@ -96,6 +97,10 @@ describe("fetchTokenTransfers", () => {
 		expect(row?.value_major).toBe("1.0");
 		expect(row?.tx_id).toBe("abc123deadbeef");
 		expect(row?.block_timestamp).toBe(1776315840000);
+		expect(row?.token_symbol).toBe("USDT");
+		expect(row?.token_address).toBe(CONTRACT_ADDRESS);
+		expect(row?.block_number).toBe(81882707);
+		expect(row?.value_unit).toBe("raw");
 	});
 
 	it("returns empty array when no events are returned", async () => {
@@ -207,20 +212,24 @@ describe("token transfers TRX guard", () => {
 
 // ---------- sortTokenTransfers ----------
 
-function mkRow(overrides: Partial<ReturnType<typeof buildRow>>): ReturnType<typeof buildRow> {
-	return { ...buildRow(), ...overrides };
-}
-
-function buildRow() {
+function buildRow(): TransferRow {
 	return {
 		tx_id: "tx_x",
+		block_number: 1,
 		block_timestamp: 1000,
 		from: "TFromAddrxxxxxxxxxxxxxxxxxxxxxxxxxx",
 		to: "TToAddrxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 		value: "1000000",
+		value_unit: "raw",
 		decimals: 6,
 		value_major: "1.0",
+		token_address: CONTRACT_ADDRESS,
+		token_symbol: "USDT",
 	};
+}
+
+function mkRow(overrides: Partial<TransferRow>): TransferRow {
+	return { ...buildRow(), ...overrides };
 }
 
 describe("sortTokenTransfers (default: block_timestamp desc)", () => {
