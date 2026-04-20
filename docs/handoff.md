@@ -24,36 +24,40 @@
 
 Sequence — execute top-down. Roadmap already reflects target Phase H = Governance + stats; v0.1.2 / v0.1.3 are Phase G patches; real cursor pagination is deferred under Phase G follow-up (no dedicated phase).
 
-**Release-prep invariant** (applies to every v0.x.y in this checklist):
-`branch → implement → bump → review → fix-if-needed → amend Co-Reviewed-By → tag → push → publish → release`.
-Review gates tag/publish because `npm publish` is a one-way door (can't unpublish beyond 72h, and retagging a shipped SHA breaks provenance). Fix any review finding BEFORE the tag exists — never retag or unpublish to patch a reviewer finding.
+**Release-prep invariant** (applies to every v0.x.y in this checklist; SSOT is `meta/WORKFLOW.md §3 Release Flow`):
+`branch → implement → bump → self-review → fix → cross-model review → fix-if-needed → amend Co-Reviewed-By (on tagged commit) → tag → push → publish → release`.
+Review gates tag/publish because `npm publish` is a one-way door (can't unpublish beyond 72h, and retagging a shipped SHA breaks provenance). Bump precedes review so the release candidate — including version string — is actually reviewed. Fix any review finding BEFORE the tag exists — never retag or unpublish to patch a reviewer finding.
 
 0. **Branch** — `git checkout -b feat/v0.1.2` from current `main`. All v0.1.2 work (CLAUDE.md, impl, bump) lives on the branch; main stays at the previous tag until PR merge.
 1. **CLAUDE.md thin pointer** (5 lines, points to `AGENTS.md`); add to `package.json` `files` for symmetry with AGENTS.md
 2. **v0.1.2 implementation (TDD)** — design discussed in this session, no separate spec needed:
-   - Helper: `formatTruncationHint(itemsReturned: number, limit: number): string | null` in `src/output/format.ts`. Returns `"Showing first {limit} items. Use --limit N to fetch more, or narrow with --before/--after."` when `itemsReturned >= limit`, else `null`.
-   - Wire into `printListResult` (add `limit?: number` to options); print hint after the list when not null
-   - Apply to ~12 list commands: each command's action passes its own parsed `--limit` value through `printListResult` options
+   - Helper: `formatTruncationHint(rawCount, limit, narrowingFlags?): string | null` in `src/output/format.ts`. Fires when `rawCount >= limit`; returns `null` otherwise. `narrowingFlags` appends "or narrow with ..." suffix when provided.
+   - `printListResult` options gain `truncation?: { limit, rawCount?, narrowingFlags? }`; helper runs in human mode only.
+   - Apply to 9 paginated list commands with per-command narrowingFlags (`--before/--after` on time-filtered commands; omitted on commands without server-side narrowing; client-side filters like `--event`/`--method` do NOT count as narrowing)
+   - Client-side filter commands (`contract events`, `contract txs --method`) expose pre-filter `rawCount` from their fetch helpers so truncation is judged on the raw page size, not the post-filter count.
+   - `account tokens` conditionally passes truncation only when `allTokens.length > limit` (fetchAccountTokens returns the complete set).
+   - `fetchInternalTxs` returns `{ rows, rawCount }` (pre-slice) so internals commands carry truncation signal despite the over-fetch heuristic.
    - JSON mode unaffected (agents compare items.length vs limit themselves)
 3. **Bump 0.1.2 commit** — edit `package.json` + `src/version.ts`, commit **without** Co-Reviewed-By, **do not tag yet**.
-4. **Cross-model review** (per `meta/AGENTS.md §3` "Cross-Agent / Cross-Model Review" rule), two layers:
-   - **Per-feature** — `codex review --commit <impl-SHA>` for focused review of a substantive v0.1.2 implementation commit (catches isolated bugs)
-   - **Per-release** — `codex review --base v0.1.1` final pass for the full v0.1.1→v0.1.2 diff (catches integration concerns when CI/docs/feature changes interact)
-   - Any High/Medium finding → fix with new commit(s) on the branch, then rerun the affected review layer(s) until clean. The bump commit can be amended or a follow-up commit added — either is fine as long as the final state on the branch is clean before tagging.
-5. **Stamp Co-Reviewed-By** — once both layers are clean, amend the bump commit to add `Co-Reviewed-By: GPT-5.4 via codex review <noreply@openai.com>` (or stamp it on the last fix commit if review fired on a fix).
-6. **Tag + push + PR + merge** — `git tag v0.1.2` on the stamped commit, push branch + tag, open PR, merge to main. Merge strategy: `--no-ff` (solo flow; keeps branch history visible).
-7. **Publish + release** — `npm publish` interactively (user handles 2FA web auth), then `gh release create v0.1.2 --generate-notes`. Same flow as v0.1.1 until OIDC lands (see Step 8).
-8. **v0.1.3 — npm Trusted Publishing (OIDC) setup**, infra-only patch (repeats Steps 0–7 with these deltas):
+4. **Self-review pass** (per `meta/AGENTS.md §3` Cross-Agent Review): read the full branch diff as a reviewer, not as implementer. Checklist: decision points, edge cases / boundaries, pattern check (same bug elsewhere?), semantic check (docs/flags actually describe behavior?). Fix findings on branch before firing codex.
+5. **Cross-model review** (two layers):
+   - **Per-feature** — `codex review --commit <impl-SHA>` on a substantive v0.1.2 implementation commit
+   - **Per-release** — `codex review --base v0.1.1` for the full v0.1.1→v0.1.2 diff
+   - Any High/Medium finding → fix with new commit(s), then rerun the affected review layer until clean.
+6. **Stamp Co-Reviewed-By** — once both layers are clean, amend the final commit of the branch (the commit that will be tagged) to add `Co-Reviewed-By: GPT-5.4 via codex review <noreply@openai.com>`.
+7. **Tag + push + PR + merge** — `git tag v0.1.2` on the stamped commit, push branch + tag, open PR, merge to main. Merge strategy: `--no-ff` (solo flow; keeps branch history visible).
+8. **Publish + release** — `npm publish` interactively (user handles 2FA web auth), then `gh release create v0.1.2 --generate-notes`. Same flow as v0.1.1 until OIDC lands (see next step).
+9. **v0.1.3 — npm Trusted Publishing (OIDC) setup**, infra-only patch (repeats Steps 0–8 with these deltas):
    - Create `.github/workflows/publish.yml` triggering on `v*` tag push, with `permissions: id-token: write`, runs `bun install + bun run build + npm publish --provenance`
    - In npm UI: Package settings → Trusted Publisher → configure GitHub Actions (org `dongzhenye`, repo `trongrid-cli`, workflow filename `publish.yml`)
-   - Tag push auto-publishes → Step 7 collapses to just `gh release create`
+   - Tag push auto-publishes → Step 8 collapses to just `gh release create`
    - Verify `npm view trongrid-cli@0.1.3` shows `provenance: true` ✓ badge
    - From v0.1.3 onward: ALL publishes via OIDC; Trusted Publishing replaces manual 2FA dance permanently
    - Optional: re-enable npm 2FA "Require for write actions" since OIDC bypasses it
    - Setup time: ~30-60 min one-time
-9. **handoff.md update**: mark Phase G fully ✅ (v0.1.0–v0.1.3), advance active phase to H = Governance + stats, refresh test count
+10. **handoff.md update**: mark Phase G fully ✅ (v0.1.0–v0.1.3), advance active phase to H = Governance + stats, refresh test count
 
-User wants user-visible patch (Steps 0–7 for v0.1.2) shipped quickly; execute in tight sequence. Step 8 (Trusted Publishing) is infra and may defer 1–2 days if needed.
+User wants user-visible patch (Steps 0–8 for v0.1.2) shipped quickly; execute in tight sequence. Step 9 (Trusted Publishing) is infra and may defer 1–2 days if needed.
 
 ---
 
