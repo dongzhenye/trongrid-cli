@@ -8,14 +8,44 @@
 
 | | |
 |---|---|
-| `main` tip | Phase G v0.1.0 + v0.1.1 (User-Agent patch) shipped, 2026-04-17 |
-| Active phase | **Phase H** — List pagination cursor support (will release as v0.2.0) |
-| Pending cross-cut | _(none)_ |
+| `main` tip | Phase G shipped (v0.1.0 + v0.1.1) + CI fixes, 2026-04-20 |
+| Active phase | **Phase G — finalizing v0.1.2 + v0.1.3 patches** (then advance to **Phase H — Governance + stats**) |
+| Pending cross-cut | v0.1.2 patch (truncation hint + CLAUDE.md) → v0.1.3 patch (npm Trusted Publishing OIDC setup) — see Next-Session Checklist |
 | Design docs | `human-display.md` (living, comprehensive) ← `tx-list-display.md` / `transfer-list-display.md` |
 | Tests | 464 passing |
 | Prod deps | 1 (`commander`) |
 | Commands | 31 across 7 resources |
 | Published | [`trongrid-cli@0.1.1` on npm](https://www.npmjs.com/package/trongrid-cli) |
+| CI | green (lint + build + test + tsc) |
+
+---
+
+## Next-Session Checklist (start here)
+
+Sequence — execute top-down. Roadmap already reflects target Phase H = Governance + stats; v0.1.2 / v0.1.3 are Phase G patches; real cursor pagination is deferred under Phase G follow-up (no dedicated phase).
+
+1. **CLAUDE.md thin pointer** (5 lines, points to `AGENTS.md`); add to `package.json` `files` for symmetry with AGENTS.md
+2. **v0.1.2 implementation (TDD)** — design discussed in this session, no separate spec needed:
+   - Helper: `formatTruncationHint(itemsReturned: number, limit: number): string | null` in `src/output/format.ts`. Returns `"Showing first {limit} items. Use --limit N to fetch more, or narrow with --before/--after."` when `itemsReturned >= limit`, else `null`.
+   - Wire into `printListResult` (add `limit?: number` to options); print hint after the list when not null
+   - Apply to ~12 list commands: each command's action passes its own parsed `--limit` value through `printListResult` options
+   - JSON mode unaffected (agents compare items.length vs limit themselves)
+3. **bump 0.1.2 + tag + publish + GitHub release** — final manual publish; same flow as v0.1.1 (user toggle 2FA, then `npm publish` interactively from terminal; CLI prompts web auth via security key)
+4. **Cross-model review** (per `meta/AGENTS.md §3` "Cross-Agent / Cross-Model Review" rule): after v0.1.2 implementation commit, run `codex review --commit <SHA>` for independent GPT review; add `Co-Reviewed-By: GPT-5.4 via codex review <noreply@openai.com>` line if review passes
+5. **v0.1.3 — npm Trusted Publishing (OIDC) setup**, infra-only patch:
+   - Create `.github/workflows/publish.yml` triggering on `v*` tag push, with `permissions: id-token: write`, runs `bun install + bun run build + npm publish --provenance`
+   - In npm UI: Package settings → Trusted Publisher → configure GitHub Actions (org `dongzhenye`, repo `trongrid-cli`, workflow filename `publish.yml`)
+   - Bump to `0.1.3` (chore commit suffices for non-empty diff)
+   - `git tag v0.1.3 && git push origin v0.1.3` — workflow auto-publishes
+   - Verify `npm view trongrid-cli@0.1.3` shows `provenance: true` ✓ badge
+   - From v0.1.3 onward: ALL publishes via OIDC; Trusted Publishing replaces manual 2FA dance permanently
+   - Optional: re-enable npm 2FA "Require for write actions" since OIDC bypasses it
+   - Setup time: ~30-60 min one-time
+6. **handoff.md update**: mark Phase G fully ✅ (v0.1.0–v0.1.3), advance active phase to H = Governance + stats, refresh test count
+
+User wants user-visible patch (Steps 1–3) shipped quickly; execute in tight sequence. Step 5 (Trusted Publishing) is infra and may defer 1–2 days if needed.
+
+---
 
 ---
 
@@ -84,17 +114,19 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - Extreme value display: `formatExtremeIfNeeded` returns scientific notation for `value_major` integer part > 16 digits; `⚠ ` warning prefix when raw value === uint256.max → `src/output/format.ts`
 - README rewritten for v0.1.0 (humans + agents framing) → `README.md`
 - Parity matrix shipped with per-resource coverage + endpoint mapping vs TronGrid MCP / TronScan MCP → [`docs/designs/competitor-parity.md`](./designs/competitor-parity.md)
-- LICENSE = MIT; author = personal (Zhenye Dong); ownership transfer remains a separate post-launch concern
+- LICENSE = MIT; author = personal (Zhenye Dong)
 - Future Phase O opt-in bin alias TODO recorded (config `bin_alias` for second symlink, default off, suggested `tron`); decided during publish prep — keeps `trongrid` as canonical, alias as opt-in convenience → [`docs/roadmap.md`](./roadmap.md) Phase O
-- Trusted Publishing (npm OIDC) is the official recommendation for ongoing CI/CD publishes; deferred until Phase L (distribution channels) — first publish was manual via personal account
 - Patch v0.1.1 (~90 min after v0.1.0): User-Agent header on all API requests for TronGrid telemetry; origin: early-user feedback after v0.1.0 publish → `src/api/client.ts`, `src/version.ts` (new — single source of truth for VERSION, used by both `--version` flag and User-Agent)
-- Roadmap reshuffle (afternoon, post-publish): inserted new Phase H "List pagination" before Governance based on additional early-user feedback (true cursor pagination, `--limit` is workaround); old H/I/J... shift +1 → [`docs/roadmap.md`](./roadmap.md) cross-walk
+- v0.1.2 patch (planned — see Next-Session Checklist): list truncation hint (`Showing first N items, use --limit M for more`) when `items.length >= --limit`. Origin: early-user feedback after v0.1.0. Decomposition decision: hint suffices for now; real cursor pagination becomes deferred (no dedicated phase) until hint proves inadequate.
+- v0.1.3 patch (planned — see Next-Session Checklist Step 6): npm Trusted Publishing (OIDC) setup via GitHub Actions. Replaces manual `npm publish` (2FA dance) for all future releases. Auto-generates provenance attestations (npm page shows ✓ verified). Brought forward from Phase L because manual publish friction hurts patch cadence (Phase G already has v0.1.0/0.1.1/0.1.2/0.1.3 in 4 days).
+- CI fixes (2026-04-20): biome lint auto-fix + workflow build-before-test order (integration tests in `tests/cli/bare-invoke.test.ts` exec `node dist/index.js`, so `dist/` must exist) → `f7b526e`, `ddb1ea4`. CI green from this point.
 
 **Open items** (not decisions — tracked in [`docs/roadmap.md`](./roadmap.md)):
 - TRON-eco vs TronGrid-only positioning (each phase generates evidence)
 - Token symbol map refresh cadence
 - TRX holders / TRX network-wide transfers (blocked on positioning decision)
-- npm Trusted Publishing (OIDC) setup — defer until CI/CD work in Phase K
+- **Real cursor / page-token pagination** — deferred under Phase G follow-up (not a phase yet); promote to phase if/when truncation hint (v0.1.2) proves insufficient
+- CI: 10 non-blocking biome warnings; Node.js 20 deprecation in `actions/checkout@v4` (deadline 2026-09)
 
 ---
 
