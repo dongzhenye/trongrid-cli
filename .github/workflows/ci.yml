@@ -14,5 +14,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun install
       - run: bun run lint
-      - run: bun run test
+      # Build before test: tests/cli/bare-invoke.test.ts execs `node dist/index.js`
+      # so dist/ must exist. Locally `dist/` survives between runs; CI starts clean.
       - run: bun run build
+      - run: bun run test
