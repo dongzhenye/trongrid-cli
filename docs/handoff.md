@@ -46,7 +46,7 @@ The Co-Reviewed-By trailer is amended BEFORE the final cross-model review so the
    - **Per-release** — `codex review --base v0.1.1` for the full v0.1.1→v0.1.2 diff
    - Any High/Medium finding → fix with new commit(s), re-amend trailer onto the new HEAD if needed, rerun the affected review layer until clean.
 7. **Tag + push + PR + merge** — `git tag v0.1.2` on the reviewed HEAD SHA, push branch + tag, open PR, merge to main with `--no-ff`.
-8. **Publish + release** — `npm publish` interactively (user handles 2FA web auth), then `gh release create v0.1.2 --generate-notes`. Same flow as v0.1.1 until OIDC lands (see next step).
+8. **Publish + release** — `npm publish` interactively; npm prints a URL, user opens it in browser, passkey/WebAuthn completes 2FA, publish proceeds. No need to toggle "Require 2FA for write" off (pre-passkey legacy flow; does NOT apply on modern npm). Then `gh release create v0.1.2 --generate-notes`. Same flow as v0.1.1 until OIDC lands (see next step).
 9. **v0.1.3 — npm Trusted Publishing (OIDC) setup**, infra-only patch (repeats Steps 0–8 with these deltas):
    - Create `.github/workflows/publish.yml` triggering on `v*` tag push, with `permissions: id-token: write`, runs `bun install + bun run build + npm publish --provenance`
    - In npm UI: Package settings → Trusted Publisher → configure GitHub Actions (org `dongzhenye`, repo `trongrid-cli`, workflow filename `publish.yml`)
