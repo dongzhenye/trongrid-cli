@@ -33,16 +33,17 @@ Sort:
 				const client = getClient(opts);
 				const range = parseTimeRange(opts.before, opts.after);
 				const limit = Number.parseInt(opts.limit, 10);
-				const { rows, rawCount } = await fetchInternalTxs(client, address, {
+				const { rows } = await fetchInternalTxs(client, address, {
 					limit,
 					minTimestamp: range.minTimestamp,
 					maxTimestamp: range.maxTimestamp,
 				});
 				const sorted = sortInternalTxs(rows, { sortBy: opts.sortBy, reverse: opts.reverse });
+				// No truncation hint: see note in account/internals.ts — the
+				// over-fetch + client-slice heuristic's rawCount is unreliable.
 				printListResult(sorted, renderInternalTxs, {
 					json: opts.json,
 					fields: parseFields(opts),
-					truncation: { limit, rawCount, narrowingFlags: ["--before", "--after"] },
 				});
 			} catch (err) {
 				reportErrorAndExit(err, { json: opts.json, verbose: opts.verbose });

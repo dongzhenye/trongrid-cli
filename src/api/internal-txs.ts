@@ -113,10 +113,13 @@ export async function fetchInternalTxs(
 		}
 	}
 
-	// rawCount is the pre-slice internal-tx count (best-effort truncation
-	// signal; doesn't account for the over-fetch parent cap of
-	// min(3*limit, 200), so callers get a false-negative if more internals
-	// exist beyond that window).
+	// Shape kept as { rows, rawCount } for callers that want pre-slice
+	// visibility, but rawCount is NOT used for truncation-hint detection:
+	// the over-fetch heuristic (min(3*limit, 200) parent txs + client-
+	// side slice) produces false-positives on exact-fit histories and
+	// false-negatives on sparse internal-call histories. Internals
+	// commands intentionally omit the truncation hint until a cursor-
+	// aware fetch path lands.
 	return { rows: allRows.slice(0, opts.limit), rawCount: allRows.length };
 }
 

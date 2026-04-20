@@ -34,16 +34,19 @@ Sort:
 				const client = getClient(opts);
 				const range = parseTimeRange(opts.before, opts.after);
 				const limit = Number.parseInt(opts.limit, 10);
-				const { rows, rawCount } = await fetchInternalTxs(client, resolved, {
+				const { rows } = await fetchInternalTxs(client, resolved, {
 					limit,
 					minTimestamp: range.minTimestamp,
 					maxTimestamp: range.maxTimestamp,
 				});
 				const sorted = sortInternalTxs(rows, { sortBy: opts.sortBy, reverse: opts.reverse });
+				// No truncation hint: fetchInternalTxs uses an over-fetch +
+				// client-slice heuristic whose rawCount is unreliable (false
+				// positives on exact-fit, false negatives on sparse history).
+				// Re-enable when cursor-aware paging lands.
 				printListResult(sorted, renderInternalTxs, {
 					json: opts.json,
 					fields: parseFields(opts),
-					truncation: { limit, rawCount, narrowingFlags: ["--before", "--after"] },
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {
