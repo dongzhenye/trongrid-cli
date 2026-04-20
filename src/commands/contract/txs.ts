@@ -211,8 +211,9 @@ Sort:
 			try {
 				validateAddress(address);
 				const client = getClient(opts);
+				const limit = Number.parseInt(opts.limit, 10);
 				const rows = await fetchContractTxs(client, address, {
-					limit: Number.parseInt(opts.limit, 10),
+					limit,
 					method: localOpts.method,
 				});
 				const sorted = sortTxs(rows, { sortBy: opts.sortBy, reverse: opts.reverse });
@@ -220,6 +221,7 @@ Sort:
 				printListResult(sorted, (items) => renderTxs(items, address), {
 					json: opts.json,
 					fields: parseFields(opts),
+					limit,
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {

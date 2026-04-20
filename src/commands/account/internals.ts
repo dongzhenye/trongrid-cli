@@ -33,13 +33,18 @@ Sort:
 				const resolved = resolveAddress(address);
 				const client = getClient(opts);
 				const range = parseTimeRange(opts.before, opts.after);
+				const limit = Number.parseInt(opts.limit, 10);
 				const rows = await fetchInternalTxs(client, resolved, {
-					limit: Number.parseInt(opts.limit, 10),
+					limit,
 					minTimestamp: range.minTimestamp,
 					maxTimestamp: range.maxTimestamp,
 				});
 				const sorted = sortInternalTxs(rows, { sortBy: opts.sortBy, reverse: opts.reverse });
-				printListResult(sorted, renderInternalTxs, { json: opts.json, fields: parseFields(opts) });
+				printListResult(sorted, renderInternalTxs, {
+					json: opts.json,
+					fields: parseFields(opts),
+					limit,
+				});
 			} catch (err) {
 				reportErrorAndExit(err, {
 					json: opts.json,

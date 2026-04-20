@@ -196,8 +196,9 @@ Sort:
 				validateAddress(address);
 				const client = getClient(opts);
 				const range = parseTimeRange(opts.before, opts.after);
+				const limit = Number.parseInt(opts.limit, 10);
 				const rows = await fetchContractEvents(client, address, {
-					limit: Number.parseInt(opts.limit, 10),
+					limit,
 					eventFilter: localOpts.event,
 					minBlockTimestamp: range.minTimestamp,
 					maxBlockTimestamp: range.maxTimestamp,
@@ -212,6 +213,7 @@ Sort:
 				printListResult(sorted, renderContractEvents, {
 					json: opts.json,
 					fields: parseFields(opts),
+					limit,
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {

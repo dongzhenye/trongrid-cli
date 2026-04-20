@@ -172,6 +172,7 @@ export async function accountTokensAction(
 		printListResult(tokens, renderTokenList, {
 			json: opts.json,
 			fields: parseFields(opts),
+			limit,
 		});
 	} catch (err) {
 		reportErrorAndExit(err, {

@@ -162,8 +162,9 @@ Sort:
 
 				const client = getClient(opts);
 				const range = parseTimeRange(opts.before, opts.after);
+				const limit = Number.parseInt(opts.limit, 10);
 				const rows = await fetchTokenTransfers(client, id.address, {
-					limit: Number.parseInt(opts.limit, 10),
+					limit,
 					minBlockTimestamp: range.minTimestamp,
 					maxBlockTimestamp: range.maxTimestamp,
 					onlyConfirmed: localOpts.confirmed,
@@ -177,6 +178,7 @@ Sort:
 				printListResult(sorted, renderTransferList, {
 					json: opts.json,
 					fields: parseFields(opts),
+					limit,
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {

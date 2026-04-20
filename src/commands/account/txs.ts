@@ -290,14 +290,16 @@ Sort:
 				// NOTE: --confirmed has no effect here — /v1/accounts/:address/transactions has
 				// no /walletsolidity mirror. Accepted silently for flag uniformity; tracked in
 				// docs/plans/phase-b.md as a follow-up.
+				const limit = Number.parseInt(opts.limit, 10);
 				const rows = await fetchAccountTxs(client, resolved, {
-					limit: Number.parseInt(opts.limit, 10),
+					limit,
 				});
 				const sorted = sortTxs(rows, { sortBy: opts.sortBy, reverse: opts.reverse });
 
 				printListResult(sorted, (items) => renderTxs(items, resolved), {
 					json: opts.json,
 					fields: parseFields(opts),
+					limit,
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {
