@@ -25,27 +25,27 @@
 Sequence — execute top-down. Roadmap already reflects target Phase H = Governance + stats; v0.1.2 / v0.1.3 are Phase G patches; real cursor pagination is deferred under Phase G follow-up (no dedicated phase).
 
 **Release-prep invariant** (applies to every v0.x.y in this checklist; SSOT is `meta/WORKFLOW.md §3 Release Flow`):
-`branch → implement → bump → self-review → fix → cross-model review → fix-if-needed → amend Co-Reviewed-By (on tagged commit) → tag → push → publish → release`.
-Review gates tag/publish because `npm publish` is a one-way door (can't unpublish beyond 72h, and retagging a shipped SHA breaks provenance). Bump precedes review so the release candidate — including version string — is actually reviewed. Fix any review finding BEFORE the tag exists — never retag or unpublish to patch a reviewer finding.
+`branch → implement → bump → self-review → fix → amend Co-Reviewed-By → cross-model review → (fix → re-amend → re-review loop until clean) → tag → push → publish → release`.
+The Co-Reviewed-By trailer is amended BEFORE the final cross-model review so the reviewed SHA is identical to the tagged SHA (post-amend SHA mismatch was the earlier bug — `git commit --amend` rewrites the SHA). Review gates tag/publish because `npm publish` is a one-way door (can't unpublish beyond 72h, and retagging a shipped SHA breaks provenance). Bump precedes review so the release candidate — including version string — is actually reviewed. Fix any review finding BEFORE the tag exists — never retag or unpublish to patch a reviewer finding.
 
 0. **Branch** — `git checkout -b feat/v0.1.2` from current `main`. All v0.1.2 work (CLAUDE.md, impl, bump) lives on the branch; main stays at the previous tag until PR merge.
 1. **CLAUDE.md thin pointer** (5 lines, points to `AGENTS.md`); add to `package.json` `files` for symmetry with AGENTS.md
 2. **v0.1.2 implementation (TDD)** — design discussed in this session, no separate spec needed:
-   - Helper: `formatTruncationHint(rawCount, limit, narrowingFlags?): string | null` in `src/output/format.ts`. Fires when `rawCount >= limit`; returns `null` otherwise. `narrowingFlags` appends "or narrow with ..." suffix when provided.
-   - `printListResult` options gain `truncation?: { limit, rawCount?, narrowingFlags? }`; helper runs in human mode only.
-   - Apply to 9 paginated list commands with per-command narrowingFlags (`--before/--after` on time-filtered commands; omitted on commands without server-side narrowing; client-side filters like `--event`/`--method` do NOT count as narrowing)
+   - Helper: `formatTruncationHint(rawCount, limit, narrowingFlags?, shownCount?): string | null` in `src/output/format.ts`. Fires when `rawCount >= limit`. `shownCount` defaults to `rawCount`; when `shownCount < rawCount` the lead text becomes "Filter matched X of Y fetched." instead of "Showing first N items." (filter-aware wording).
+   - `printListResult` options gain `truncation?: { limit, rawCount?, narrowingFlags? }`; helper threads `items.length` as `shownCount` automatically.
+   - Apply to 7 paginated list commands with per-command `narrowingFlags` (only server-side-narrowing flags belong here — `--before/--after`, plus `--confirmed` for contract events; client-side filters like `--event`/`--method` are explicitly excluded).
    - Client-side filter commands (`contract events`, `contract txs --method`) expose pre-filter `rawCount` from their fetch helpers so truncation is judged on the raw page size, not the post-filter count.
-   - `account tokens` conditionally passes truncation only when `allTokens.length > limit` (fetchAccountTokens returns the complete set).
-   - `fetchInternalTxs` returns `{ rows, rawCount }` (pre-slice) so internals commands carry truncation signal despite the over-fetch heuristic.
+   - `account tokens` conditionally passes truncation only when `allTokens.length > limit` (fetchAccountTokens returns the complete set, so `==` equals full set, not truncation).
+   - **Internals commands (`account internals`, `contract internals`) intentionally omit the hint** — `fetchInternalTxs` over-fetch heuristic can't produce a reliable rawCount (false positives on exact-fit histories, false negatives on sparse). Re-enable when cursor-aware paging lands.
    - JSON mode unaffected (agents compare items.length vs limit themselves)
-3. **Bump 0.1.2 commit** — edit `package.json` + `src/version.ts`, commit **without** Co-Reviewed-By, **do not tag yet**.
-4. **Self-review pass** (per `meta/AGENTS.md §3` Cross-Agent Review): read the full branch diff as a reviewer, not as implementer. Checklist: decision points, edge cases / boundaries, pattern check (same bug elsewhere?), semantic check (docs/flags actually describe behavior?). Fix findings on branch before firing codex.
-5. **Cross-model review** (two layers):
-   - **Per-feature** — `codex review --commit <impl-SHA>` on a substantive v0.1.2 implementation commit
+3. **Bump 0.1.2 commit** — edit `package.json` + `src/version.ts`; commit without trailer yet.
+4. **Self-review pass** (per `meta/AGENTS.md §3` Cross-Agent Review, mandatory baseline): read the full branch diff as a reviewer, not as implementer. Checklist: decision points, edge cases / boundaries, pattern check (same bug elsewhere?), semantic check (docs/flags actually describe behavior?). Fix findings on branch before proceeding.
+5. **Amend Co-Reviewed-By** — on the release commit (final HEAD of the branch, likely the bump commit or a stamp commit), append `Co-Reviewed-By: GPT-5.4 via codex review <noreply@openai.com>`. The next cross-model review pass validates THIS SHA.
+6. **Cross-model review** (two layers on the trailer-bearing HEAD SHA):
+   - **Per-feature** — `codex review --commit <HEAD-SHA>` on the release commit
    - **Per-release** — `codex review --base v0.1.1` for the full v0.1.1→v0.1.2 diff
-   - Any High/Medium finding → fix with new commit(s), then rerun the affected review layer until clean.
-6. **Stamp Co-Reviewed-By** — once both layers are clean, amend the final commit of the branch (the commit that will be tagged) to add `Co-Reviewed-By: GPT-5.4 via codex review <noreply@openai.com>`.
-7. **Tag + push + PR + merge** — `git tag v0.1.2` on the stamped commit, push branch + tag, open PR, merge to main. Merge strategy: `--no-ff` (solo flow; keeps branch history visible).
+   - Any High/Medium finding → fix with new commit(s), re-amend trailer onto the new HEAD if needed, rerun the affected review layer until clean.
+7. **Tag + push + PR + merge** — `git tag v0.1.2` on the reviewed HEAD SHA, push branch + tag, open PR, merge to main with `--no-ff`.
 8. **Publish + release** — `npm publish` interactively (user handles 2FA web auth), then `gh release create v0.1.2 --generate-notes`. Same flow as v0.1.1 until OIDC lands (see next step).
 9. **v0.1.3 — npm Trusted Publishing (OIDC) setup**, infra-only patch (repeats Steps 0–8 with these deltas):
    - Create `.github/workflows/publish.yml` triggering on `v*` tag push, with `permissions: id-token: write`, runs `bun install + bun run build + npm publish --provenance`
