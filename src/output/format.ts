@@ -113,21 +113,44 @@ export function formatJsonList<T extends object>(items: T[], fields?: string[]):
 }
 
 /**
+ * Human-mode hint emitted after a list when the response is almost
+ * certainly truncated (items returned equals the requested limit).
+ * Returns `null` when no truncation signal is present.
+ *
+ * JSON callers don't need this — they can compare `items.length` vs the
+ * `--limit` value themselves. Human readers can't, which is why the hint
+ * exists.
+ */
+export function formatTruncationHint(itemsReturned: number, limit: number): string | null {
+	if (limit <= 0) return null;
+	if (itemsReturned < limit) return null;
+	return `Showing first ${limit} items. Use --limit N to fetch more, or narrow with --before/--after.`;
+}
+
+/**
  * List counterpart of {@link printResult}. Handles JSON mode generically
  * (array serialization + per-item field filtering) and delegates human mode
  * to a caller-supplied renderer, which has full control over empty-state
  * messaging, per-row formatting, and any summary line. Pulled out of
  * `account tokens` so future list commands can share the JSON branch.
+ *
+ * When `limit` is supplied and the response size hits it, a truncation
+ * hint is appended after the human render — agents in `--json` mode
+ * never see the hint (they compare lengths themselves).
  */
 export function printListResult<T extends object>(
 	items: T[],
 	renderHuman: (items: T[]) => void,
-	options: { json?: boolean; fields?: string[] },
+	options: { json?: boolean; fields?: string[]; limit?: number },
 ): void {
 	if (options.json) {
 		console.log(formatJsonList(items, options.fields));
-	} else {
-		renderHuman(items);
+		return;
+	}
+	renderHuman(items);
+	if (options.limit !== undefined) {
+		const hint = formatTruncationHint(items.length, options.limit);
+		if (hint) console.log(muted(hint));
 	}
 }
 

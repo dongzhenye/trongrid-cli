@@ -6,6 +6,7 @@ import {
 	formatJsonList,
 	formatKeyValue,
 	formatTimestamp,
+	formatTruncationHint,
 	printError,
 	printListResult,
 	reportErrorAndExit,
@@ -192,6 +193,129 @@ describe("printListResult", () => {
 			{ a: 1, c: 3 },
 			{ a: 4, c: 6 },
 		]);
+	});
+});
+
+describe("formatTruncationHint", () => {
+	it("returns null when itemsReturned is below the limit", () => {
+		expect(formatTruncationHint(10, 20)).toBeNull();
+		expect(formatTruncationHint(0, 50)).toBeNull();
+	});
+
+	it("returns a hint when itemsReturned equals the limit", () => {
+		const hint = formatTruncationHint(50, 50);
+		expect(hint).not.toBeNull();
+		expect(hint).toContain("50");
+	});
+
+	it("returns a hint when itemsReturned exceeds the limit (defensive)", () => {
+		const hint = formatTruncationHint(51, 50);
+		expect(hint).not.toBeNull();
+	});
+
+	it("mentions --limit and the narrowing flags so users know the next step", () => {
+		const hint = formatTruncationHint(50, 50);
+		expect(hint).toContain("--limit");
+		expect(hint).toContain("--before");
+		expect(hint).toContain("--after");
+	});
+
+	it("returns null for limit === 0 (pathological, no truncation signal)", () => {
+		expect(formatTruncationHint(0, 0)).toBeNull();
+	});
+});
+
+describe("printListResult truncation hint wiring", () => {
+	const originalLog = console.log;
+	let captured: string[];
+	const capture = () => {
+		captured = [];
+		console.log = (msg?: unknown) => {
+			captured.push(typeof msg === "string" ? msg : JSON.stringify(msg));
+		};
+	};
+	const restore = () => {
+		console.log = originalLog;
+	};
+	const originalNoColor = process.env.NO_COLOR;
+
+	beforeEach(() => {
+		process.env.NO_COLOR = "1";
+	});
+
+	afterEach(() => {
+		if (originalNoColor !== undefined) {
+			process.env.NO_COLOR = originalNoColor;
+		} else {
+			delete process.env.NO_COLOR;
+		}
+	});
+
+	it("prints the hint after human render when items.length >= limit", () => {
+		capture();
+		try {
+			printListResult(
+				[{ a: 1 }, { a: 2 }, { a: 3 }],
+				(items) => {
+					for (const item of items) console.log(`row ${item.a}`);
+				},
+				{ json: false, limit: 3 },
+			);
+		} finally {
+			restore();
+		}
+		expect(captured).toHaveLength(4);
+		expect(captured[0]).toBe("row 1");
+		expect(captured[3]).toContain("--limit");
+		expect(captured[3]).toContain("3");
+	});
+
+	it("omits the hint when items.length < limit", () => {
+		capture();
+		try {
+			printListResult(
+				[{ a: 1 }],
+				(items) => {
+					for (const item of items) console.log(`row ${item.a}`);
+				},
+				{ json: false, limit: 50 },
+			);
+		} finally {
+			restore();
+		}
+		expect(captured).toHaveLength(1);
+		expect(captured[0]).toBe("row 1");
+	});
+
+	it("omits the hint when limit option is not passed (back-compat)", () => {
+		capture();
+		try {
+			printListResult(
+				[{ a: 1 }, { a: 2 }],
+				(items) => {
+					for (const item of items) console.log(`row ${item.a}`);
+				},
+				{ json: false },
+			);
+		} finally {
+			restore();
+		}
+		expect(captured).toHaveLength(2);
+		expect(captured.find((l) => l.includes("--limit"))).toBeUndefined();
+	});
+
+	it("never prints the hint in JSON mode even when items.length >= limit", () => {
+		capture();
+		try {
+			printListResult([{ a: 1 }, { a: 2 }, { a: 3 }], () => {}, {
+				json: true,
+				limit: 3,
+			});
+		} finally {
+			restore();
+		}
+		expect(captured).toHaveLength(1);
+		expect(JSON.parse(captured[0])).toEqual([{ a: 1 }, { a: 2 }, { a: 3 }]);
 	});
 });
 
