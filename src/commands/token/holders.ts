@@ -204,9 +204,8 @@ Sort:
 				}
 
 				const client = getClient(opts);
-				const rows = await fetchTokenHolders(client, id.address, {
-					limit: Number.parseInt(opts.limit, 10),
-				});
+				const limit = Number.parseInt(opts.limit, 10);
+				const rows = await fetchTokenHolders(client, id.address, { limit });
 				const sorted = sortHolders(rows, {
 					sortBy: opts.sortBy,
 					reverse: opts.reverse,
@@ -214,6 +213,7 @@ Sort:
 				printListResult(sorted, renderHolderList, {
 					json: opts.json,
 					fields: parseFields(opts),
+					truncation: { limit },
 				});
 			} catch (err) {
 				const hint = hintForTokenHolders(err);

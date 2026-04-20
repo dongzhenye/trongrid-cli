@@ -33,13 +33,21 @@ Sort:
 				const resolved = resolveAddress(address);
 				const client = getClient(opts);
 				const range = parseTimeRange(opts.before, opts.after);
-				const rows = await fetchInternalTxs(client, resolved, {
-					limit: Number.parseInt(opts.limit, 10),
+				const limit = Number.parseInt(opts.limit, 10);
+				const { rows } = await fetchInternalTxs(client, resolved, {
+					limit,
 					minTimestamp: range.minTimestamp,
 					maxTimestamp: range.maxTimestamp,
 				});
 				const sorted = sortInternalTxs(rows, { sortBy: opts.sortBy, reverse: opts.reverse });
-				printListResult(sorted, renderInternalTxs, { json: opts.json, fields: parseFields(opts) });
+				// No truncation hint: fetchInternalTxs uses an over-fetch +
+				// client-slice heuristic whose rawCount is unreliable (false
+				// positives on exact-fit, false negatives on sparse history).
+				// Re-enable when cursor-aware paging lands.
+				printListResult(sorted, renderInternalTxs, {
+					json: opts.json,
+					fields: parseFields(opts),
+				});
 			} catch (err) {
 				reportErrorAndExit(err, {
 					json: opts.json,

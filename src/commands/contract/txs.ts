@@ -140,25 +140,29 @@ async function resolveSelectors(
 /**
  * Fetch transaction history for a contract address.
  *
- * Without `method`: delegates to `fetchAccountTxs` (same endpoint).
- * With `method`: fetches raw response, filters by method selector, maps to AccountTxRow.
+ * Without `method`: delegates to `fetchAccountTxs` (same endpoint) —
+ *   rawCount equals the returned row count (server-side paging, no filter).
+ * With `method`: fetches raw response, filters client-side by method
+ *   selector — rawCount equals the unfiltered upstream page size so the
+ *   truncation hint fires even when the filter matches few rows.
  */
 export async function fetchContractTxs(
 	client: ApiClient,
 	address: string,
 	opts: { limit: number; method?: string },
-): Promise<AccountTxRow[]> {
+): Promise<{ rows: AccountTxRow[]; rawCount: number }> {
 	validateAddress(address);
 
 	// No method filter — delegate to the account txs function
 	if (!opts.method) {
-		return fetchAccountTxs(client, address, { limit: opts.limit });
+		const rows = await fetchAccountTxs(client, address, { limit: opts.limit });
+		return { rows, rawCount: rows.length };
 	}
 
 	// Resolve method to selector(s)
 	const selectors = await resolveSelectors(client, address, opts.method);
 	if (selectors.size === 0) {
-		return [];
+		return { rows: [], rawCount: 0 };
 	}
 
 	// Fetch raw txs (need the data field for filtering)
@@ -177,7 +181,7 @@ export async function fetchContractTxs(
 		}
 	}
 
-	return filtered;
+	return { rows: filtered, rawCount: txs.length };
 }
 
 // --- Command registration ---
@@ -211,8 +215,9 @@ Sort:
 			try {
 				validateAddress(address);
 				const client = getClient(opts);
-				const rows = await fetchContractTxs(client, address, {
-					limit: Number.parseInt(opts.limit, 10),
+				const limit = Number.parseInt(opts.limit, 10);
+				const { rows, rawCount } = await fetchContractTxs(client, address, {
+					limit,
 					method: localOpts.method,
 				});
 				const sorted = sortTxs(rows, { sortBy: opts.sortBy, reverse: opts.reverse });
@@ -220,6 +225,11 @@ Sort:
 				printListResult(sorted, (items) => renderTxs(items, address), {
 					json: opts.json,
 					fields: parseFields(opts),
+					// No narrowingFlags: --method is a client-side filter that doesn't
+					// change upstream pagination, and the underlying /v1/accounts/.../
+					// transactions endpoint has no min/max_timestamp support. rawCount
+					// still fires the hint correctly when the raw page hits --limit.
+					truncation: { limit, rawCount },
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {

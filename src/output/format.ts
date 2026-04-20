@@ -113,21 +113,108 @@ export function formatJsonList<T extends object>(items: T[], fields?: string[]):
 }
 
 /**
+ * Human-mode hint emitted after a list when the fetch response hits the
+ * requested limit. Returns `null` when no truncation signal is present.
+ *
+ * `rawCount` is the size of the raw fetch page (pre any client-side
+ * filter). Callers that filter client-side MUST pass the unfiltered
+ * count — otherwise a filter that keeps 2 of 20 rows would hide the
+ * truncation signal for the other 18.
+ *
+ * `shownCount` is how many rows were actually rendered (defaults to
+ * `rawCount`). When `shownCount < rawCount`, a client-side filter
+ * reduced the display; the lead text changes from "Showing first N
+ * items" to "Filter matched X of Y fetched" so the hint doesn't lie
+ * about how many items were shown.
+ *
+ * `narrowingFlags` advertises flags that would actually change the
+ * upstream fetch (e.g. `--before`/`--after`, `--confirmed`). Do NOT
+ * include client-side filter flags here — they don't narrow pagination.
+ *
+ * JSON-mode callers on non-filter commands can infer truncation from
+ * `items.length >= limit` directly. For client-side filter commands
+ * (`contract events --event`, `contract txs --method`) this inference
+ * is unreliable: a filter that keeps 2 of 20 rows gives `items.length
+ * == 2 < limit`, which looks like a completed-set response even though
+ * the raw fetched page was full. Exposing `rawCount` in the JSON
+ * contract for those commands is tracked under the Phase H cursor-
+ * pagination work (see `docs/handoff.md` Open items). Human readers
+ * get the hint regardless, which is why this helper exists.
+ */
+export function formatTruncationHint(
+	rawCount: number,
+	limit: number,
+	narrowingFlags?: readonly string[],
+	shownCount?: number,
+): string | null {
+	if (limit <= 0) return null;
+	if (rawCount < limit) return null;
+	const shown = shownCount ?? rawCount;
+	// Two shapes:
+	// - shown === rawCount: full fetched page rendered → "Showing first N items."
+	// - shown < rawCount: either a client-side filter (contract events --event,
+	//   contract txs --method) reduced the fetched page, or a slice-to-limit on
+	//   a complete-set fetch (account tokens) → "Showing X of Y items."
+	// "Filter matched" wording would be wrong for the slice case.
+	const lead =
+		shown < rawCount
+			? `Showing ${shown} of ${rawCount} items.`
+			: `Showing first ${limit} items.`;
+	const action = "Use --limit N to fetch more";
+	const narrow =
+		narrowingFlags && narrowingFlags.length > 0
+			? `, or narrow with ${narrowingFlags.join("/")}`
+			: "";
+	return `${lead} ${action}${narrow}.`;
+}
+
+export interface TruncationMeta {
+	/** The fetch limit the command passed upstream. */
+	limit: number;
+	/**
+	 * Raw pre-filter fetch count. Set explicitly for commands that
+	 * filter client-side (e.g. `contract events --event`,
+	 * `contract txs --method`); defaults to `items.length`.
+	 */
+	rawCount?: number;
+	/** Flags the user could pass to narrow the result (hint text only). */
+	narrowingFlags?: readonly string[];
+}
+
+/**
  * List counterpart of {@link printResult}. Handles JSON mode generically
  * (array serialization + per-item field filtering) and delegates human mode
  * to a caller-supplied renderer, which has full control over empty-state
  * messaging, per-row formatting, and any summary line. Pulled out of
  * `account tokens` so future list commands can share the JSON branch.
+ *
+ * When `truncation` is supplied and the fetch hit the limit, a hint is
+ * appended after the human render — agents in `--json` mode never see
+ * the hint (they compare lengths themselves).
  */
 export function printListResult<T extends object>(
 	items: T[],
 	renderHuman: (items: T[]) => void,
-	options: { json?: boolean; fields?: string[] },
+	options: {
+		json?: boolean;
+		fields?: string[];
+		truncation?: TruncationMeta;
+	},
 ): void {
 	if (options.json) {
 		console.log(formatJsonList(items, options.fields));
-	} else {
-		renderHuman(items);
+		return;
+	}
+	renderHuman(items);
+	const t = options.truncation;
+	if (t) {
+		const hint = formatTruncationHint(
+			t.rawCount ?? items.length,
+			t.limit,
+			t.narrowingFlags,
+			items.length,
+		);
+		if (hint) console.log(muted(hint));
 	}
 }
 

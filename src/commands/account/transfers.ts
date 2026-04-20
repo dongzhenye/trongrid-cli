@@ -97,8 +97,9 @@ export async function accountTransfersAction(
 		// mirror. Accepted silently for flag uniformity; tracked as a
 		// Phase D follow-up.
 		const range = parseTimeRange(opts.before, opts.after);
+		const limit = Number.parseInt(opts.limit, 10);
 		const rows = await fetchAccountTransfers(client, resolved, {
-			limit: Number.parseInt(opts.limit, 10),
+			limit,
 			minTimestamp: range.minTimestamp,
 			maxTimestamp: range.maxTimestamp,
 		});
@@ -109,6 +110,7 @@ export async function accountTransfersAction(
 		printListResult(sorted, (r) => renderTransferList(r, resolved), {
 			json: opts.json,
 			fields: parseFields(opts),
+			truncation: { limit, narrowingFlags: ["--before", "--after"] },
 		});
 	} catch (err) {
 		reportErrorAndExit(err, {

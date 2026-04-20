@@ -49,7 +49,7 @@ describe("fetchInternalTxs", () => {
 		};
 		mockFetch(fixture);
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchInternalTxs(client, ADDRESS, { limit: 20 });
+		const { rows } = await fetchInternalTxs(client, ADDRESS, { limit: 20 });
 
 		expect(rows.length).toBe(1);
 		const row = rows[0]!;
@@ -75,7 +75,7 @@ describe("fetchInternalTxs", () => {
 			],
 		});
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchInternalTxs(client, ADDRESS, { limit: 20 });
+		const { rows } = await fetchInternalTxs(client, ADDRESS, { limit: 20 });
 		expect(rows).toEqual([]);
 	});
 
@@ -97,7 +97,7 @@ describe("fetchInternalTxs", () => {
 			],
 		});
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchInternalTxs(client, ADDRESS, { limit: 20 });
+		const { rows } = await fetchInternalTxs(client, ADDRESS, { limit: 20 });
 		expect(rows[0]?.rejected).toBe(true);
 	});
 
@@ -162,7 +162,7 @@ describe("fetchInternalTxs", () => {
 			],
 		});
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchInternalTxs(client, ADDRESS, { limit: 20 });
+		const { rows } = await fetchInternalTxs(client, ADDRESS, { limit: 20 });
 		expect(rows.length).toBe(3);
 		expect(rows[1]?.call_type).toBe("create");
 	});
@@ -183,7 +183,7 @@ describe("fetchInternalTxs", () => {
 			],
 		});
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchInternalTxs(client, ADDRESS, { limit: 3 });
+		const { rows } = await fetchInternalTxs(client, ADDRESS, { limit: 3 });
 		expect(rows.length).toBe(3);
 	});
 });

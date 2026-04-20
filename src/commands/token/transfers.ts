@@ -162,11 +162,15 @@ Sort:
 
 				const client = getClient(opts);
 				const range = parseTimeRange(opts.before, opts.after);
+				const limit = Number.parseInt(opts.limit, 10);
 				const rows = await fetchTokenTransfers(client, id.address, {
-					limit: Number.parseInt(opts.limit, 10),
+					limit,
 					minBlockTimestamp: range.minTimestamp,
 					maxBlockTimestamp: range.maxTimestamp,
-					onlyConfirmed: localOpts.confirmed,
+					// Honor both placements: `trongrid --confirmed token transfers ...`
+					// (global) and `trongrid token transfers ... --confirmed` (local),
+					// matching `contract events`'s behavior.
+					onlyConfirmed: localOpts.confirmed ?? opts.confirmed,
 				});
 
 				const sorted = sortTokenTransfers(rows, {
@@ -177,6 +181,10 @@ Sort:
 				printListResult(sorted, renderTransferList, {
 					json: opts.json,
 					fields: parseFields(opts),
+					truncation: {
+						limit,
+						narrowingFlags: ["--before", "--after", "--confirmed"],
+					},
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {

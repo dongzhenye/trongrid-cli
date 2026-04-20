@@ -166,7 +166,7 @@ describe("fetchContractTxs", () => {
 	it("returns all txs without --method filter", async () => {
 		mockFetchMulti();
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractTxs(client, CONTRACT, { limit: 20 });
+		const { rows } = await fetchContractTxs(client, CONTRACT, { limit: 20 });
 
 		expect(rows).toHaveLength(3);
 		const ids = rows.map((r) => r.tx_id);
@@ -178,7 +178,7 @@ describe("fetchContractTxs", () => {
 	it("filters by 4-byte selector (--method 0xa9059cbb)", async () => {
 		mockFetchMulti();
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractTxs(client, CONTRACT, {
+		const { rows } = await fetchContractTxs(client, CONTRACT, {
 			limit: 20,
 			method: "0xa9059cbb",
 		});
@@ -190,7 +190,7 @@ describe("fetchContractTxs", () => {
 	it("filters by method name via ABI lookup (--method transfer)", async () => {
 		mockFetchMulti();
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractTxs(client, CONTRACT, {
+		const { rows } = await fetchContractTxs(client, CONTRACT, {
 			limit: 20,
 			method: "transfer",
 		});
@@ -202,7 +202,7 @@ describe("fetchContractTxs", () => {
 	it("excludes plain TRX transfers when --method is specified", async () => {
 		mockFetchMulti();
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractTxs(client, CONTRACT, {
+		const { rows } = await fetchContractTxs(client, CONTRACT, {
 			limit: 20,
 			method: "0xa9059cbb",
 		});
@@ -216,7 +216,7 @@ describe("fetchContractTxs", () => {
 		mockFetchMulti();
 		const client = createClient({ network: "mainnet" });
 
-		const rows = await fetchContractTxs(client, CONTRACT, {
+		const { rows } = await fetchContractTxs(client, CONTRACT, {
 			limit: 20,
 			method: "TRANSFER",
 		});
@@ -228,7 +228,7 @@ describe("fetchContractTxs", () => {
 	it("returns empty when method name matches no ABI entry", async () => {
 		mockFetchMulti();
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractTxs(client, CONTRACT, {
+		const { rows } = await fetchContractTxs(client, CONTRACT, {
 			limit: 20,
 			method: "nonexistent",
 		});
@@ -239,7 +239,7 @@ describe("fetchContractTxs", () => {
 	it("returns empty when selector matches no transactions", async () => {
 		mockFetchMulti();
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractTxs(client, CONTRACT, {
+		const { rows } = await fetchContractTxs(client, CONTRACT, {
 			limit: 20,
 			method: "0xdeadbeef",
 		});
@@ -250,7 +250,7 @@ describe("fetchContractTxs", () => {
 	it("maps rows to AccountTxRow shape correctly", async () => {
 		mockFetchMulti();
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractTxs(client, CONTRACT, {
+		const { rows } = await fetchContractTxs(client, CONTRACT, {
 			limit: 20,
 			method: "0xa9059cbb",
 		});
@@ -277,7 +277,7 @@ describe("fetchContractTxs", () => {
 	it("extracts from/to/amount for plain TRX transfer rows", async () => {
 		mockFetchMulti();
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractTxs(client, CONTRACT, { limit: 20 });
+		const { rows } = await fetchContractTxs(client, CONTRACT, { limit: 20 });
 		const trxRow = rows.find((r) => r.tx_id === "tx_trx");
 
 		expect(trxRow).toMatchObject({

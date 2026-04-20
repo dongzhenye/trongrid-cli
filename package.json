@@ -1,6 +1,6 @@
 {
   "name": "trongrid-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "TRON CLI built on TronGrid — for humans and AI agents",
   "type": "module",
   "bin": {
@@ -11,9 +11,9 @@
     "dev": "tsc --watch",
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/",
-    "test": "bun test",
+    "test": "bun run build && bun test",
     "start": "node dist/index.js",
-    "prepublishOnly": "bun test && tsc"
+    "prepublishOnly": "bun run build && bun test"
   },
   "engines": {
     "node": ">=22"
@@ -22,6 +22,7 @@
     "dist",
     "README.md",
     "AGENTS.md",
+    "CLAUDE.md",
     "LICENSE"
   ],
   "keywords": [

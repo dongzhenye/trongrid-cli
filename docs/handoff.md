@@ -24,29 +24,40 @@
 
 Sequence — execute top-down. Roadmap already reflects target Phase H = Governance + stats; v0.1.2 / v0.1.3 are Phase G patches; real cursor pagination is deferred under Phase G follow-up (no dedicated phase).
 
+**Release-prep invariant** (applies to every v0.x.y in this checklist; SSOT is `meta/WORKFLOW.md §3 Release Flow`):
+`branch → implement → bump → self-review → fix → amend Co-Reviewed-By → cross-model review → (fix → re-amend → re-review loop until clean) → tag → push → publish → release`.
+The Co-Reviewed-By trailer is amended BEFORE the final cross-model review so the reviewed SHA is identical to the tagged SHA (post-amend SHA mismatch was the earlier bug — `git commit --amend` rewrites the SHA). Review gates tag/publish because `npm publish` is a one-way door (can't unpublish beyond 72h, and retagging a shipped SHA breaks provenance). Bump precedes review so the release candidate — including version string — is actually reviewed. Fix any review finding BEFORE the tag exists — never retag or unpublish to patch a reviewer finding.
+
+0. **Branch** — `git checkout -b feat/v0.1.2` from current `main`. All v0.1.2 work (CLAUDE.md, impl, bump) lives on the branch; main stays at the previous tag until PR merge.
 1. **CLAUDE.md thin pointer** (5 lines, points to `AGENTS.md`); add to `package.json` `files` for symmetry with AGENTS.md
 2. **v0.1.2 implementation (TDD)** — design discussed in this session, no separate spec needed:
-   - Helper: `formatTruncationHint(itemsReturned: number, limit: number): string | null` in `src/output/format.ts`. Returns `"Showing first {limit} items. Use --limit N to fetch more, or narrow with --before/--after."` when `itemsReturned >= limit`, else `null`.
-   - Wire into `printListResult` (add `limit?: number` to options); print hint after the list when not null
-   - Apply to ~12 list commands: each command's action passes its own parsed `--limit` value through `printListResult` options
+   - Helper: `formatTruncationHint(rawCount, limit, narrowingFlags?, shownCount?): string | null` in `src/output/format.ts`. Fires when `rawCount >= limit`. `shownCount` defaults to `rawCount`; when `shownCount < rawCount` the lead text becomes "Filter matched X of Y fetched." instead of "Showing first N items." (filter-aware wording).
+   - `printListResult` options gain `truncation?: { limit, rawCount?, narrowingFlags? }`; helper threads `items.length` as `shownCount` automatically.
+   - Apply to 7 paginated list commands with per-command `narrowingFlags` (only server-side-narrowing flags belong here — `--before/--after`, plus `--confirmed` for contract events; client-side filters like `--event`/`--method` are explicitly excluded).
+   - Client-side filter commands (`contract events`, `contract txs --method`) expose pre-filter `rawCount` from their fetch helpers so truncation is judged on the raw page size, not the post-filter count.
+   - `account tokens` conditionally passes truncation only when `allTokens.length > limit` (fetchAccountTokens returns the complete set, so `==` equals full set, not truncation).
+   - **Internals commands (`account internals`, `contract internals`) intentionally omit the hint** — `fetchInternalTxs` over-fetch heuristic can't produce a reliable rawCount (false positives on exact-fit histories, false negatives on sparse). Re-enable when cursor-aware paging lands.
    - JSON mode unaffected (agents compare items.length vs limit themselves)
-3. **bump 0.1.2 + tag + publish + GitHub release** — final manual publish; same flow as v0.1.1 (user toggle 2FA, then `npm publish` interactively from terminal; CLI prompts web auth via security key)
-4. **Cross-model review** (per `meta/AGENTS.md §3` "Cross-Agent / Cross-Model Review" rule), two layers:
-   - **Per-feature** — `codex review --commit <truncation-hint-impl-SHA>` for focused review of the v0.1.2 implementation commit (catches isolated bugs)
-   - **Per-release** — `codex review --base v0.1.1` final pass for the full v0.1.1→v0.1.2 diff (catches integration concerns when CI/docs/feature changes interact)
-   - Add `Co-Reviewed-By: GPT-5.4 via codex review <noreply@openai.com>` line on the publish/tag commit only if BOTH layers pass
-5. **v0.1.3 — npm Trusted Publishing (OIDC) setup**, infra-only patch:
+3. **Bump 0.1.2 commit** — edit `package.json` + `src/version.ts`; commit without trailer yet.
+4. **Self-review pass** (per `meta/AGENTS.md §3` Cross-Agent Review, mandatory baseline): read the full branch diff as a reviewer, not as implementer. Checklist: decision points, edge cases / boundaries, pattern check (same bug elsewhere?), semantic check (docs/flags actually describe behavior?). Fix findings on branch before proceeding.
+5. **Amend Co-Reviewed-By** — on the release commit (final HEAD of the branch, likely the bump commit or a stamp commit), append `Co-Reviewed-By: GPT-5.4 via codex review <noreply@openai.com>`. The next cross-model review pass validates THIS SHA.
+6. **Cross-model review** (two layers on the trailer-bearing HEAD SHA):
+   - **Per-feature** — `codex review --commit <HEAD-SHA>` on the release commit
+   - **Per-release** — `codex review --base v0.1.1` for the full v0.1.1→v0.1.2 diff
+   - Any High/Medium finding → fix with new commit(s), re-amend trailer onto the new HEAD if needed, rerun the affected review layer until clean.
+7. **Tag + push + PR + merge** — `git tag v0.1.2` on the reviewed HEAD SHA, push branch + tag, open PR, merge to main with `--no-ff`.
+8. **Publish + release** — `npm publish` interactively (user handles 2FA web auth), then `gh release create v0.1.2 --generate-notes`. Same flow as v0.1.1 until OIDC lands (see next step).
+9. **v0.1.3 — npm Trusted Publishing (OIDC) setup**, infra-only patch (repeats Steps 0–8 with these deltas):
    - Create `.github/workflows/publish.yml` triggering on `v*` tag push, with `permissions: id-token: write`, runs `bun install + bun run build + npm publish --provenance`
    - In npm UI: Package settings → Trusted Publisher → configure GitHub Actions (org `dongzhenye`, repo `trongrid-cli`, workflow filename `publish.yml`)
-   - Bump to `0.1.3` (chore commit suffices for non-empty diff)
-   - `git tag v0.1.3 && git push origin v0.1.3` — workflow auto-publishes
+   - Tag push auto-publishes → Step 8 collapses to just `gh release create`
    - Verify `npm view trongrid-cli@0.1.3` shows `provenance: true` ✓ badge
    - From v0.1.3 onward: ALL publishes via OIDC; Trusted Publishing replaces manual 2FA dance permanently
    - Optional: re-enable npm 2FA "Require for write actions" since OIDC bypasses it
    - Setup time: ~30-60 min one-time
-6. **handoff.md update**: mark Phase G fully ✅ (v0.1.0–v0.1.3), advance active phase to H = Governance + stats, refresh test count
+10. **handoff.md update**: mark Phase G fully ✅ (v0.1.0–v0.1.3), advance active phase to H = Governance + stats, refresh test count
 
-User wants user-visible patch (Steps 1–3) shipped quickly; execute in tight sequence. Step 5 (Trusted Publishing) is infra and may defer 1–2 days if needed.
+User wants user-visible patch (Steps 0–8 for v0.1.2) shipped quickly; execute in tight sequence. Step 9 (Trusted Publishing) is infra and may defer 1–2 days if needed.
 
 ---
 
@@ -128,7 +139,9 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - TRON-eco vs TronGrid-only positioning (each phase generates evidence)
 - Token symbol map refresh cadence
 - TRX holders / TRX network-wide transfers (blocked on positioning decision)
-- **Real cursor / page-token pagination** — deferred under Phase G follow-up (not a phase yet); promote to phase if/when truncation hint (v0.1.2) proves insufficient
+- **Real cursor / page-token pagination** — deferred under Phase G follow-up (not a phase yet); promote to phase if/when truncation hint (v0.1.2) proves insufficient. **Known v0.1.2 gap**: JSON mode exposes no `rawCount` for client-side filter commands (`contract events --event`, `contract txs --method`), so agents can't distinguish "1 match total" from "1 of 20 fetched" — pick up alongside cursor work.
+- **Roadmap Phase L/M numbering pre-existing inconsistency**: cross-walk table (line 24) says `Gap commands = Phase L`; the actual section heading (line 240) says `Phase M — Gap commands`, colliding with `Phase M — Dynamic token symbol resolution` (line 249). Also `docs/roadmap.md:205` says Trusted Publishing was "brought forward from Phase L" which referred to the old Phase L (distribution). Needs user-level holistic renumbering; not a v0.1.2 blocker and attempts to fix in-flight can cascade into more stale references.
+- **Internals truncation hint** re-enable: `fetchInternalTxs` over-fetch heuristic can't produce reliable `rawCount`; internals commands explicitly omit the hint (v0.1.2). Re-enable when cursor-aware paging lands.
 - CI: 10 non-blocking biome warnings; Node.js 20 deprecation in `actions/checkout@v4` (deadline 2026-09)
 
 ---

@@ -67,7 +67,7 @@ export async function fetchContractEvents(
 		maxBlockTimestamp?: number;
 		onlyConfirmed?: boolean;
 	},
-): Promise<ContractEventRow[]> {
+): Promise<{ rows: ContractEventRow[]; rawCount: number }> {
 	validateAddress(address);
 
 	const params = new URLSearchParams();
@@ -86,8 +86,9 @@ export async function fetchContractEvents(
 	// Don't pass event_name to API — filter client-side for case-insensitivity
 	const path = `/v1/contracts/${address}/events?${params.toString()}`;
 	const raw = await client.get<ContractEventsResponse>(path);
+	const rawData = raw.data ?? [];
 
-	let events = (raw.data ?? []).map((e) => ({
+	let events: ContractEventRow[] = rawData.map((e) => ({
 		event_name: e.event_name ?? "",
 		transaction_id: e.transaction_id ?? "",
 		block_number: e.block_number ?? 0,
@@ -101,7 +102,7 @@ export async function fetchContractEvents(
 		events = events.filter((e) => e.event_name.toLowerCase() === filter);
 	}
 
-	return events;
+	return { rows: events, rawCount: rawData.length };
 }
 
 // --- Sort ---
@@ -196,8 +197,9 @@ Sort:
 				validateAddress(address);
 				const client = getClient(opts);
 				const range = parseTimeRange(opts.before, opts.after);
-				const rows = await fetchContractEvents(client, address, {
-					limit: Number.parseInt(opts.limit, 10),
+				const limit = Number.parseInt(opts.limit, 10);
+				const { rows, rawCount } = await fetchContractEvents(client, address, {
+					limit,
 					eventFilter: localOpts.event,
 					minBlockTimestamp: range.minTimestamp,
 					maxBlockTimestamp: range.maxTimestamp,
@@ -212,6 +214,16 @@ Sort:
 				printListResult(sorted, renderContractEvents, {
 					json: opts.json,
 					fields: parseFields(opts),
+					// --before/--after/--confirmed all translate to upstream query
+					// params that actually reduce the fetched page. --event is
+					// intentionally excluded: it's a client-side filter applied
+					// after the fetch, so re-running with --event doesn't change
+					// the server response.
+					truncation: {
+						limit,
+						rawCount,
+						narrowingFlags: ["--before", "--after", "--confirmed"],
+					},
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {

@@ -43,7 +43,7 @@ describe("fetchContractEvents", () => {
 		});
 
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractEvents(client, CONTRACT, { limit: 20 });
+		const { rows } = await fetchContractEvents(client, CONTRACT, { limit: 20 });
 
 		expect(rows.length).toBe(1);
 		expect(rows[0]?.event_name).toBe("Transfer");
@@ -84,7 +84,7 @@ describe("fetchContractEvents", () => {
 
 		const client = createClient({ network: "mainnet" });
 		// lowercase "transfer" should match "Transfer"
-		const rows = await fetchContractEvents(client, CONTRACT, {
+		const { rows } = await fetchContractEvents(client, CONTRACT, {
 			limit: 20,
 			eventFilter: "transfer",
 		});
@@ -95,7 +95,7 @@ describe("fetchContractEvents", () => {
 	it("returns empty array when no events", async () => {
 		mockFetch({ data: [] });
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractEvents(client, CONTRACT, { limit: 20 });
+		const { rows } = await fetchContractEvents(client, CONTRACT, { limit: 20 });
 		expect(rows).toEqual([]);
 	});
 
@@ -117,7 +117,7 @@ describe("fetchContractEvents", () => {
 		});
 
 		const client = createClient({ network: "mainnet" });
-		const rows = await fetchContractEvents(client, CONTRACT, { limit: 20 });
+		const { rows } = await fetchContractEvents(client, CONTRACT, { limit: 20 });
 
 		expect(rows.length).toBe(1);
 		// Numeric strings pass through
