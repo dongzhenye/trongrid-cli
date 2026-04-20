@@ -8,14 +8,14 @@
 
 | | |
 |---|---|
-| `main` tip | Phase G released as `trongrid-cli@0.1.0`, 2026-04-17 |
-| Active phase | **Phase H** — Governance + stats (will release as v0.2.0) |
+| `main` tip | Phase G v0.1.0 + v0.1.1 (User-Agent patch) shipped, 2026-04-17 |
+| Active phase | **Phase H** — List pagination cursor support (will release as v0.2.0) |
 | Pending cross-cut | _(none)_ |
 | Design docs | `human-display.md` (living, comprehensive) ← `tx-list-display.md` / `transfer-list-display.md` |
-| Tests | 463 passing |
+| Tests | 464 passing |
 | Prod deps | 1 (`commander`) |
 | Commands | 31 across 7 resources |
-| Published | [`trongrid-cli` on npm](https://www.npmjs.com/package/trongrid-cli) |
+| Published | [`trongrid-cli@0.1.1` on npm](https://www.npmjs.com/package/trongrid-cli) |
 
 ---
 
@@ -85,8 +85,10 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - README rewritten for v0.1.0 (humans + agents framing) → `README.md`
 - Parity matrix shipped with per-resource coverage + endpoint mapping vs TronGrid MCP / TronScan MCP → [`docs/designs/competitor-parity.md`](./designs/competitor-parity.md)
 - LICENSE = MIT; author = personal (Zhenye Dong); ownership transfer remains a separate post-launch concern
-- Future Phase N opt-in bin alias TODO recorded (config `bin_alias` for second symlink, default off, suggested `tron`); decided during publish prep — keeps `trongrid` as canonical, alias as opt-in convenience → [`docs/roadmap.md`](./roadmap.md) Phase N
-- Trusted Publishing (npm OIDC) is the official recommendation for ongoing CI/CD publishes; deferred until Phase K (distribution channels) — first publish was manual via personal account
+- Future Phase O opt-in bin alias TODO recorded (config `bin_alias` for second symlink, default off, suggested `tron`); decided during publish prep — keeps `trongrid` as canonical, alias as opt-in convenience → [`docs/roadmap.md`](./roadmap.md) Phase O
+- Trusted Publishing (npm OIDC) is the official recommendation for ongoing CI/CD publishes; deferred until Phase L (distribution channels) — first publish was manual via personal account
+- Patch v0.1.1 (~90 min after v0.1.0): User-Agent header on all API requests for TronGrid telemetry; origin: early-user feedback after v0.1.0 publish → `src/api/client.ts`, `src/version.ts` (new — single source of truth for VERSION, used by both `--version` flag and User-Agent)
+- Roadmap reshuffle (afternoon, post-publish): inserted new Phase H "List pagination" before Governance based on additional early-user feedback (true cursor pagination, `--limit` is workaround); old H/I/J... shift +1 → [`docs/roadmap.md`](./roadmap.md) cross-walk
 
 **Open items** (not decisions — tracked in [`docs/roadmap.md`](./roadmap.md)):
 - TRON-eco vs TronGrid-only positioning (each phase generates evidence)
