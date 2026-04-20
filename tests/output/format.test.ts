@@ -243,6 +243,27 @@ describe("formatTruncationHint", () => {
 		expect(hint).toContain("--limit");
 		expect(hint).not.toContain("narrow with");
 	});
+
+	it("emits a filter-aware lead when shownCount < rawCount", () => {
+		const hint = formatTruncationHint(20, 20, ["--event"], 1);
+		expect(hint).not.toBeNull();
+		expect(hint).toContain("20");
+		expect(hint).toContain("1");
+		// The filter case must not claim "Showing first 20 items" — only 1 row shown
+		expect(hint).not.toContain("Showing first 20 items");
+		expect(hint).toContain("Filter matched");
+	});
+
+	it("uses the 'Showing first N items' lead when shownCount equals rawCount", () => {
+		const hint = formatTruncationHint(20, 20, ["--before", "--after"], 20);
+		expect(hint).toContain("Showing first 20 items");
+		expect(hint).not.toContain("Filter matched");
+	});
+
+	it("defaults shownCount to rawCount when omitted (back-compat)", () => {
+		const hint = formatTruncationHint(20, 20);
+		expect(hint).toContain("Showing first 20 items");
+	});
 });
 
 describe("printListResult truncation hint wiring", () => {
@@ -367,6 +388,23 @@ describe("printListResult truncation hint wiring", () => {
 		}
 		expect(captured).toHaveLength(1);
 		expect(JSON.parse(captured[0])).toEqual([{ a: 1 }, { a: 2 }, { a: 3 }]);
+	});
+
+	it("passes items.length as shownCount so filter-aware lead fires", () => {
+		// Filter reduced a 20-row page to 1 row; hint must reflect that.
+		capture();
+		try {
+			printListResult([{ a: 1 }], () => {}, {
+				json: false,
+				truncation: { limit: 20, rawCount: 20, narrowingFlags: ["--confirmed"] },
+			});
+		} finally {
+			restore();
+		}
+		const hintLine = captured.find((l) => l.includes("--limit"));
+		expect(hintLine).toBeDefined();
+		expect(hintLine).toContain("Filter matched");
+		expect(hintLine).not.toContain("Showing first 20 items");
 	});
 });
 

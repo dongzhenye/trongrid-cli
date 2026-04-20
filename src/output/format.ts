@@ -121,10 +121,15 @@ export function formatJsonList<T extends object>(items: T[], fields?: string[]):
  * count — otherwise a filter that keeps 2 of 20 rows would hide the
  * truncation signal for the other 18.
  *
- * `narrowingFlags` lets the caller advertise flags that would actually
- * change the result (e.g. `--before`/`--after`, `--event`, `--method`).
- * When omitted or empty, the hint only mentions `--limit` — safer than
- * suggesting flags the command doesn't support.
+ * `shownCount` is how many rows were actually rendered (defaults to
+ * `rawCount`). When `shownCount < rawCount`, a client-side filter
+ * reduced the display; the lead text changes from "Showing first N
+ * items" to "Filter matched X of Y fetched" so the hint doesn't lie
+ * about how many items were shown.
+ *
+ * `narrowingFlags` advertises flags that would actually change the
+ * upstream fetch (e.g. `--before`/`--after`, `--confirmed`). Do NOT
+ * include client-side filter flags here — they don't narrow pagination.
  *
  * JSON callers don't need this — they can compare `items.length` vs the
  * `--limit` value themselves. Human readers can't, which is why the hint
@@ -134,14 +139,21 @@ export function formatTruncationHint(
 	rawCount: number,
 	limit: number,
 	narrowingFlags?: readonly string[],
+	shownCount?: number,
 ): string | null {
 	if (limit <= 0) return null;
 	if (rawCount < limit) return null;
-	const base = `Showing first ${limit} items. Use --limit N to fetch more`;
-	if (narrowingFlags && narrowingFlags.length > 0) {
-		return `${base}, or narrow with ${narrowingFlags.join("/")}.`;
-	}
-	return `${base}.`;
+	const shown = shownCount ?? rawCount;
+	const lead =
+		shown < rawCount
+			? `Filter matched ${shown} of ${rawCount} fetched.`
+			: `Showing first ${limit} items.`;
+	const action = "Use --limit N to fetch more";
+	const narrow =
+		narrowingFlags && narrowingFlags.length > 0
+			? `, or narrow with ${narrowingFlags.join("/")}`
+			: "";
+	return `${lead} ${action}${narrow}.`;
 }
 
 export interface TruncationMeta {
@@ -184,7 +196,12 @@ export function printListResult<T extends object>(
 	renderHuman(items);
 	const t = options.truncation;
 	if (t) {
-		const hint = formatTruncationHint(t.rawCount ?? items.length, t.limit, t.narrowingFlags);
+		const hint = formatTruncationHint(
+			t.rawCount ?? items.length,
+			t.limit,
+			t.narrowingFlags,
+			items.length,
+		);
 		if (hint) console.log(muted(hint));
 	}
 }
