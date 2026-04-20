@@ -214,10 +214,14 @@ Sort:
 				printListResult(sorted, renderContractEvents, {
 					json: opts.json,
 					fields: parseFields(opts),
+					// --event is a client-side filter on already-fetched rows; it does
+					// not change upstream pagination, so it's intentionally excluded
+					// from the narrowing hint. Only --before/--after actually reduce
+					// the server-side fetch.
 					truncation: {
 						limit,
 						rawCount,
-						narrowingFlags: ["--before", "--after", "--event"],
+						narrowingFlags: ["--before", "--after"],
 					},
 				});
 			} catch (err) {

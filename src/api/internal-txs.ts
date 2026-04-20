@@ -80,7 +80,7 @@ export async function fetchInternalTxs(
 	client: ApiClient,
 	address: string,
 	opts: { limit: number; minTimestamp?: number; maxTimestamp?: number },
-): Promise<InternalTxRow[]> {
+): Promise<{ rows: InternalTxRow[]; rawCount: number }> {
 	// Fetch regular transactions — internal txs are nested inside each one
 	const params = new URLSearchParams();
 	// Fetch more parent txs than limit since not all have internals
@@ -91,13 +91,13 @@ export async function fetchInternalTxs(
 	const path = `/v1/accounts/${address}/transactions?${params.toString()}`;
 	const raw = await client.get<TransactionsResponse>(path);
 
-	const rows: InternalTxRow[] = [];
+	const allRows: InternalTxRow[] = [];
 	for (const tx of raw.data ?? []) {
 		for (const itx of tx.internal_transactions ?? []) {
 			const callValue = itx.data?.call_value;
 			// call_value is {"_": amount} or {"tokenId": amount}
 			const value = callValue ? (Object.values(callValue)[0] ?? 0) : 0;
-			rows.push({
+			allRows.push({
 				internal_id: itx.internal_tx_id ?? "",
 				tx_id: tx.txID ?? "",
 				block_timestamp: tx.block_timestamp ?? 0,
@@ -113,8 +113,11 @@ export async function fetchInternalTxs(
 		}
 	}
 
-	// Return up to limit internal txs
-	return rows.slice(0, opts.limit);
+	// rawCount is the pre-slice internal-tx count (best-effort truncation
+	// signal; doesn't account for the over-fetch parent cap of
+	// min(3*limit, 200), so callers get a false-negative if more internals
+	// exist beyond that window).
+	return { rows: allRows.slice(0, opts.limit), rawCount: allRows.length };
 }
 
 const INTERNAL_TXS_SORT_CONFIG: SortConfig<InternalTxRow> = {

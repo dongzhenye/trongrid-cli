@@ -172,7 +172,11 @@ export async function accountTokensAction(
 		printListResult(tokens, renderTokenList, {
 			json: opts.json,
 			fields: parseFields(opts),
-			truncation: { limit, rawCount: allTokens.length },
+			// fetchAccountTokens returns the complete set for the address (no
+			// server pagination), so we know with certainty whether truncation
+			// happened: only when the total exceeds --limit. Equal-to-limit is
+			// a full set that happens to match, not a truncated page.
+			truncation: allTokens.length > limit ? { limit, rawCount: allTokens.length } : undefined,
 		});
 	} catch (err) {
 		reportErrorAndExit(err, {

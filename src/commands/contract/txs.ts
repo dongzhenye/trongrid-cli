@@ -225,11 +225,11 @@ Sort:
 				printListResult(sorted, (items) => renderTxs(items, address), {
 					json: opts.json,
 					fields: parseFields(opts),
-					truncation: {
-						limit,
-						rawCount,
-						narrowingFlags: localOpts.method ? ["--method"] : undefined,
-					},
+					// No narrowingFlags: --method is a client-side filter that doesn't
+					// change upstream pagination, and the underlying /v1/accounts/.../
+					// transactions endpoint has no min/max_timestamp support. rawCount
+					// still fires the hint correctly when the raw page hits --limit.
+					truncation: { limit, rawCount },
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {

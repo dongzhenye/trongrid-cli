@@ -13,7 +13,7 @@
     "lint:fix": "biome check --write src/",
     "test": "bun test",
     "start": "node dist/index.js",
-    "prepublishOnly": "bun test && tsc"
+    "prepublishOnly": "bun run build && bun test"
   },
   "engines": {
     "node": ">=22"

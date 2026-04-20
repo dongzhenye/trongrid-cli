@@ -34,7 +34,7 @@ Sort:
 				const client = getClient(opts);
 				const range = parseTimeRange(opts.before, opts.after);
 				const limit = Number.parseInt(opts.limit, 10);
-				const rows = await fetchInternalTxs(client, resolved, {
+				const { rows, rawCount } = await fetchInternalTxs(client, resolved, {
 					limit,
 					minTimestamp: range.minTimestamp,
 					maxTimestamp: range.maxTimestamp,
@@ -43,7 +43,7 @@ Sort:
 				printListResult(sorted, renderInternalTxs, {
 					json: opts.json,
 					fields: parseFields(opts),
-					truncation: { limit, narrowingFlags: ["--before", "--after"] },
+					truncation: { limit, rawCount, narrowingFlags: ["--before", "--after"] },
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {
