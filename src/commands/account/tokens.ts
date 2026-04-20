@@ -172,7 +172,7 @@ export async function accountTokensAction(
 		printListResult(tokens, renderTokenList, {
 			json: opts.json,
 			fields: parseFields(opts),
-			limit,
+			truncation: { limit, rawCount: allTokens.length },
 		});
 	} catch (err) {
 		reportErrorAndExit(err, {

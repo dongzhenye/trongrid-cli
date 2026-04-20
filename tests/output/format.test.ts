@@ -197,31 +197,51 @@ describe("printListResult", () => {
 });
 
 describe("formatTruncationHint", () => {
-	it("returns null when itemsReturned is below the limit", () => {
+	it("returns null when rawCount is below the limit", () => {
 		expect(formatTruncationHint(10, 20)).toBeNull();
 		expect(formatTruncationHint(0, 50)).toBeNull();
 	});
 
-	it("returns a hint when itemsReturned equals the limit", () => {
+	it("returns a hint when rawCount equals the limit", () => {
 		const hint = formatTruncationHint(50, 50);
 		expect(hint).not.toBeNull();
 		expect(hint).toContain("50");
 	});
 
-	it("returns a hint when itemsReturned exceeds the limit (defensive)", () => {
+	it("returns a hint when rawCount exceeds the limit (defensive)", () => {
 		const hint = formatTruncationHint(51, 50);
 		expect(hint).not.toBeNull();
 	});
 
-	it("mentions --limit and the narrowing flags so users know the next step", () => {
+	it("mentions --limit without narrowing flags when none are provided", () => {
 		const hint = formatTruncationHint(50, 50);
+		expect(hint).toContain("--limit");
+		expect(hint).not.toContain("--before");
+		expect(hint).not.toContain("--after");
+	});
+
+	it("mentions provided narrowing flags alongside --limit", () => {
+		const hint = formatTruncationHint(50, 50, ["--before", "--after"]);
 		expect(hint).toContain("--limit");
 		expect(hint).toContain("--before");
 		expect(hint).toContain("--after");
 	});
 
-	it("returns null for limit === 0 (pathological, no truncation signal)", () => {
+	it("supports filter flags as narrowing hints (e.g. --method, --event)", () => {
+		const hint = formatTruncationHint(20, 20, ["--method"]);
+		expect(hint).toContain("--method");
+		expect(hint).not.toContain("--before");
+	});
+
+	it("returns null for limit <= 0 (pathological, no truncation signal)", () => {
 		expect(formatTruncationHint(0, 0)).toBeNull();
+		expect(formatTruncationHint(5, -1)).toBeNull();
+	});
+
+	it("ignores an empty narrowing-flag array (treats as no flags)", () => {
+		const hint = formatTruncationHint(50, 50, []);
+		expect(hint).toContain("--limit");
+		expect(hint).not.toContain("narrow with");
 	});
 });
 
@@ -259,7 +279,7 @@ describe("printListResult truncation hint wiring", () => {
 				(items) => {
 					for (const item of items) console.log(`row ${item.a}`);
 				},
-				{ json: false, limit: 3 },
+				{ json: false, truncation: { limit: 3 } },
 			);
 		} finally {
 			restore();
@@ -270,7 +290,23 @@ describe("printListResult truncation hint wiring", () => {
 		expect(captured[3]).toContain("3");
 	});
 
-	it("omits the hint when items.length < limit", () => {
+	it("uses rawCount instead of items.length when provided (client-filter case)", () => {
+		// Filter kept 1 match out of a full raw page of 20 — truncation still likely.
+		capture();
+		try {
+			printListResult([{ a: 1 }], () => {}, {
+				json: false,
+				truncation: { limit: 20, rawCount: 20 },
+			});
+		} finally {
+			restore();
+		}
+		const hintLine = captured.find((l) => l.includes("--limit"));
+		expect(hintLine).toBeDefined();
+		expect(hintLine).toContain("20");
+	});
+
+	it("omits the hint when items.length < limit and no rawCount override", () => {
 		capture();
 		try {
 			printListResult(
@@ -278,7 +314,7 @@ describe("printListResult truncation hint wiring", () => {
 				(items) => {
 					for (const item of items) console.log(`row ${item.a}`);
 				},
-				{ json: false, limit: 50 },
+				{ json: false, truncation: { limit: 50 } },
 			);
 		} finally {
 			restore();
@@ -287,7 +323,7 @@ describe("printListResult truncation hint wiring", () => {
 		expect(captured[0]).toBe("row 1");
 	});
 
-	it("omits the hint when limit option is not passed (back-compat)", () => {
+	it("omits the hint when truncation option is not passed (back-compat)", () => {
 		capture();
 		try {
 			printListResult(
@@ -304,12 +340,27 @@ describe("printListResult truncation hint wiring", () => {
 		expect(captured.find((l) => l.includes("--limit"))).toBeUndefined();
 	});
 
+	it("threads narrowingFlags through to the hint", () => {
+		capture();
+		try {
+			printListResult([{ a: 1 }, { a: 2 }, { a: 3 }], () => {}, {
+				json: false,
+				truncation: { limit: 3, narrowingFlags: ["--before", "--after"] },
+			});
+		} finally {
+			restore();
+		}
+		const hintLine = captured.find((l) => l.includes("--limit"));
+		expect(hintLine).toContain("--before");
+		expect(hintLine).toContain("--after");
+	});
+
 	it("never prints the hint in JSON mode even when items.length >= limit", () => {
 		capture();
 		try {
 			printListResult([{ a: 1 }, { a: 2 }, { a: 3 }], () => {}, {
 				json: true,
-				limit: 3,
+				truncation: { limit: 3, narrowingFlags: ["--before"] },
 			});
 		} finally {
 			restore();

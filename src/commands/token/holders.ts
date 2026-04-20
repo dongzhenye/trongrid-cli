@@ -213,7 +213,7 @@ Sort:
 				printListResult(sorted, renderHolderList, {
 					json: opts.json,
 					fields: parseFields(opts),
-					limit,
+					truncation: { limit },
 				});
 			} catch (err) {
 				const hint = hintForTokenHolders(err);

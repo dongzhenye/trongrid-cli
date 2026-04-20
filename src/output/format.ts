@@ -113,18 +113,48 @@ export function formatJsonList<T extends object>(items: T[], fields?: string[]):
 }
 
 /**
- * Human-mode hint emitted after a list when the response is almost
- * certainly truncated (items returned equals the requested limit).
- * Returns `null` when no truncation signal is present.
+ * Human-mode hint emitted after a list when the fetch response hits the
+ * requested limit. Returns `null` when no truncation signal is present.
+ *
+ * `rawCount` is the size of the raw fetch page (pre any client-side
+ * filter). Callers that filter client-side MUST pass the unfiltered
+ * count — otherwise a filter that keeps 2 of 20 rows would hide the
+ * truncation signal for the other 18.
+ *
+ * `narrowingFlags` lets the caller advertise flags that would actually
+ * change the result (e.g. `--before`/`--after`, `--event`, `--method`).
+ * When omitted or empty, the hint only mentions `--limit` — safer than
+ * suggesting flags the command doesn't support.
  *
  * JSON callers don't need this — they can compare `items.length` vs the
  * `--limit` value themselves. Human readers can't, which is why the hint
  * exists.
  */
-export function formatTruncationHint(itemsReturned: number, limit: number): string | null {
+export function formatTruncationHint(
+	rawCount: number,
+	limit: number,
+	narrowingFlags?: readonly string[],
+): string | null {
 	if (limit <= 0) return null;
-	if (itemsReturned < limit) return null;
-	return `Showing first ${limit} items. Use --limit N to fetch more, or narrow with --before/--after.`;
+	if (rawCount < limit) return null;
+	const base = `Showing first ${limit} items. Use --limit N to fetch more`;
+	if (narrowingFlags && narrowingFlags.length > 0) {
+		return `${base}, or narrow with ${narrowingFlags.join("/")}.`;
+	}
+	return `${base}.`;
+}
+
+export interface TruncationMeta {
+	/** The fetch limit the command passed upstream. */
+	limit: number;
+	/**
+	 * Raw pre-filter fetch count. Set explicitly for commands that
+	 * filter client-side (e.g. `contract events --event`,
+	 * `contract txs --method`); defaults to `items.length`.
+	 */
+	rawCount?: number;
+	/** Flags the user could pass to narrow the result (hint text only). */
+	narrowingFlags?: readonly string[];
 }
 
 /**
@@ -134,22 +164,27 @@ export function formatTruncationHint(itemsReturned: number, limit: number): stri
  * messaging, per-row formatting, and any summary line. Pulled out of
  * `account tokens` so future list commands can share the JSON branch.
  *
- * When `limit` is supplied and the response size hits it, a truncation
- * hint is appended after the human render — agents in `--json` mode
- * never see the hint (they compare lengths themselves).
+ * When `truncation` is supplied and the fetch hit the limit, a hint is
+ * appended after the human render — agents in `--json` mode never see
+ * the hint (they compare lengths themselves).
  */
 export function printListResult<T extends object>(
 	items: T[],
 	renderHuman: (items: T[]) => void,
-	options: { json?: boolean; fields?: string[]; limit?: number },
+	options: {
+		json?: boolean;
+		fields?: string[];
+		truncation?: TruncationMeta;
+	},
 ): void {
 	if (options.json) {
 		console.log(formatJsonList(items, options.fields));
 		return;
 	}
 	renderHuman(items);
-	if (options.limit !== undefined) {
-		const hint = formatTruncationHint(items.length, options.limit);
+	const t = options.truncation;
+	if (t) {
+		const hint = formatTruncationHint(t.rawCount ?? items.length, t.limit, t.narrowingFlags);
 		if (hint) console.log(muted(hint));
 	}
 }

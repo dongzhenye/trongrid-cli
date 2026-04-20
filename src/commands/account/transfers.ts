@@ -110,7 +110,7 @@ export async function accountTransfersAction(
 		printListResult(sorted, (r) => renderTransferList(r, resolved), {
 			json: opts.json,
 			fields: parseFields(opts),
-			limit,
+			truncation: { limit, narrowingFlags: ["--before", "--after"] },
 		});
 	} catch (err) {
 		reportErrorAndExit(err, {

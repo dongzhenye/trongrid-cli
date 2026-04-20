@@ -42,7 +42,7 @@ Sort:
 				printListResult(sorted, renderInternalTxs, {
 					json: opts.json,
 					fields: parseFields(opts),
-					limit,
+					truncation: { limit, narrowingFlags: ["--before", "--after"] },
 				});
 			} catch (err) {
 				reportErrorAndExit(err, { json: opts.json, verbose: opts.verbose });

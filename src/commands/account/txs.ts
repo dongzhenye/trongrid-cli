@@ -299,7 +299,7 @@ Sort:
 				printListResult(sorted, (items) => renderTxs(items, resolved), {
 					json: opts.json,
 					fields: parseFields(opts),
-					limit,
+					truncation: { limit },
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {
