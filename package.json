@@ -1,6 +1,6 @@
 {
   "name": "trongrid-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "TRON CLI built on TronGrid — for humans and AI agents",
   "type": "module",
   "bin": {

@@ -139,7 +139,9 @@ Each entry is a closed decision. Rationale lives at the linked SSOT — don't re
 - TRON-eco vs TronGrid-only positioning (each phase generates evidence)
 - Token symbol map refresh cadence
 - TRX holders / TRX network-wide transfers (blocked on positioning decision)
-- **Real cursor / page-token pagination** — deferred under Phase G follow-up (not a phase yet); promote to phase if/when truncation hint (v0.1.2) proves insufficient
+- **Real cursor / page-token pagination** — deferred under Phase G follow-up (not a phase yet); promote to phase if/when truncation hint (v0.1.2) proves insufficient. **Known v0.1.2 gap**: JSON mode exposes no `rawCount` for client-side filter commands (`contract events --event`, `contract txs --method`), so agents can't distinguish "1 match total" from "1 of 20 fetched" — pick up alongside cursor work.
+- **Roadmap Phase L/M numbering pre-existing inconsistency**: cross-walk table (line 24) says `Gap commands = Phase L`; the actual section heading (line 240) says `Phase M — Gap commands`, colliding with `Phase M — Dynamic token symbol resolution` (line 249). Also `docs/roadmap.md:205` says Trusted Publishing was "brought forward from Phase L" which referred to the old Phase L (distribution). Needs user-level holistic renumbering; not a v0.1.2 blocker and attempts to fix in-flight can cascade into more stale references.
+- **Internals truncation hint** re-enable: `fetchInternalTxs` over-fetch heuristic can't produce reliable `rawCount`; internals commands explicitly omit the hint (v0.1.2). Re-enable when cursor-aware paging lands.
 - CI: 10 non-blocking biome warnings; Node.js 20 deprecation in `actions/checkout@v4` (deadline 2026-09)
 
 ---

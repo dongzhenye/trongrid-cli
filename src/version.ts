@@ -8,4 +8,4 @@
  * Must stay in sync with `package.json` `version` field (manual sync at release time).
  * Bump procedure: edit this file + package.json together; never one without the other.
  */
-export const VERSION = "0.1.1";
+export const VERSION = "0.1.2";

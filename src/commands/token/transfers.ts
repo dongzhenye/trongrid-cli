@@ -167,7 +167,10 @@ Sort:
 					limit,
 					minBlockTimestamp: range.minTimestamp,
 					maxBlockTimestamp: range.maxTimestamp,
-					onlyConfirmed: localOpts.confirmed,
+					// Honor both placements: `trongrid --confirmed token transfers ...`
+					// (global) and `trongrid token transfers ... --confirmed` (local),
+					// matching `contract events`'s behavior.
+					onlyConfirmed: localOpts.confirmed ?? opts.confirmed,
 				});
 
 				const sorted = sortTokenTransfers(rows, {
@@ -178,7 +181,10 @@ Sort:
 				printListResult(sorted, renderTransferList, {
 					json: opts.json,
 					fields: parseFields(opts),
-					truncation: { limit, narrowingFlags: ["--before", "--after"] },
+					truncation: {
+						limit,
+						narrowingFlags: ["--before", "--after", "--confirmed"],
+					},
 				});
 			} catch (err) {
 				reportErrorAndExit(err, {

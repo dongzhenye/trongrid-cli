@@ -131,9 +131,15 @@ export function formatJsonList<T extends object>(items: T[], fields?: string[]):
  * upstream fetch (e.g. `--before`/`--after`, `--confirmed`). Do NOT
  * include client-side filter flags here — they don't narrow pagination.
  *
- * JSON callers don't need this — they can compare `items.length` vs the
- * `--limit` value themselves. Human readers can't, which is why the hint
- * exists.
+ * JSON-mode callers on non-filter commands can infer truncation from
+ * `items.length >= limit` directly. For client-side filter commands
+ * (`contract events --event`, `contract txs --method`) this inference
+ * is unreliable: a filter that keeps 2 of 20 rows gives `items.length
+ * == 2 < limit`, which looks like a completed-set response even though
+ * the raw fetched page was full. Exposing `rawCount` in the JSON
+ * contract for those commands is tracked under the Phase H cursor-
+ * pagination work (see `docs/handoff.md` Open items). Human readers
+ * get the hint regardless, which is why this helper exists.
  */
 export function formatTruncationHint(
 	rawCount: number,
