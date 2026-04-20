@@ -144,9 +144,15 @@ export function formatTruncationHint(
 	if (limit <= 0) return null;
 	if (rawCount < limit) return null;
 	const shown = shownCount ?? rawCount;
+	// Two shapes:
+	// - shown === rawCount: full fetched page rendered → "Showing first N items."
+	// - shown < rawCount: either a client-side filter (contract events --event,
+	//   contract txs --method) reduced the fetched page, or a slice-to-limit on
+	//   a complete-set fetch (account tokens) → "Showing X of Y items."
+	// "Filter matched" wording would be wrong for the slice case.
 	const lead =
 		shown < rawCount
-			? `Filter matched ${shown} of ${rawCount} fetched.`
+			? `Showing ${shown} of ${rawCount} items.`
 			: `Showing first ${limit} items.`;
 	const action = "Use --limit N to fetch more";
 	const narrow =

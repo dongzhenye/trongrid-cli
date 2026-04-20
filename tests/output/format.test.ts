@@ -244,20 +244,19 @@ describe("formatTruncationHint", () => {
 		expect(hint).not.toContain("narrow with");
 	});
 
-	it("emits a filter-aware lead when shownCount < rawCount", () => {
+	it("uses 'Showing X of Y items' when shownCount < rawCount (covers both filter and slice)", () => {
 		const hint = formatTruncationHint(20, 20, ["--event"], 1);
 		expect(hint).not.toBeNull();
 		expect(hint).toContain("20");
 		expect(hint).toContain("1");
-		// The filter case must not claim "Showing first 20 items" — only 1 row shown
+		// Must not claim "Showing first 20 items" — only 1 row actually shown
 		expect(hint).not.toContain("Showing first 20 items");
-		expect(hint).toContain("Filter matched");
+		expect(hint).toContain("Showing 1 of 20 items");
 	});
 
-	it("uses the 'Showing first N items' lead when shownCount equals rawCount", () => {
+	it("uses 'Showing first N items' when shownCount equals rawCount", () => {
 		const hint = formatTruncationHint(20, 20, ["--before", "--after"], 20);
 		expect(hint).toContain("Showing first 20 items");
-		expect(hint).not.toContain("Filter matched");
 	});
 
 	it("defaults shownCount to rawCount when omitted (back-compat)", () => {
@@ -390,8 +389,8 @@ describe("printListResult truncation hint wiring", () => {
 		expect(JSON.parse(captured[0])).toEqual([{ a: 1 }, { a: 2 }, { a: 3 }]);
 	});
 
-	it("passes items.length as shownCount so filter-aware lead fires", () => {
-		// Filter reduced a 20-row page to 1 row; hint must reflect that.
+	it("passes items.length as shownCount so reduced-set lead fires", () => {
+		// Filter/slice reduced a 20-row page to 1 row; hint must reflect that.
 		capture();
 		try {
 			printListResult([{ a: 1 }], () => {}, {
@@ -403,7 +402,7 @@ describe("printListResult truncation hint wiring", () => {
 		}
 		const hintLine = captured.find((l) => l.includes("--limit"));
 		expect(hintLine).toBeDefined();
-		expect(hintLine).toContain("Filter matched");
+		expect(hintLine).toContain("Showing 1 of 20 items");
 		expect(hintLine).not.toContain("Showing first 20 items");
 	});
 });
