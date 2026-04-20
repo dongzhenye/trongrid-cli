@@ -31,7 +31,10 @@ Sequence — execute top-down. Roadmap already reflects target Phase H = Governa
    - Apply to ~12 list commands: each command's action passes its own parsed `--limit` value through `printListResult` options
    - JSON mode unaffected (agents compare items.length vs limit themselves)
 3. **bump 0.1.2 + tag + publish + GitHub release** — final manual publish; same flow as v0.1.1 (user toggle 2FA, then `npm publish` interactively from terminal; CLI prompts web auth via security key)
-4. **Cross-model review** (per `meta/AGENTS.md §3` "Cross-Agent / Cross-Model Review" rule): after v0.1.2 implementation commit, run `codex review --commit <SHA>` for independent GPT review; add `Co-Reviewed-By: GPT-5.4 via codex review <noreply@openai.com>` line if review passes
+4. **Cross-model review** (per `meta/AGENTS.md §3` "Cross-Agent / Cross-Model Review" rule), two layers:
+   - **Per-feature** — `codex review --commit <truncation-hint-impl-SHA>` for focused review of the v0.1.2 implementation commit (catches isolated bugs)
+   - **Per-release** — `codex review --base v0.1.1` final pass for the full v0.1.1→v0.1.2 diff (catches integration concerns when CI/docs/feature changes interact)
+   - Add `Co-Reviewed-By: GPT-5.4 via codex review <noreply@openai.com>` line on the publish/tag commit only if BOTH layers pass
 5. **v0.1.3 — npm Trusted Publishing (OIDC) setup**, infra-only patch:
    - Create `.github/workflows/publish.yml` triggering on `v*` tag push, with `permissions: id-token: write`, runs `bun install + bun run build + npm publish --provenance`
    - In npm UI: Package settings → Trusted Publisher → configure GitHub Actions (org `dongzhenye`, repo `trongrid-cli`, workflow filename `publish.yml`)
