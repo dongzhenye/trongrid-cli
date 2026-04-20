@@ -157,9 +157,7 @@ export function formatTruncationHint(
 	//   a complete-set fetch (account tokens) → "Showing X of Y items."
 	// "Filter matched" wording would be wrong for the slice case.
 	const lead =
-		shown < rawCount
-			? `Showing ${shown} of ${rawCount} items.`
-			: `Showing first ${limit} items.`;
+		shown < rawCount ? `Showing ${shown} of ${rawCount} items.` : `Showing first ${limit} items.`;
 	const action = "Use --limit N to fetch more";
 	const narrow =
 		narrowingFlags && narrowingFlags.length > 0
