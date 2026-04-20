@@ -3,7 +3,7 @@ import type { ApiClient } from "../../api/client.js";
 import { fetchBatchTrc20Info } from "../../api/token-info.js";
 import type { GlobalOptions } from "../../index.js";
 import { printListResult, reportErrorAndExit, UsageError } from "../../output/format.js";
-import { type TransferRow, renderTransferList } from "../../output/transfers.js";
+import { renderTransferList, type TransferRow } from "../../output/transfers.js";
 import { hexToBase58 } from "../../utils/address.js";
 import { applySort, type SortConfig } from "../../utils/sort.js";
 import { parseTimeRange } from "../../utils/time-range.js";
