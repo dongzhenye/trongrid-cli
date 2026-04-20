@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import type { ApiClient } from "../../api/client.js";
 import type { GlobalOptions } from "../../index.js";
 import { printListResult, reportErrorAndExit } from "../../output/format.js";
-import { type TransferRow, renderTransferList } from "../../output/transfers.js";
+import { renderTransferList, type TransferRow } from "../../output/transfers.js";
 import { addressErrorHint, resolveAddress } from "../../utils/resolve-address.js";
 import { applySort, type SortConfig, type SortOptions } from "../../utils/sort.js";
 import { parseTimeRange } from "../../utils/time-range.js";
@@ -79,10 +79,7 @@ const TRANSFERS_SORT_CONFIG: SortConfig<TransferRow> = {
  * Exported so tests can exercise the sort config (default field, tie-break,
  * unknown-field UsageError) without going through commander.
  */
-export function sortTransfers(
-	items: TransferRow[],
-	opts: SortOptions,
-): TransferRow[] {
+export function sortTransfers(items: TransferRow[], opts: SortOptions): TransferRow[] {
 	return applySort(items, TRANSFERS_SORT_CONFIG, opts);
 }
 

@@ -59,7 +59,8 @@ export function renderTransferList(rows: TransferRow[], subjectAddress?: string)
 		const toDisplay = truncateAddress(r.to);
 		// Extreme values (scam tokens, huge magnitudes) bypass thousands separator
 		// and render in scientific notation per docs/designs/human-display.md §2.3.
-		const amountStr = formatExtremeIfNeeded(r.value, r.value_major) ?? addThousandsSep(r.value_major);
+		const amountStr =
+			formatExtremeIfNeeded(r.value, r.value_major) ?? addThousandsSep(r.value_major);
 		amountNums.push(amountStr);
 
 		return [
