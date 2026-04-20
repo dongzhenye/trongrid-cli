@@ -4,39 +4,35 @@
 >
 > **Reshuffle 2026-04-17 (morning).** First npm publish (originally planned as Phase I) brought forward to **Phase G** to ship sooner. Old Phase G (Governance + stats) → new **Phase H**; old Phase H (Write-side) → new **Phase I**. J–O letters unchanged; version numbers shift +2 because two previously-untagged phases now sit after a tagged release.
 >
-> **Reshuffle 2026-04-17 (afternoon, post-publish).** Within hours of v0.1.0 publish, an early user requested true pagination cursor support on list commands (currently only `--limit`). Inserted as new **Phase H** "List pagination" (v0.2.0). Original Phase H (Governance + stats) → **Phase I** (v0.3.0); original Phase I (Write-side) → **Phase J** (v0.4.0); J–O all shift +1.
->
 > Per project convention, open phases are free to shift letters; position = priority.
 >
 > Cross-walk from the pre-2026-04-15 labels:
 >
-> | Old label | 2026-04-15 phase | 2026-04-17 morning | 2026-04-17 afternoon | Theme |
-> |---|---|---|---|---|
-> | Phase A | Phase A | Phase A | **Phase A** | Foundation |
-> | Phase A+ | Phase B | Phase B | **Phase B** | Post-Foundation Improvements |
-> | Phase B Wave 1 | Phase C | Phase C | **Phase C** | `block view` + `account txs` + `token view` |
-> | Phase B Wave 2 | Phase D | Phase D | **Phase D** | Account list family + Phase-C trial plumbing |
-> | Phase B Wave 3 | Phase E | Phase E | **Phase E** | Token family polish |
-> | Phase B Wave 4 | Phase F | Phase F | **Phase F** | Contract family |
-> | Phase B Wave N | Phase I | Phase G | **Phase G** | First npm publish (shipped v0.1.0 + v0.1.1) |
-> | (new 2026-04-17 PM) | — | — | **Phase H** | List pagination cursor support |
-> | Phase B Wave 5 | Phase G | Phase H | **Phase I** | Governance + stats |
-> | Phase B Wave 6 | Phase H | Phase I | **Phase J** | Write-side (scope TBD) |
-> | Phase C (Expand) P0 | Phase J | Phase J | **Phase K** | OAuth auth UX |
-> | Phase C (Expand) P1 distribution | Phase K | Phase K | **Phase L** | Homebrew + GH Releases binaries |
-> | Phase C (Expand) P1 gap commands | Phase L | Phase L | **Phase M** | `token price` / `account tags` / `contract creator` |
-> | Phase C (Expand) P2 dynamic symbols | Phase M | Phase M | **Phase N** | Runtime verified-token resolution |
-> | Phase C (Expand) P2 advanced | Phase N | Phase N | **Phase O** | Schema introspection, aliases, completions |
-> | Phase C (Expand) P3 | Phase O | Phase O | **Phase P** | Plugin marketplace, MCP server mode (conditional) |
+> | Old label | 2026-04-15 phase | 2026-04-17 phase | Theme |
+> |---|---|---|---|
+> | Phase A | Phase A | **Phase A** | Foundation |
+> | Phase A+ | Phase B | **Phase B** | Post-Foundation Improvements |
+> | Phase B Wave 1 | Phase C | **Phase C** | `block view` + `account txs` + `token view` |
+> | Phase B Wave 2 | Phase D | **Phase D** | Account list family + Phase-C trial plumbing |
+> | Phase B Wave 3 | Phase E | **Phase E** | Token family polish |
+> | Phase B Wave 4 | Phase F | **Phase F** | Contract family |
+> | Phase B Wave N | Phase I | **Phase G** | First npm publish (shipped v0.1.0–v0.1.3) |
+> | Phase B Wave 5 | Phase G | **Phase H** | Governance + stats |
+> | Phase B Wave 6 | Phase H | **Phase I** | Write-side (scope TBD) |
+> | Phase C (Expand) P0 | Phase J | **Phase J** | OAuth auth UX |
+> | Phase C (Expand) P1 distribution | Phase K | **Phase K** | Homebrew + GH Releases binaries |
+> | Phase C (Expand) P1 gap commands | Phase L | **Phase L** | `token price` / `account tags` / `contract creator` |
+> | Phase C (Expand) P2 dynamic symbols | Phase M | **Phase M** | Runtime verified-token resolution |
+> | Phase C (Expand) P2 advanced | Phase N | **Phase N** | Schema introspection, aliases, completions |
+> | Phase C (Expand) P3 | Phase O | **Phase O** | Plugin marketplace, MCP server mode (conditional) |
 
 ## Overview
 
 ```
-Phase A–F  (pre-publish, merged)              Architecture + early command surface
-Phase G    (FIRST npm publish, v0.1.0/0.1.1)  Distribution begins (read-side + User-Agent telemetry)
-Phase H    (post-publish polish, v0.2.0)      List pagination cursor support
-Phase I–J  (command fill-out)                 Governance + stats, then write-side
-Phase K–P  (expand)                           Auth UX, distribution, gaps, advanced, ecosystem
+Phase A–F  (pre-publish, merged)                  Architecture + early command surface
+Phase G    (FIRST npm publish, v0.1.0–v0.1.3)     Distribution begins; read-side CLI + telemetry + UX patches + Trusted Publishing
+Phase H–I  (command fill-out)                     Governance + stats, then write-side
+Phase J–O  (expand)                               Auth UX, distribution, gaps, advanced, ecosystem
 ```
 
 Phases are one-level; tasks inside each phase are a single-level flat checklist. Position encodes priority — open-phase letters are not stable promises.
@@ -189,7 +185,7 @@ Spec: [`designs/phase-e-token-family.md`](./designs/phase-e-token-family.md). Pl
 
 Spec: [`specs/phase-f.md`](./specs/phase-f.md). Plan: [`plans/phase-f.md`](./plans/phase-f.md).
 
-## Phase G — First npm publish ✅ (released as v0.1.0, 2026-04-17)
+## Phase G — First npm publish ✅ (released as v0.1.0+, 2026-04-17 onward)
 
 **Goal**: Ship `trongrid-cli@0.1.0` to npm with the read-side CLI surface from Phases A–F (31 commands), plus two pre-publish bug fixes that would otherwise embarrass early users. Brought forward from Phase I per release timing.
 
@@ -204,31 +200,18 @@ Spec: [`specs/phase-f.md`](./specs/phase-f.md). Plan: [`plans/phase-f.md`](./pla
 
 **Patch v0.1.1 (same day, ~90 min later):** User-Agent header (`User-Agent: trongrid-cli/<version>`) on all API requests for TronGrid usage telemetry. Origin: early-user feedback within hours of v0.1.0 publish. Also extracted `VERSION` to `src/version.ts` as single source of truth.
 
+**Patch v0.1.2 (planned):** List truncation hint — when `items.length >= --limit`, show `Showing first N items. Use --limit M to fetch more, or narrow with --before/--after.`. Origin: early-user feedback. Also adds `CLAUDE.md` thin pointer to `AGENTS.md`. JSON mode unaffected.
+
+**Patch v0.1.3 (planned):** npm Trusted Publishing (OIDC) setup — `.github/workflows/publish.yml` triggers on `v*` tag push, mints short-lived OIDC token via GitHub Actions, replaces manual `npm publish` flow. From v0.1.3 onward all releases auto-publish on tag push, with `provenance: true` attestation visible on npmjs.com. Brought forward from Phase L because manual publish friction (2FA dance + interactive auth) hurts patch cadence.
+
+**Deferred under Phase G follow-up** (no dedicated phase; promote when warranted):
+- Real cursor / page-token pagination — defer until truncation hint (v0.1.2) proves insufficient. Affects 12+ list commands; needs design (cursor model, flag name, output envelope).
+
 **This was the first tagged release.** Phases A–F shipped behavior-complete but untagged because there was no distribution contract to honor pre-publish (empty-diff tags would have polluted the eventual registry).
 
 Spec: [`designs/phase-g-first-publish.md`](./designs/phase-g-first-publish.md). Plan: [`plans/phase-g-first-publish.md`](./plans/phase-g-first-publish.md).
 
-## Phase H — List pagination cursor support (will release as v0.2.0)
-
-**Goal**: Real cursor / page-token pagination for all list commands. Currently users only have `--limit N` (fetch up to N items in one batch); an early user immediately asked for true pagination — `--limit 100` works as a workaround but is not pagination.
-
-**Open design questions** (resolve in spec):
-
-- Cursor model: server-side cursor token (preferred if TronGrid supports), or client-side `--offset` (works always but inefficient on large offsets)
-- Flag name: `--page-token <token>` vs `--cursor <token>` vs `--after-id <id>` (note: `--before` / `--after` already taken for time range)
-- Output: include `next_page_token` in JSON response envelope (machine consumers); maybe `Next page: trongrid <cmd> --page-token <token>` hint in human mode
-- Affected commands: `account txs`, `account transfers`, `account internals`, `account delegations`, `token holders`, `token transfers`, `contract events`, `contract txs`, `contract internals`, `contract transfers`, `contract tokens`, `contract delegations` (12+ list commands)
-
-**Tasks**:
-
-- [ ] Spec: `docs/designs/phase-h-list-pagination.md` — pick cursor model, flag name, output shape
-- [ ] Audit which TronGrid endpoints support cursor / `fingerprint` / similar; document per-endpoint capability
-- [ ] Implement cursor flag at global option level (`--page-token` or chosen name)
-- [ ] Wire through each list command's fetch function
-- [ ] Update help text + `AGENTS.md` agent integration examples
-- [ ] Document client-side `--offset` fallback (if used) with N+1 caveat for last-page detection
-
-## Phase I — Governance + stats (will release as v0.3.0)
+## Phase H — Governance + stats (will release as v0.2.0)
 
 - [ ] `sr list` / `sr view <address>` — Super Representatives
 - [ ] `proposal list` / `proposal view <id>` — governance proposals
@@ -237,11 +220,11 @@ Spec: [`designs/phase-g-first-publish.md`](./designs/phase-g-first-publish.md). 
 - [ ] `bandwidth price` — bandwidth pricing
 - [ ] `network status` / `network maintenance` / `network burn` — node + chain status
 
-## Phase J — Write-side (will release as v0.4.0, scope TBD)
+## Phase I — Write-side (will release as v0.3.0, scope TBD)
 
-**Open question**: scope of write-side support (`tx broadcast`, freeze/unfreeze, delegate, vote, etc.). Decision blockers: `--yes` / `--confirm` UX, SIGINT handling, actor tracking, and secret-key workflow. Scope locks at Phase I close.
+**Open question**: scope of write-side support (`tx broadcast`, freeze/unfreeze, delegate, vote, etc.). Decision blockers: `--yes` / `--confirm` UX, SIGINT handling, actor tracking, and secret-key workflow. Scope locks at Phase H close.
 
-## Phase K — Auth UX upgrade
+## Phase J — Auth UX upgrade
 
 **Goal**: Replace manual key entry with OAuth / device-flow login. Blocked on TronGrid platform support.
 
@@ -249,11 +232,10 @@ Spec: [`designs/phase-g-first-publish.md`](./designs/phase-g-first-publish.md). 
 - [ ] Refresh-token rotation
 - [ ] `trongrid auth status` shows auth provider + expiry
 
-## Phase L — Distribution channels
+## Phase K — Distribution channels
 
 - [ ] Homebrew formula (covers non-Node.js macOS users)
 - [ ] GitHub Releases binaries (universal fallback)
-- [ ] npm Trusted Publishing (OIDC) via GitHub Actions — replace manual `npm publish` workflow with short-lived token from CI; deferred from Phase G as official npm best practice for ongoing CI/CD publishes (2025-07 GA, requires `id-token: write` permission on workflow)
 
 ## Phase M — Gap commands
 
@@ -264,13 +246,13 @@ Commands representing identified user needs that depend on endpoints not yet ava
 - [ ] `contract creator <address>` — creator address + creation tx
 - [ ] `account tokens` sorted by USD value desc (Phase C trial #2, blocked on price feed)
 
-## Phase N — Dynamic token symbol resolution
+## Phase M — Dynamic token symbol resolution
 
 - [ ] Replace static verified-token map with runtime fetch from TronScan verified token list
 - [ ] Local cache with TTL
 - [ ] Symbol collision handling (disambiguation prompt)
 
-## Phase O — Advanced UX
+## Phase N — Advanced UX
 
 - [ ] `trongrid schema <command>` — machine-readable command schema (per Google CLI principle #2)
 - [ ] `--fields` field-mask examples in `AGENTS.md`
@@ -278,7 +260,7 @@ Commands representing identified user needs that depend on endpoints not yet ava
 - [ ] Pipe-friendly defaults (auto-detect non-TTY → JSON)
 - [ ] Completion scripts (bash/zsh/fish)
 
-## Phase P — Ecosystem integration
+## Phase O — Ecosystem integration
 
 - [ ] Agent platform plugins — publish to plugin marketplaces (Claude Code plugins first, others as they mature); wraps CLI + AGENTS.md as a unified entry point; marketplace review is gated
 - [ ] MCP server mode — conditional; only if CLI + AGENTS.md surface leaves LLM callers with CLI-unsolvable pain
@@ -291,10 +273,11 @@ Following [SemVer](https://semver.org/). Conservative versioning — stay in `0.
 |---------|-------|--------|-----------|
 | (untagged) | A–F | shipped | pre-publish, behavior-complete on each phase close |
 | 0.1.0 | G | shipped 2026-04-17 | **first npm publish** (read-side CLI + README + parity matrix + bug fixes) |
-| 0.1.1 | G (patch) | shipped 2026-04-17 | User-Agent header for TronGrid usage telemetry (real-user request) |
-| 0.2.0 | H | planned | List pagination cursor support |
-| 0.3.0 | I | planned | Governance + stats |
-| 0.4.0 | J | planned | Write-side (scope TBD) |
-| 0.5.0+ | K onward | planned | each code-changing phase cuts a minor bump |
+| 0.1.1 | G (patch) | shipped 2026-04-17 | User-Agent header for TronGrid usage telemetry |
+| 0.1.2 | G (patch) | planned | List truncation hint + `CLAUDE.md` thin pointer |
+| 0.1.3 | G (patch) | planned | npm Trusted Publishing (OIDC) setup; from here onward all releases auto-publish on tag push |
+| 0.2.0 | H | planned | Governance + stats |
+| 0.3.0 | I | planned | Write-side (scope TBD) |
+| 0.4.0+ | J onward | planned | each code-changing phase cuts a minor bump |
 
-Pre-publish phases don't consume version space — the first tagged release begins at `0.1.0`, the SemVer convention for a new package. Phases H–P cut sequential minor bumps as code-changing phases close. Patch versions (`0.x.y` where `y > 0`) are reserved for hotfixes within an existing phase. No `1.0.0` — there is no reason to promise backward compatibility for a CLI that should stay free to evolve.
+Pre-publish phases don't consume version space — the first tagged release begins at `0.1.0`, the SemVer convention for a new package. Phases H–O cut sequential minor bumps as code-changing phases close. Patch versions (`0.x.y` where `y > 0`) are reserved for follow-up work within an existing phase. No `1.0.0` — there is no reason to promise backward compatibility for a CLI that should stay free to evolve.
