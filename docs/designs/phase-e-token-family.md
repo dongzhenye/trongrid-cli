@@ -14,7 +14,7 @@ Every Phase surfaces instances where TronGrid's API cannot serve a user need tha
 | Framing | Constraint | Implication |
 |---------|-----------|-------------|
 | **TronGrid API wrapper CLI** | TronGrid endpoints only | Gaps documented as API feature requests; scope stays narrow |
-| **TRON ecosystem user CLI** (by the TronGrid team) | TronScan + other APIs allowed | Richer coverage; multiple API dependencies; may absorb tronscan-cli scope |
+| **TRON ecosystem aggregator CLI** | TronScan + other APIs allowed | Richer coverage; multiple API dependencies; may absorb tronscan-cli scope |
 
 This decision is intentionally deferred — it is not a Phase E blocker. Phase E stays on the TronGrid-only side. Each deferred item (TRX holders, TRX transfers, address tags, contract creator) is evidence that will inform the positioning decision when it is made. The deferred items are tracked in `docs/roadmap.md`.
 
