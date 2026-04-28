@@ -37,7 +37,7 @@
     "web3"
   ],
   "license": "MIT",
-  "author": "Zhenye Dong <dongzhenye@gmail.com>",
+  "author": "Zhenye Dong <dongzhenye@gmail.com> (https://dongzhenye.com)",
   "homepage": "https://github.com/dongzhenye/trongrid-cli",
   "repository": {
     "type": "git",
