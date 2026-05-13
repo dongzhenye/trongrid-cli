@@ -1,0 +1,38 @@
+name: Release
+
+# Trusted Publishing via OIDC — see https://docs.npmjs.com/trusted-publishers
+# Configure on npmjs.com: trongrid-cli → Settings → Trusted Publisher
+#   Provider:        GitHub Actions
+#   Org / repo:      trongrid-team / trongrid-cli
+#   Workflow file:   release.yml
+#   Environment:     release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Trusted publishing requires npm CLI >= 11.5.1; Node 22 ships with npm 10.x.
+      - run: npm install -g npm@latest
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run verify
+
+      - run: npm publish --provenance
